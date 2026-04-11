@@ -37,7 +37,8 @@ export default function ProjectBudgetDashboard() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/projects/${projectId}/budget-report`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const res = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}/budget-report`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data);
@@ -140,16 +141,16 @@ export default function ProjectBudgetDashboard() {
               <div>
                  <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase mb-1">الإنفاق الفعلي إلى الآن</p>
                  <div className="flex items-end gap-2">
-                   <p className={`text-xl font-mono font-black ${isOverBudget ? 'text-rose-400' : 'text-emerald-400'}`}>SAR {actualTotalCost.toLocaleString()}</p>
-                   {isOverBudget && <AlertCircle size={14} className="text-rose-500 mb-1" title="تجاوز الميزانية!" />}
+                    <p className={`text-xl font-mono font-black ${isOverBudget ? 'text-rose-400' : 'text-emerald-400'}`}>SAR {actualTotalCost.toLocaleString()}</p>
+                    {isOverBudget && <AlertCircle size={14} className="text-rose-500 mb-1" title="تجاوز الميزانية!" />}
                  </div>
                  
                  <div className="mt-3 bg-slate-900/80 h-2 rounded-full overflow-hidden border border-slate-800">
-                    <div className={`h-full rounded-full transition-all duration-1000 ${isOverBudget ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: \`\${costSpentPercent}%\` }} />
+                    <div className={`h-full rounded-full transition-all duration-1000 ${isOverBudget ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${costSpentPercent}%` }} />
                  </div>
                  <p className="text-xs text-slate-500 mt-1.5 flex justify-between font-mono">
-                   <span>{costSpentPercent.toFixed(1)}% تم إنفاقه</span>
-                   <span className={variances.costVariance < 0 ? 'text-rose-400' : 'text-emerald-400'}>المتبقي: {Math.max(0, variances.costVariance).toLocaleString()}</span>
+                    <span>{costSpentPercent.toFixed(1)}% تم إنفاقه</span>
+                    <span className={variances.costVariance < 0 ? 'text-rose-400' : 'text-emerald-400'}>المتبقي: {Math.max(0, variances.costVariance).toLocaleString()}</span>
                  </p>
               </div>
            </div>
@@ -165,7 +166,7 @@ export default function ProjectBudgetDashboard() {
               <div>
                  <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase">إجمالي الربح المتوقع</p>
                  <p className="text-3xl font-mono font-black text-amber-500">
-                   {expectedProfit > 0 ? '+' : ''}{expectedProfit.toLocaleString()}
+                    {expectedProfit > 0 ? '+' : ''}{expectedProfit.toLocaleString()}
                  </p>
               </div>
               <div className="bg-amber-500/10 py-3 px-4 rounded-xl border border-amber-500/20">
@@ -185,19 +186,20 @@ export default function ProjectBudgetDashboard() {
            <div className="space-y-4 relative z-10">
               <div>
                  <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase">المركز المالي الحالي (مدخول - مصروف)</p>
-                 <p className={`text-3xl font-mono font-black \${currentProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                   {currentProfit > 0 ? '+' : ''}{currentProfit.toLocaleString()}
+                 <p className={`text-3xl font-mono font-black ${currentProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {currentProfit > 0 ? '+' : ''}{currentProfit.toLocaleString()}
                  </p>
               </div>
-              <div className={`py-3 px-4 rounded-xl border \${currentProfit >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
-                 <p className={`text-[10px] font-black tracking-widest uppercase mb-1 \${currentProfit >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>هامش الربح الفعلي حالياً</p>
-                 <p className={`text-xl font-mono font-black \${currentProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                   {currentProfitMargin.toFixed(2)}%
+              <div className={`py-3 px-4 rounded-xl border ${currentProfit >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
+                 <p className={`text-[10px] font-black tracking-widest uppercase mb-1 ${currentProfit >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>هامش الربح الفعلي حالياً</p>
+                 <p className={`text-xl font-mono font-black ${currentProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {currentProfitMargin.toFixed(2)}%
                  </p>
-                 <p className={`text-[10px] mt-1 \${currentProfit >= 0 ? 'text-emerald-500/50' : 'text-rose-500/50'}`}>يبدأ بالاستقرار مع تقدم التنفيذ والمطالبات</p>
+                 <p className={`text-[10px] mt-1 ${currentProfit >= 0 ? 'text-emerald-500/50' : 'text-rose-500/50'}`}>يبدأ بالاستقرار مع تقدم التنفيذ والمطالبات</p>
               </div>
            </div>
         </div>
+         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
