@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -39,13 +40,13 @@ export default function EditInvoicePage() {
   const fetchInvoiceAndData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const resInvoice = await axios.get(`http://localhost:4000/v1/invoices/${invoiceId}`, {
+      const resInvoice = await axios.get(`${API_BASE_URL}/v1/invoices/${invoiceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const fetchedInvoice = resInvoice.data;
       
-      if (!fetchedInvoice || fetchedInvoice.status !== 'DRAFT') {
-        alert("لا يمكن تعديل هذا المستخلص لأنه مسجل كمعتمد.");
+      if (!fetchedInvoice || fetchedInvoice.status !== `DRAFT') {
+        alert(`لا يمكن تعديل هذا المستخلص لأنه مسجل كمعتمد.");
         router.push("/dashboard/invoices");
         return;
       }
@@ -68,14 +69,14 @@ export default function EditInvoicePage() {
       setDraftQuantities(draftMap);
       setExecutionData(execMap);
 
-      const resBoq = await axios.get(`http://localhost:4000/v1/projects/${fetchedInvoice.projectId}/boq`, {
+      const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${fetchedInvoice.projectId}/boq`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBoqItems(resBoq.data);
       
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء تحميل المستخلص.");
+      alert(`حدث خطأ أثناء تحميل المستخلص.");
     } finally {
       setIsLoading(false);
     }
@@ -102,13 +103,13 @@ export default function EditInvoicePage() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:4000/v1/invoices/${invoiceId}`,
+        `${API_BASE_URL}/v1/invoices/${invoiceId}`,
         { executionData: payloadData, taxPercent, advanceDeduction, delayPenalty, otherDeductions, deductionTiming, deferDeductions },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       router.push(`/dashboard/invoices/${invoiceId}`);
     } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الحفظ.");
+      alert(err.response?.data?.message || `حدث خطأ أثناء الحفظ.");
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +222,7 @@ export default function EditInvoicePage() {
                       <tr 
                         key={item.id} 
                         className={`transition-all duration-300 group ${
-                          isCompleted ? 'bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
+                          isCompleted ? `bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
                           isActive ? 'bg-amber-500/[0.03] shadow-[inset_2px_0_0_rgba(245,158,11,0.5)]' : 
                           'hover:bg-white/[0.02]'
                         }`}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileSpreadsheet, 
@@ -42,7 +43,7 @@ export default function BoqPage() {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/projects", {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProjects(res.data);
@@ -56,7 +57,7 @@ export default function BoqPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/projects/${projectId}/boq`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}/boq`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBoqItems(res.data);
@@ -69,13 +70,13 @@ export default function BoqPage() {
     if (!selectedProjectId) return;
     
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/projects/${selectedProjectId}/boq`, newItem, {
+      const token = localStorage.getItem(`token");
+      await axios.post(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq`, newItem, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       setIsAdding(false);
-      setNewItem({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
+      setNewItem({ itemCode: `", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
       fetchBoqItems(selectedProjectId); // Refresh list
     } catch (err) {
       alert("حدث خطأ أثناء إضافة البند. تأكد من أن الرمز غير مكرر.");
@@ -89,7 +90,7 @@ export default function BoqPage() {
     setIsLoading(true);
     try {
       // Parse TSV (Tab Separated Values) from Excel Paste
-      const rows = importText.split('\n').filter(r => r.trim().length > 0);
+      const rows = importText.split(`\n').filter(r => r.trim().length > 0);
       const items = rows.map(r => {
         const cols = r.split('\t').map(c => c.trim());
         return {
@@ -103,13 +104,13 @@ export default function BoqPage() {
       });
 
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/projects/${selectedProjectId}/boq/batch-import`, { items }, {
+      await axios.post(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq/batch-import`, { items }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       alert(`🎉 تم استيراد ${items.length} بنود بنجاح!`);
       setIsImporting(false);
-      setImportText("");
+      setImportText(`");
       fetchBoqItems(selectedProjectId);
     } catch (err) {
       alert("خطأ أثناء الاستيراد. تأكد من صحة البيانات المنسوخة.");
@@ -265,7 +266,7 @@ export default function BoqPage() {
                     <td className="px-6 py-5 font-mono text-slate-300">{Number(item.quantity).toLocaleString()}</td>
                     <td className="px-6 py-5 font-mono text-slate-300">{Number(item.unitPrice).toLocaleString()}</td>
                     <td className="px-6 py-5">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-inner ${item.executionType === 'SUBCONTRACT' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-inner ${item.executionType === `SUBCONTRACT' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
                         {item.executionType === 'SUBCONTRACT' ? 'مقاول باطن' : 'تنفيذ ذاتي'}
                       </span>
                     </td>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
 import { 
   FileText, 
@@ -37,7 +38,7 @@ export default function InvoiceViewPage() {
   const fetchInvoice = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/invoices/${invoiceId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/invoices/${invoiceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInvoice(res.data);
@@ -51,13 +52,13 @@ export default function InvoiceViewPage() {
   const handleSyncPayment = async () => {
     setIsSyncing(true);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/invoices/${invoiceId}/sync-payment`, {}, {
+      const token = localStorage.getItem(`token");
+      await axios.post(`${API_BASE_URL}/v1/invoices/${invoiceId}/sync-payment`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchInvoice();
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || "خطأ مجهول";
+      const msg = err.response?.data?.message || err.message || `خطأ مجهول";
       alert(`فشل المزامنة مع دفترة: ${msg}`);
     } finally {
       setIsSyncing(false);
@@ -91,7 +92,7 @@ export default function InvoiceViewPage() {
     PAID: { label: "تم دفع المستخلص", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
   };
 
-  const statusInfo = statusMap[invoice.status] || statusMap['DRAFT'];
+  const statusInfo = statusMap[invoice.status] || statusMap[`DRAFT'];
   const StatusIcon = statusInfo.icon;
   const totalDeductions = Number(invoice.retentionAmount) + Number(invoice.advanceDeduction) + Number(invoice.delayPenalty) + Number(invoice.otherDeductions);
 
@@ -100,12 +101,12 @@ export default function InvoiceViewPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.patch(`http://localhost:4000/v1/invoices/${invoiceId}/certify`, {}, {
+      const response = await axios.patch(`${API_BASE_URL}/v1/invoices/${invoiceId}/certify`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const daftraId = response.data?.daftraExternalId || "N/A";
+      const daftraId = response.data?.daftraExternalId || `N/A";
       alert(`تم اعتماد المستخلص بنجاح!\nرقم الربط في دفترة: ${daftraId}`);
-      setInvoice({ ...invoice, status: 'CERTIFIED' });
+      setInvoice({ ...invoice, status: `CERTIFIED' });
     } catch (err: any) {
       const errData = err.response?.data || err.message;
       alert(`حدث خطأ أثناء المزامنة مع دفترة:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);

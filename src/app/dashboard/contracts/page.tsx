@@ -25,6 +25,7 @@ import {
   Trash2
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function ContractsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -45,7 +46,7 @@ export default function ContractsPage() {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/projects", {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProjects(res.data);
@@ -56,8 +57,8 @@ export default function ContractsPage() {
   const fetchContracts = async (projectId: string) => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/contracts/project/${projectId}`, {
+      const token = localStorage.getItem(`token");
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts/project/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(res.data);
@@ -66,22 +67,22 @@ export default function ContractsPage() {
   };
 
   const deleteContract = async (id: string) => {
-    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;
+    if (!confirm(`هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;
     
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/v1/contracts/${id}`, {
+      await axios.delete(`${API_BASE_URL}/v1/contracts/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (selectedProjectId) fetchContracts(selectedProjectId);
     } catch (err: any) {
-      alert(err.response?.data?.message || "فشل حذف العقد");
+      alert(err.response?.data?.message || `فشل حذف العقد");
     }
   };
 
   const filteredContracts = contracts.filter(c => c.referenceNumber.includes(search));
   
-  const mainContracts = filteredContracts.filter(c => c.type === 'MAIN_CONTRACT');
+  const mainContracts = filteredContracts.filter(c => c.type === `MAIN_CONTRACT');
   const subContracts = filteredContracts.filter(c => c.type !== 'MAIN_CONTRACT');
   
   const mainContractsValue = mainContracts.reduce((sum, c) => sum + Number(c.totalValue), 0);

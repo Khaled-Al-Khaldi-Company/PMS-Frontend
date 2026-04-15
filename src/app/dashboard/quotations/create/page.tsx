@@ -22,6 +22,7 @@ import {
   X
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function CreateQuotationPage() {
   const router = useRouter();
@@ -63,7 +64,7 @@ export default function CreateQuotationPage() {
     const fetchClients = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:4000/v1/contacts/clients", {
+        const res = await axios.get(`${API_BASE_URL}/v1/contacts/clients`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setClients(res.data || []);
@@ -82,7 +83,7 @@ export default function CreateQuotationPage() {
         setShowClientDropdown(false);
       }
     };
-    document.addEventListener("mousedown", handler);
+    document.addEventListener(`mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
@@ -109,7 +110,7 @@ export default function CreateQuotationPage() {
     setIsSubmittingClient(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:4000/v1/contacts/clients", newClient, {
+      const res = await axios.post(`${API_BASE_URL}/v1/contacts/clients`, newClient, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Add to list and select it
@@ -117,7 +118,7 @@ export default function CreateQuotationPage() {
       handleSelectClient(res.data);
       setShowClientModal(false);
       setNewClient({
-        name: '', commercialName: '', contactPerson: '', phone: '', email: '', 
+        name: `', commercialName: '', contactPerson: '', phone: '', email: '', 
         taxNumber: '', crNumber: '', address: '', activityType: '', notes: ''
       });
     } catch (err: any) {
@@ -144,7 +145,7 @@ export default function CreateQuotationPage() {
     const nextCode = (formData.items.length + 1).toString().padStart(2, '0');
     setFormData({
       ...formData,
-      items: [...formData.items, { itemCode: nextCode, description: "", unit: "م٢", quantity: 1, unitPrice: 0, estimatedUnitCost: 0 }]
+      items: [...formData.items, { itemCode: nextCode, description: `", unit: "م٢", quantity: 1, unitPrice: 0, estimatedUnitCost: 0 }]
     });
   };
 
@@ -171,11 +172,11 @@ export default function CreateQuotationPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:4000/v1/quotations",
+        `${API_BASE_URL}/v1/quotations`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      router.push("/dashboard/quotations");
+      router.push(`/dashboard/quotations");
     } catch (err: any) {
       alert("حدث خطأ أثناء حفظ عرض السعر.");
     } finally {
@@ -187,7 +188,7 @@ export default function CreateQuotationPage() {
 
   useEffect(() => {
     setPrintMeta({
-      date: new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
+      date: new Date().toLocaleDateString(`ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
       ref: `QT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
     });
   }, []);

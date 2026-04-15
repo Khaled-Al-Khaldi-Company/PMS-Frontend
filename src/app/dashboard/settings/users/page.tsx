@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Users, UserPlus, FileEdit, Trash2, Shield, Lock, Activity, CheckCircle, XCircle } from "lucide-react";
@@ -32,7 +33,7 @@ export default function UsersManagementPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/users", {
+      const res = await axios.get(`${API_BASE_URL}/v1/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);
@@ -43,7 +44,7 @@ export default function UsersManagementPage() {
   const fetchRoles = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/users/roles", {
+      const res = await axios.get(`${API_BASE_URL}/v1/users/roles`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRoles(res.data);
@@ -76,17 +77,17 @@ export default function UsersManagementPage() {
       if (editingUserId) {
         // Update
         const payload: any = { ...formData };
-        if (!payload.password) delete payload.password; // Don't submit blank password
-        await axios.patch(`http://localhost:4000/v1/users/${editingUserId}`, payload, {
+        if (!payload.password) delete payload.password; // Don`t submit blank password
+        await axios.patch(`${API_BASE_URL}/v1/users/${editingUserId}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
         // Create
         if (!formData.password) {
-           alert("كلمة المرور مطلوبة للمستخدم الجديد!");
+           alert(`كلمة المرور مطلوبة للمستخدم الجديد!");
            return;
         }
-        await axios.post("http://localhost:4000/v1/users", formData, {
+        await axios.post(`${API_BASE_URL}/v1/users`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -210,7 +211,7 @@ export default function UsersManagementPage() {
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block text-center">حالة الحساب</label>
-                  <button type="button" onClick={() => setFormData({...formData, isActive: !formData.isActive})} className={`w-full py-2.5 rounded-xl font-bold flex flex-col items-center justify-center transition-colors ${formData.isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+                  <button type="button" onClick={() => setFormData({...formData, isActive: !formData.isActive})} className={`w-full py-2.5 rounded-xl font-bold flex flex-col items-center justify-center transition-colors ${formData.isActive ? `bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
                     {formData.isActive ? 'مُفعّل نشط' : 'موقوف'}
                   </button>
                 </div>

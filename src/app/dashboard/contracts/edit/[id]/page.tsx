@@ -8,6 +8,7 @@ import {
   Crown, HardHat, Building2, Edit3, AlertTriangle, Plus
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function EditContractPage() {
   const router = useRouter();
@@ -33,13 +34,13 @@ export default function EditContractPage() {
   const fetchContract = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/contracts/${contractId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts/${contractId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const c = res.data;
       setContract(c);
       setFormData({
-        referenceNumber: c.referenceNumber || "",
+        referenceNumber: c.referenceNumber || `",
         totalValue: Number(c.totalValue) || 0,
         retentionPercent: Number(c.retentionPercent) || 5,
         advancePayment: Number(c.advancePayment) || 10,
@@ -59,11 +60,11 @@ export default function EditContractPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:4000/v1/contracts/${contractId}`,
+        `${API_BASE_URL}/v1/contracts/${contractId}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      router.push("/dashboard/contracts");
+      router.push(`/dashboard/contracts");
     } catch (err: any) {
       alert(`خطأ أثناء حفظ التعديلات: ${err.response?.data?.message || err.message}`);
     } finally {
@@ -318,7 +319,7 @@ export default function EditContractPage() {
                      <td className="px-4 py-4 font-mono font-bold text-white">#{co.orderNumber}</td>
                      <td className="px-4 py-4 font-medium max-w-[200px] truncate" title={co.title}>{co.title}</td>
                      <td className="px-4 py-4">
-                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.type === 'ADDITION' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.type === `ADDITION' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
                          {co.type === 'ADDITION' ? 'بند إضافي (+)' : 'خصم متفق (-)'}
                        </span>
                      </td>

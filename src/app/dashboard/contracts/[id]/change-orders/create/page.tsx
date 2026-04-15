@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,12 +35,12 @@ export default function CreateChangeOrderPage() {
   const fetchContract = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/contracts/${contractId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts/${contractId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContract(res.data);
     } catch (err) {
-      alert("لم يتم العثور على العقد.");
+      alert(`لم يتم العثور على العقد.");
       router.push("/dashboard/contracts");
     } finally {
       setIsLoading(false);
@@ -83,7 +84,7 @@ export default function CreateChangeOrderPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:4000/v1/contracts/${contractId}/change-orders`,
+        `${API_BASE_URL}/v1/contracts/${contractId}/change-orders`,
         {
           ...formData,
           amount,
@@ -105,7 +106,7 @@ export default function CreateChangeOrderPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className=`flex items-center justify-center min-h-[60vh]">
         <Loader2 className="animate-spin text-emerald-500" size={48} />
       </div>
     );
@@ -166,7 +167,7 @@ export default function CreateChangeOrderPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div
-                onClick={() => setFormData({ ...formData, type: 'ADDITION' })}
+                onClick={() => setFormData({ ...formData, type: `ADDITION' })}
                 className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center justify-center gap-2 transition-all group ${
                   formData.type === 'ADDITION' 
                     ? 'bg-emerald-500/10 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)] shadow-inner' 

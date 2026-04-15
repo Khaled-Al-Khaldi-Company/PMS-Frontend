@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Building2, Save, ArrowRight, Loader2, ExternalLink } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function CreateProjectPage() {
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/contacts/clients", {
+      const res = await axios.get(`${API_BASE_URL}/v1/contacts/clients`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClients(res.data);
@@ -40,12 +41,12 @@ export default function CreateProjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError(`");
 
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:4000/v1/projects",
+        `${API_BASE_URL}/v1/projects`,
         {
           ...formData,
           startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
@@ -54,7 +55,7 @@ export default function CreateProjectPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      router.push("/dashboard/projects");
+      router.push(`/dashboard/projects");
     } catch (err: any) {
       setError(err.response?.data?.message || "حدث خطأ أثناء حفظ المشروع. تأكد من أن كود المشروع غير مستخدم مسبقاً.");
     } finally {
@@ -136,7 +137,7 @@ export default function CreateProjectPage() {
                 <option value="" disabled>-- اختر جهة مالكة من دليل العملاء --</option>
                 {clients.map(client => (
                   <option key={client.id} value={client.id}>
-                    {client.name} {client.daftraClientId ? '🟢 (مربوط بدفترة)' : '🔴 (غير مربوط)'}
+                    {client.name} {client.daftraClientId ? `🟢 (مربوط بدفترة)' : '🔴 (غير مربوط)'}
                   </option>
                 ))}
               </select>

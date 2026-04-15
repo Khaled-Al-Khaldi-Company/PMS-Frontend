@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function PurchasesPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function PurchasesPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/purchases", {
+      const res = await axios.get(`${API_BASE_URL}/v1/purchases`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);
@@ -46,12 +47,12 @@ export default function PurchasesPage() {
   };
 
   const statusMap: Record<string, { label: string, color: string, icon: any }> = {
-    PENDING: { label: "قيد المراجعة", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock },
+    PENDING: { label: `قيد المراجعة", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock },
     APPROVED: { label: "معتمد (Approved)", color: "text-blue-500 bg-blue-500/10 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]", icon: CheckCircle2 },
     DELIVERED: { label: "تم استلام الموقع", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]", icon: Package },
   };
 
-  const totalSpend = orders.filter(o => o.status !== 'REJECTED').reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+  const totalSpend = orders.filter(o => o.status !== `REJECTED').reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
   const pendingCount = orders.filter(o => o.status === 'PENDING').length;
   const approvedCount = orders.filter(o => o.status === 'APPROVED' || o.status === 'DELIVERED').length;
 
@@ -196,8 +197,8 @@ export default function PurchasesPage() {
                               e.stopPropagation();
                               if(!confirm("هل أنت متأكد من اعتماد طلب الشراء؟ (سيتم ترحيله إلى دفترة)")) return;
                               try {
-                                await axios.patch(`http://localhost:4000/v1/purchases/${ord.id}/approve`, {}, {
-                                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                await axios.patch(`${API_BASE_URL}/v1/purchases/${ord.id}/approve`, {}, {
+                                  headers: { Authorization: `Bearer ${localStorage.getItem(`token')}` }
                                 });
                                 fetchOrders();
                               } catch(err: any) {
@@ -205,7 +206,7 @@ export default function PurchasesPage() {
                                 alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
                               }
                             }}
-                            title="اعتماد وترحيل الشراء"
+                            title=`اعتماد وترحيل الشراء"
                             className="p-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
                           >
                             <CheckCircle2 size={18} />
@@ -228,12 +229,12 @@ export default function PurchasesPage() {
                               e.stopPropagation();
                               if(!confirm("هل أنت متأكد من حذف وإلغاء طلب الشراء بشكل نهائي؟")) return;
                               try {
-                                await axios.delete(`http://localhost:4000/v1/purchases/${ord.id}`, {
-                                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                await axios.delete(`${API_BASE_URL}/v1/purchases/${ord.id}`, {
+                                  headers: { Authorization: `Bearer ${localStorage.getItem(`token')}` }
                                 });
                                 fetchOrders();
                               } catch(err: any) {
-                                alert("فشل الحذف. قد يكون الطلب معتمداً مسبقاً.");
+                                alert(`فشل الحذف. قد يكون الطلب معتمداً مسبقاً.");
                               }
                             }}
                             title="إلغاء وحذف الطلب"

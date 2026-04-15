@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function QuotationsPage() {
   const [quotations, setQuotations] = useState<any[]>([]);
@@ -31,7 +32,7 @@ export default function QuotationsPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/quotations", {
+      const res = await axios.get(`${API_BASE_URL}/v1/quotations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuotations(res.data);
@@ -41,16 +42,16 @@ export default function QuotationsPage() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!confirm("هل أنت متأكد من رغبتك في حذف العرض السعري بالكامل؟")) return;
+    if (!confirm(`هل أنت متأكد من رغبتك في حذف العرض السعري بالكامل؟")) return;
     
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/v1/quotations/${id}`, {
+      await axios.delete(`${API_BASE_URL}/v1/quotations/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchQuotations();
     } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الحذف.");
+      alert(err.response?.data?.message || `حدث خطأ أثناء الحذف.");
     }
   };
 
@@ -59,13 +60,13 @@ export default function QuotationsPage() {
     
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post(`http://localhost:4000/v1/quotations/${id}/convert`, {}, {
+      const res = await axios.post(`${API_BASE_URL}/v1/quotations/${id}/convert`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert(`مبروك! تم التحويل بنجاح. رقم المشروع الجديد: ${res.data.code}`);
       fetchQuotations();
     } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الاعتماد.");
+      alert(err.response?.data?.message || `حدث خطأ أثناء الاعتماد.");
     }
   };
 
@@ -151,7 +152,7 @@ export default function QuotationsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-center">
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest border ${statusMap[quote.status]?.color || statusMap['DRAFT'].color}`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest border ${statusMap[quote.status]?.color || statusMap[`DRAFT'].color}`}>
                           {(() => {
                             const IconComp = statusMap[quote.status]?.icon || Clock;
                             return <IconComp size={14} />;

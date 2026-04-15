@@ -8,6 +8,7 @@ import {
   Trash2, ShieldAlert, AlertTriangle, X, Loader2
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
@@ -27,12 +28,12 @@ export default function SettingsPage() {
     const fetchSettings = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:4000/v1/settings", {
+        const res = await fetch(`${API_BASE_URL}/v1/settings`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
           const data = await res.json();
-          setApiKey(data["DAFTRA_API_KEY"] || "");
+          setApiKey(data[`DAFTRA_API_KEY"] || "");
           setDomain(data["DAFTRA_DOMAIN"] || "");
         }
       } catch (err) {
@@ -47,7 +48,7 @@ export default function SettingsPage() {
   const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
     // Auto-clean pasted URLs: "https://gkke.daftra.com/" -> "gkke"
-    val = val.replace(/^https?:\/\//i, ''); // remove http:// or https://
+    val = val.replace(/^https?:\/\//i, `'); // remove http:// or https://
     val = val.replace(/\.daftra\.com.*/i, ''); // remove .daftra.com and anything after
     val = val.replace(/[\/]/g, ''); // remove any slashes
     setDomain(val);
@@ -57,8 +58,8 @@ export default function SettingsPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/v1/settings", {
-        method: "POST",
+      const res = await fetch(`${API_BASE_URL}/v1/settings`, {
+        method: `POST",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}` 
@@ -79,15 +80,15 @@ export default function SettingsPage() {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    setSyncStatus({type: 'idle', message: ''});
+    setSyncStatus({type: `idle', message: ''});
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/v1/integration/daftra/sync/cost-centers", {
-        method: "POST",
+      const res = await fetch(`${API_BASE_URL}/v1/integration/daftra/sync/cost-centers`, {
+        method: `POST",
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setSyncStatus({type: 'success', message: 'تمت مزامنة مراكز التكلفة والمشاريع مع دفترة بنجاح!'});
+        setSyncStatus({type: `success', message: 'تمت مزامنة مراكز التكلفة والمشاريع مع دفترة بنجاح!'});
       } else {
         const errorData = await res.json().catch(() => ({}));
         let extMsg = errorData.message || 'فشل الاتصال بـ دفترة، يرجى التحقق من المفتاح والدومين.';
@@ -108,12 +109,12 @@ export default function SettingsPage() {
     setIsResetting(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:4000/v1/settings/reset-data", {}, {
+      await axios.post(`${API_BASE_URL}/v1/settings/reset-data`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setResetDone(true);
       setShowResetModal(false);
-      setResetConfirmText("");
+      setResetConfirmText(`");
       setTimeout(() => setResetDone(false), 5000);
     } catch (err: any) {
       alert(err.response?.data?.message || "فشل التصفير. يرجى المحاولة مجدداً.");
@@ -217,7 +218,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
                     <Server size={14} className="text-emerald-400" /> الدومين الفرعي (Subdomain)
                   </label>
-                  {domain.includes('@') && (
+                  {domain.includes(`@') && (
                     <span className="text-xs text-rose-400 font-medium animate-pulse">
                       يرجى إدخال اسم الدومين فقط وليس الإيميل
                     </span>

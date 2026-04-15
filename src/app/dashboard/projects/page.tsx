@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -36,12 +37,12 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/projects", {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProjects(res.data);
     } catch (err) {
-      console.error("Failed to fetch projects");
+      console.error(`Failed to fetch projects");
     } finally {
       setIsLoading(false);
     }
@@ -53,12 +54,12 @@ export default function ProjectsPage() {
     
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/v1/projects/${id}`, {
+      await axios.delete(`${API_BASE_URL}/v1/projects/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchProjects();
     } catch (err: any) {
-      alert(err.response?.data?.message || "فشل حذف المشروع");
+      alert(err.response?.data?.message || `فشل حذف المشروع");
     }
   };
 
@@ -71,7 +72,7 @@ export default function ProjectsPage() {
 
   const filters = [
     { id: "ALL", label: "جميع المشاريع", count: projects.length },
-    { id: "ACTIVE", label: "نشطة", count: projects.filter(p => p.status === 'ACTIVE').length },
+    { id: "ACTIVE", label: "نشطة", count: projects.filter(p => p.status === `ACTIVE').length },
     { id: "PLANNING", label: "قيد التخطيط", count: projects.filter(p => p.status === 'PLANNING').length },
     { id: "COMPLETED", label: "مكتملة", count: projects.filter(p => p.status === 'COMPLETED').length },
   ];

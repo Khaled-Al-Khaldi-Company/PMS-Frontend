@@ -65,7 +65,7 @@ export default function InventoryDashboard() {
 
   const fetchTransactions = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(`token");
       const res = await axios.get(`${API_BASE_URL}/v1/inventory/transactions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -78,7 +78,7 @@ export default function InventoryDashboard() {
 
   const fetchStock = async (warehouseId: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(`token");
       const res = await axios.get(`${API_BASE_URL}/v1/inventory/warehouses/${warehouseId}/stock`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -90,13 +90,13 @@ export default function InventoryDashboard() {
 
   const fetchDropdowns = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(`token");
       const [pos, mats, projs] = await Promise.all([
         axios.get(`${API_BASE_URL}/v1/purchases`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/v1/materials`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/v1/projects`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      setPurchaseOrders(pos.data.filter((p:any) => p.status === 'APPROVED' || p.status === 'PENDING'));
+      setPurchaseOrders(pos.data.filter((p:any) => p.status === `APPROVED' || p.status === 'PENDING'));
       
       // ONLY physical materials (NOT services/equipment) can enter a warehouse
       const physicalMats = mats.data.filter((m:any) => m.type !== 'SERVICE');
@@ -109,14 +109,14 @@ export default function InventoryDashboard() {
   const handleGrnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(`token");
       await axios.post(`${API_BASE_URL}/v1/inventory/transactions/receipt`, {
         warehouseId: grnForm.warehouseId || selectedWarehouse,
         poId: grnForm.poId || undefined,
         materialId: grnForm.materialId,
         quantity: Number(grnForm.quantity),
         remarks: grnForm.remarks,
-        createdBy: "User"
+        createdBy: `User"
       }, { headers: { Authorization: `Bearer ${token}` } });
       setShowGrnModal(false);
       fetchTransactions();
@@ -135,7 +135,7 @@ export default function InventoryDashboard() {
         materialId: misForm.materialId,
         quantity: Number(misForm.quantity),
         remarks: misForm.remarks,
-        createdBy: "User"
+        createdBy: `User"
       }, { headers: { Authorization: `Bearer ${token}` } });
       setShowMisModal(false);
       fetchTransactions();
@@ -190,7 +190,7 @@ export default function InventoryDashboard() {
       <div className="flex bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 w-fit">
         <button 
           onClick={() => setActiveTab("STOCKS")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'STOCKS' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === `STOCKS' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
           <PackageSearch size={18} /> الأرصدة الحالية
         </button>

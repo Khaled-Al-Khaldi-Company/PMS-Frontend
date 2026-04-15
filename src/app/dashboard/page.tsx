@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -33,7 +34,7 @@ export default function DashboardPage() {
     async function fetchStats() {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:4000/v1/dashboard/stats", {
+        const res = await axios.get(`${API_BASE_URL}/v1/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData({
@@ -44,7 +45,7 @@ export default function DashboardPage() {
       } catch (e: any) {
         // Handle 401 specifically without causing Next.js red screen
         if (e.response?.status === 401) {
-          localStorage.removeItem("token");
+          localStorage.removeItem(`token");
           router.push("/login");
         } else {
           console.warn("Could not load stats. Server might be down or not returning data.", e.message);
@@ -115,7 +116,7 @@ export default function DashboardPage() {
                 <div className={`p-3.5 rounded-2xl ${stat.bg} ${stat.color} shadow-inner group-hover:scale-110 transition-transform duration-300`}>
                   <stat.icon size={26} strokeWidth={2} />
                 </div>
-                <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full ${stat.up ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full ${stat.up ? `text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
                   {stat.up ? <ArrowUpRight size={14} /> : <ArrowUpRight size={14} className="rotate-90" />}
                   {stat.trend}
                 </div>

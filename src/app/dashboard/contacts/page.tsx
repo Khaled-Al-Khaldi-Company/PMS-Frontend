@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '@/lib/api';
 import { User, Building, Phone, Mail, FileText, MapPin, MoreVertical, Edit, Trash2, Plus, X } from 'lucide-react';
 
 export default function ContactsPage() {
@@ -31,7 +32,7 @@ export default function ContactsPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/contacts/${activeTab}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/contacts/${activeTab}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data);
@@ -45,7 +46,7 @@ export default function ContactsPage() {
   const openNewModal = () => {
     setEditingItem(null);
     setFormData({
-      name: '', commercialName: '', contactPerson: '', phone: '', email: '', 
+      name: `', commercialName: '', contactPerson: '', phone: '', email: '', 
       taxNumber: '', crNumber: '', address: '', activityType: '', notes: ''
     });
     setIsModalOpen(true);
@@ -69,15 +70,15 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
+    if (!confirm(`هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/v1/contacts/${activeTab}/${id}`, {
+      await axios.delete(`${API_BASE_URL}/v1/contacts/${activeTab}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
     } catch (err) {
-      alert("حدث خطأ أثناء الحذف، ربما السجل مرتبط بعمليات مالية!");
+      alert(`حدث خطأ أثناء الحذف، ربما السجل مرتبط بعمليات مالية!");
     }
   };
 
@@ -86,11 +87,11 @@ export default function ContactsPage() {
     try {
       const token = localStorage.getItem("token");
       if (editingItem) {
-        await axios.put(`http://localhost:4000/v1/contacts/${activeTab}/${editingItem.id}`, formData, {
+        await axios.put(`${API_BASE_URL}/v1/contacts/${activeTab}/${editingItem.id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post(`http://localhost:4000/v1/contacts/${activeTab}`, formData, {
+        await axios.post(`${API_BASE_URL}/v1/contacts/${activeTab}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -102,7 +103,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 space-y-8 animate-in fade-in zoom-in duration-500">
+    <div className=`p-6 md:p-10 space-y-8 animate-in fade-in zoom-in duration-500">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/50 p-6 rounded-3xl border border-slate-800 backdrop-blur-xl">
@@ -120,7 +121,7 @@ export default function ContactsPage() {
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 font-medium"
         >
           <Plus size={20} />
-          إضافة {activeTab === 'suppliers' ? 'مورد جديد' : 'عميل جديد'}
+          إضافة {activeTab === `suppliers' ? 'مورد جديد' : 'عميل جديد'}
         </button>
       </div>
 

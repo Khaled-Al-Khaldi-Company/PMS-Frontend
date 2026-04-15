@@ -8,6 +8,7 @@ import {
   Percent, Wallet, Clock, Tag, RefreshCcw, LayoutTemplate
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 function InvoiceCreateContent() {
   const router = useRouter();
@@ -38,18 +39,18 @@ function InvoiceCreateContent() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const resContract = await axios.get(`http://localhost:4000/v1/contracts/${contractId}`, {
+      const resContract = await axios.get(`${API_BASE_URL}/v1/contracts/${contractId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContractDetails(resContract.data);
 
-      const resBoq = await axios.get(`http://localhost:4000/v1/projects/${projectId}/boq`, {
+      const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}/boq`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBoqItems(resBoq.data);
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء تحميل البيانات.");
+      alert(`حدث خطأ أثناء تحميل البيانات.");
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +77,7 @@ function InvoiceCreateContent() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        `http://localhost:4000/v1/invoices/${contractId}/generate`,
+        `${API_BASE_URL}/v1/invoices/${contractId}/generate`,
         { 
           executionData: payloadData,
           taxPercent,
@@ -89,7 +90,7 @@ function InvoiceCreateContent() {
       
       router.push(`/dashboard/invoices/${res.data.id}`);
     } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء إنشاء المستخلص.");
+      alert(err.response?.data?.message || `حدث خطأ أثناء إنشاء المستخلص.");
     } finally {
       setIsSubmitting(false);
     }
@@ -199,7 +200,7 @@ function InvoiceCreateContent() {
                       <tr 
                         key={item.id} 
                         className={`transition-all duration-300 group ${
-                          isCompleted ? 'bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
+                          isCompleted ? `bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
                           isActive ? 'bg-emerald-500/[0.03] shadow-[inset_2px_0_0_rgba(16,185,129,0.5)]' : 
                           'hover:bg-white/[0.02]'
                         }`}

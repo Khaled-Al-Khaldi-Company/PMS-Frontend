@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, 
@@ -47,14 +48,14 @@ export default function ProjectDashboardPage() {
   const fetchProjectDetails = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/projects/${projectId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProject(res.data);
     } catch (err) {
       console.error(err);
-      alert("استحالة الوصول للمشروع، الرجاء المحاولة مجدداً.");
-      router.push('/dashboard/projects');
+      alert(`استحالة الوصول للمشروع، الرجاء المحاولة مجدداً.");
+      router.push(`/dashboard/projects');
     } finally {
       setIsLoading(false);
     }
@@ -65,15 +66,15 @@ export default function ProjectDashboardPage() {
     setIsSubmittingBoq(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/projects/${projectId}/boq`, newBoq, {
+      await axios.post(`${API_BASE_URL}/v1/projects/${projectId}/boq`, newBoq, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsBoqModalOpen(false);
-      setNewBoq({ itemCode: '', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
+      setNewBoq({ itemCode: `', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
       fetchProjectDetails(); // Refresh the table automatically
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء إضافة بند الكميات.");
+      alert(`حدث خطأ أثناء إضافة بند الكميات.");
     } finally {
       setIsSubmittingBoq(false);
     }

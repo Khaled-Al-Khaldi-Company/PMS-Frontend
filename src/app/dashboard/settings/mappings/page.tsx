@@ -16,6 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function MappingPage() {
   const router = useRouter();
@@ -45,12 +46,12 @@ export default function MappingPage() {
       const token = localStorage.getItem("token");
       
       const [pmsRes, daftraRes, pmsClientsRes, daftraClientsRes, pmsProjectsRes, costCentersRes] = await Promise.all([
-        axios.get("http://localhost:4000/v1/integration/daftra/pms-suppliers", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:4000/v1/integration/daftra/suppliers", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:4000/v1/integration/daftra/pms-clients", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:4000/v1/integration/daftra/clients", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:4000/v1/integration/daftra/pms-projects", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:4000/v1/integration/daftra/cost-centers", { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/pms-suppliers`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/suppliers`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/pms-clients`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/pms-projects`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/v1/integration/daftra/cost-centers`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })),
       ]);
       
       setPmsSuppliers(pmsRes.data);
@@ -70,8 +71,8 @@ export default function MappingPage() {
   const handleLinkSupplier = async (pmsId: string, daftraId: string | null) => {
     setIsSaving(pmsId);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/integration/daftra/link-supplier/${pmsId}`, 
+      const token = localStorage.getItem(`token");
+      await axios.post(`${API_BASE_URL}/v1/integration/daftra/link-supplier/${pmsId}`, 
         { daftraId }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -79,7 +80,7 @@ export default function MappingPage() {
       // Update local state to reflect the checkmark immediately
       setPmsSuppliers(prev => prev.map(s => s.id === pmsId ? { ...s, daftraSupplierId: daftraId } : s));
     } catch (err: any) {
-      alert("حدث خطأ أثناء حفظ الربط. يرجى المحاولة مرة أخرى.");
+      alert(`حدث خطأ أثناء حفظ الربط. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsSaving(null);
     }
@@ -89,13 +90,13 @@ export default function MappingPage() {
     setIsSaving(pmsId);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/integration/daftra/link-client/${pmsId}`, 
+      await axios.post(`${API_BASE_URL}/v1/integration/daftra/link-client/${pmsId}`, 
         { daftraId }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPmsClients(prev => prev.map(c => c.id === pmsId ? { ...c, daftraClientId: daftraId } : c));
     } catch (err: any) {
-      alert("حدث خطأ أثناء الربط.");
+      alert(`حدث خطأ أثناء الربط.");
     } finally {
       setIsSaving(null);
     }
@@ -105,13 +106,13 @@ export default function MappingPage() {
     setIsSaving(pmsId);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`http://localhost:4000/v1/integration/daftra/link-project/${pmsId}`,
+      await axios.post(`${API_BASE_URL}/v1/integration/daftra/link-project/${pmsId}`,
         { daftraCostCenterId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPmsProjects(prev => prev.map(p => p.id === pmsId ? { ...p, daftraCostCenterId } : p));
     } catch {
-      alert("حدث خطأ أثناء ربط المشروع.");
+      alert(`حدث خطأ أثناء ربط المشروع.");
     } finally {
       setIsSaving(null);
     }
@@ -171,7 +172,7 @@ export default function MappingPage() {
         
         <div className="flex border-b border-white/10 mb-8 w-fit gap-1 padding-1 bg-slate-900/50 rounded-xl p-1">
           <button 
-            onClick={() => { setActiveTab('suppliers'); setSearch(''); }}
+            onClick={() => { setActiveTab(`suppliers'); setSearch(''); }}
             className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'suppliers' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
           >
             مطابقة الموردين (Suppliers)

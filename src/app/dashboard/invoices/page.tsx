@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function InvoicesPage() {
   const router = useRouter();
@@ -63,14 +64,14 @@ export default function InvoicesPage() {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/v1/projects", {
+      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProjects(res.data);
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(`token");
         router.push("/");
       }
     }
@@ -79,14 +80,14 @@ export default function InvoicesPage() {
   const fetchContracts = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/contracts/project/${projectId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts/project/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(res.data);
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(`token");
         router.push("/");
       }
     }
@@ -98,12 +99,12 @@ export default function InvoicesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/v1/invoices/${id}`, {
+      await axios.delete(`${API_BASE_URL}/v1/invoices/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (selectedContractId) fetchInvoices(selectedContractId);
     } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الحذف.");
+      alert(err.response?.data?.message || `حدث خطأ أثناء الحذف.");
     }
   };
 
@@ -111,14 +112,14 @@ export default function InvoicesPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:4000/v1/invoices/contract/${contractId}`, {
+      const res = await axios.get(`${API_BASE_URL}/v1/invoices/contract/${contractId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInvoices(res.data);
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(`token");
         router.push("/");
       }
     }
@@ -240,7 +241,7 @@ export default function InvoicesPage() {
             >
               <option value="" disabled className="bg-slate-900 text-slate-500">📄 حدد العقد (إيراد / تكلفة)</option>
               {contracts.map(c => {
-                const name = c.type === 'MAIN_CONTRACT' ? 'عقد رئيسي (إيراد)' : (c.subcontractor?.name || 'مقاول باطن');
+                const name = c.type === `MAIN_CONTRACT' ? 'عقد رئيسي (إيراد)' : (c.subcontractor?.name || 'مقاول باطن');
                 return <option key={c.id} value={c.id} className="bg-slate-900">{name} - {c.referenceNumber}</option>;
               })}
             </select>
