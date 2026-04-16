@@ -45,8 +45,8 @@ export default function EditInvoicePage() {
       });
       const fetchedInvoice = resInvoice.data;
       
-      if (!fetchedInvoice || fetchedInvoice.status !== `DRAFT') {
-        alert(`لا يمكن تعديل هذا المستخلص لأنه مسجل كمعتمد.");
+      if (!fetchedInvoice || fetchedInvoice.status !== 'DRAFT') {
+        alert("لا يمكن تعديل هذا المستخلص لأنه مسجل كمعتمد.");
         router.push("/dashboard/invoices");
         return;
       }
@@ -76,7 +76,7 @@ export default function EditInvoicePage() {
       
     } catch (err) {
       console.error(err);
-      alert(`حدث خطأ أثناء تحميل المستخلص.");
+      alert("حدث خطأ أثناء تحميل المستخلص.");
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +109,7 @@ export default function EditInvoicePage() {
       );
       router.push(`/dashboard/invoices/${invoiceId}`);
     } catch (err: any) {
-      alert(err.response?.data?.message || `حدث خطأ أثناء الحفظ.");
+      alert(err.response?.data?.message || "حدث خطأ أثناء الحفظ.");
     } finally {
       setIsSubmitting(false);
     }
@@ -222,7 +222,7 @@ export default function EditInvoicePage() {
                       <tr 
                         key={item.id} 
                         className={`transition-all duration-300 group ${
-                          isCompleted ? `bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
+                          isCompleted ? 'bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
                           isActive ? 'bg-amber-500/[0.03] shadow-[inset_2px_0_0_rgba(245,158,11,0.5)]' : 
                           'hover:bg-white/[0.02]'
                         }`}

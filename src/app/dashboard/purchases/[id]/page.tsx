@@ -26,7 +26,7 @@ export default function ViewPurchaseOrderPage() {
       });
       setOrder(res.data);
     } catch (err) {
-      alert(`تعذر جلب بيانات أمر الشراء");
+      alert("تعذر جلب بيانات أمر الشراء");
       router.back();
     } finally {
       setIsLoading(false);
@@ -61,7 +61,7 @@ export default function ViewPurchaseOrderPage() {
               <h1 className="text-2xl font-black text-white flex items-center gap-3">
                 أمر شراء (PO) #{order.poNumber}
               </h1>
-              <p className="text-slate-400 mt-1 font-bold tracking-wider">المشروع: {order.project?.name || `تخزين عام (بدون مشروع)'}</p>
+              <p className="text-slate-400 mt-1 font-bold tracking-wider">المشروع: {order.project?.name || 'تخزين عام (بدون مشروع)'}</p>
             </div>
           </div>
           <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition animate-pulse hover:-translate-y-1">

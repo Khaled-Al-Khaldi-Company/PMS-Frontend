@@ -41,7 +41,7 @@ export default function CreateContractPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       const res = await axios.get(`${API_BASE_URL}/v1/contacts/suppliers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +66,7 @@ export default function CreateContractPage() {
 
   const fetchProjectBoq = async (pid: string) => {
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       const res = await axios.get(`${API_BASE_URL}/v1/projects/${pid}/boq`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -109,16 +109,16 @@ export default function CreateContractPage() {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       await axios.post(
         `${API_BASE_URL}/v1/contracts`,
         { ...formData, items: selectedItems, totalValue: calculatedTotal },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      router.push(`/dashboard/contracts");
+      router.push("/dashboard/contracts");
     } catch (err: any) {
       const errData = err.response?.data || err.message;
-      alert(`حدث خطأ أثناء حفظ العقد:\n${typeof errData === `object' ? JSON.stringify(errData, null, 2) : errData}`);
+      alert(`حدث خطأ أثناء حفظ العقد:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);
     } finally {
       setIsLoading(false);
     }

@@ -44,7 +44,7 @@ export default function ExpensesPage() {
        });
        setExpenses(res.data);
     } catch (e) {
-       console.error(`Failed to load expenses.");
+       console.error("Failed to load expenses.");
     } finally {
        setIsLoading(false);
     }
@@ -62,7 +62,7 @@ export default function ExpensesPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if(!confirm(`هل أنت متأكد من تسجيل هذه العهدة؟")) return;
+    if(!confirm("هل أنت متأكد من تسجيل هذه العهدة؟")) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -72,7 +72,7 @@ export default function ExpensesPage() {
       setIsFormOpen(false);
       fetchExpenses();
     } catch (e: any) {
-      alert(`حدث خطأ في التسجيل");
+      alert("حدث خطأ في التسجيل");
     }
   };
 
@@ -85,7 +85,7 @@ export default function ExpensesPage() {
       });
       fetchExpenses();
     } catch (e) {
-      alert(`فشل الحذف.");
+      alert("فشل الحذف.");
     }
   };
 
@@ -98,7 +98,7 @@ export default function ExpensesPage() {
   };
 
   const totalAmount = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
-  const currentDate = new Date().toLocaleDateString(`ar-SA');
+  const currentDate = new Date().toLocaleDateString('ar-SA');
 
   return (
     <>

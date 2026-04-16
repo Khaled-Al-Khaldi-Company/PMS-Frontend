@@ -42,7 +42,7 @@ export default function QuotationsPage() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!confirm(`هل أنت متأكد من رغبتك في حذف العرض السعري بالكامل؟")) return;
+    if (!confirm("هل أنت متأكد من رغبتك في حذف العرض السعري بالكامل؟")) return;
     
     try {
       const token = localStorage.getItem("token");
@@ -51,7 +51,7 @@ export default function QuotationsPage() {
       });
       fetchQuotations();
     } catch (err: any) {
-      alert(err.response?.data?.message || `حدث خطأ أثناء الحذف.");
+      alert(err.response?.data?.message || "حدث خطأ أثناء الحذف.");
     }
   };
 
@@ -66,7 +66,7 @@ export default function QuotationsPage() {
       alert(`مبروك! تم التحويل بنجاح. رقم المشروع الجديد: ${res.data.code}`);
       fetchQuotations();
     } catch (err: any) {
-      alert(err.response?.data?.message || `حدث خطأ أثناء الاعتماد.");
+      alert(err.response?.data?.message || "حدث خطأ أثناء الاعتماد.");
     }
   };
 
@@ -152,7 +152,7 @@ export default function QuotationsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-center">
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest border ${statusMap[quote.status]?.color || statusMap[`DRAFT'].color}`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest border ${statusMap[quote.status]?.color || statusMap['DRAFT'].color}`}>
                           {(() => {
                             const IconComp = statusMap[quote.status]?.icon || Clock;
                             return <IconComp size={14} />;

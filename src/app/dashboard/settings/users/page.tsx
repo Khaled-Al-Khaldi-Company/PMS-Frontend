@@ -84,7 +84,7 @@ export default function UsersManagementPage() {
       } else {
         // Create
         if (!formData.password) {
-           alert(`كلمة المرور مطلوبة للمستخدم الجديد!");
+           alert("كلمة المرور مطلوبة للمستخدم الجديد!");
            return;
         }
         await axios.post(`${API_BASE_URL}/v1/users`, formData, {
@@ -211,7 +211,7 @@ export default function UsersManagementPage() {
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block text-center">حالة الحساب</label>
-                  <button type="button" onClick={() => setFormData({...formData, isActive: !formData.isActive})} className={`w-full py-2.5 rounded-xl font-bold flex flex-col items-center justify-center transition-colors ${formData.isActive ? `bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+                  <button type="button" onClick={() => setFormData({...formData, isActive: !formData.isActive})} className={`w-full py-2.5 rounded-xl font-bold flex flex-col items-center justify-center transition-colors ${formData.isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
                     {formData.isActive ? 'مُفعّل نشط' : 'موقوف'}
                   </button>
                 </div>

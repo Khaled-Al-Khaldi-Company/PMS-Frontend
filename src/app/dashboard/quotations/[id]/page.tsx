@@ -57,7 +57,7 @@ export default function EditQuotationPage() {
       
       const q = res.data;
       setFormData({
-        title: q.title || `",
+        title: q.title || "",
         clientName: q.client?.name || "",
         hasVat: q.hasVat || false,
         technicalOffer: q.technicalOffer || "",
@@ -74,7 +74,7 @@ export default function EditQuotationPage() {
       });
 
       setPrintMeta({
-        date: new Date(q.createdAt || new Date()).toLocaleDateString(`ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
+        date: new Date(q.createdAt || new Date()).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
         ref: q.quotationNumber
       });
     } catch (err) {
@@ -132,7 +132,7 @@ export default function EditQuotationPage() {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`تم تحديث عرض السعر بنجاح!");
+      alert("تم تحديث عرض السعر بنجاح!");
     } catch (err: any) {
       alert("حدث خطأ أثناء الرفع والتعديل.");
     } finally {
@@ -148,7 +148,7 @@ export default function EditQuotationPage() {
       await axios.post(`${API_BASE_URL}/v1/quotations/${quotationId}/convert`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert(`🎉 تم إنشاء المشروع بنجاح من عرض السعر!");
+      alert("🎉 تم إنشاء المشروع بنجاح من عرض السعر!");
       fetchQuotation();
     } catch (err) {
       alert("فشل تحويل عرض السعر لمشروع.");
@@ -206,7 +206,7 @@ export default function EditQuotationPage() {
                 onChange={e => setFormData({...formData, status: e.target.value})}
                 disabled={!!formData.projectId}
                 className={`bg-slate-950 border rounded-lg px-3 py-1.5 text-sm font-bold outline-none transition-colors appearance-none cursor-pointer ${
-                  formData.status === `APPROVED' ? 'text-emerald-400 border-emerald-500/30' : 
+                  formData.status === 'APPROVED' ? 'text-emerald-400 border-emerald-500/30' : 
                   formData.status === 'REJECTED' ? 'text-rose-400 border-rose-500/30' : 
                   formData.status === 'SUBMITTED' ? 'text-blue-400 border-blue-500/30' : 
                   'text-slate-300 border-slate-700'

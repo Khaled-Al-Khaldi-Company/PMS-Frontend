@@ -52,13 +52,13 @@ export default function InvoiceViewPage() {
   const handleSyncPayment = async () => {
     setIsSyncing(true);
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       await axios.post(`${API_BASE_URL}/v1/invoices/${invoiceId}/sync-payment`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchInvoice();
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || `خطأ مجهول";
+      const msg = err.response?.data?.message || err.message || "خطأ مجهول";
       alert(`فشل المزامنة مع دفترة: ${msg}`);
     } finally {
       setIsSyncing(false);
@@ -92,7 +92,7 @@ export default function InvoiceViewPage() {
     PAID: { label: "تم دفع المستخلص", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
   };
 
-  const statusInfo = statusMap[invoice.status] || statusMap[`DRAFT'];
+  const statusInfo = statusMap[invoice.status] || statusMap['DRAFT'];
   const StatusIcon = statusInfo.icon;
   const totalDeductions = Number(invoice.retentionAmount) + Number(invoice.advanceDeduction) + Number(invoice.delayPenalty) + Number(invoice.otherDeductions);
 
@@ -104,9 +104,9 @@ export default function InvoiceViewPage() {
       const response = await axios.patch(`${API_BASE_URL}/v1/invoices/${invoiceId}/certify`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const daftraId = response.data?.daftraExternalId || `N/A";
+      const daftraId = response.data?.daftraExternalId || "N/A";
       alert(`تم اعتماد المستخلص بنجاح!\nرقم الربط في دفترة: ${daftraId}`);
-      setInvoice({ ...invoice, status: `CERTIFIED' });
+      setInvoice({ ...invoice, status: 'CERTIFIED' });
     } catch (err: any) {
       const errData = err.response?.data || err.message;
       alert(`حدث خطأ أثناء المزامنة مع دفترة:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);

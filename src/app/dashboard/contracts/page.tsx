@@ -57,7 +57,7 @@ export default function ContractsPage() {
   const fetchContracts = async (projectId: string) => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       const res = await axios.get(`${API_BASE_URL}/v1/contracts/project/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -67,7 +67,7 @@ export default function ContractsPage() {
   };
 
   const deleteContract = async (id: string) => {
-    if (!confirm(`هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;
+    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;
     
     try {
       const token = localStorage.getItem("token");
@@ -76,13 +76,13 @@ export default function ContractsPage() {
       });
       if (selectedProjectId) fetchContracts(selectedProjectId);
     } catch (err: any) {
-      alert(err.response?.data?.message || `فشل حذف العقد");
+      alert(err.response?.data?.message || "فشل حذف العقد");
     }
   };
 
   const filteredContracts = contracts.filter(c => c.referenceNumber.includes(search));
   
-  const mainContracts = filteredContracts.filter(c => c.type === `MAIN_CONTRACT');
+  const mainContracts = filteredContracts.filter(c => c.type === 'MAIN_CONTRACT');
   const subContracts = filteredContracts.filter(c => c.type !== 'MAIN_CONTRACT');
   
   const mainContractsValue = mainContracts.reduce((sum, c) => sum + Number(c.totalValue), 0);

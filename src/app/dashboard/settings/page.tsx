@@ -33,7 +33,7 @@ export default function SettingsPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setApiKey(data[`DAFTRA_API_KEY"] || "");
+          setApiKey(data["DAFTRA_API_KEY"] || "");
           setDomain(data["DAFTRA_DOMAIN"] || "");
         }
       } catch (err) {
@@ -48,7 +48,7 @@ export default function SettingsPage() {
   const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
     // Auto-clean pasted URLs: "https://gkke.daftra.com/" -> "gkke"
-    val = val.replace(/^https?:\/\//i, `'); // remove http:// or https://
+    val = val.replace(/^https?:\/\//i, ''); // remove http:// or https://
     val = val.replace(/\.daftra\.com.*/i, ''); // remove .daftra.com and anything after
     val = val.replace(/[\/]/g, ''); // remove any slashes
     setDomain(val);
@@ -59,7 +59,7 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/v1/settings`, {
-        method: `POST",
+        method: "POST",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}` 
@@ -72,32 +72,36 @@ export default function SettingsPage() {
       if (res.ok) {
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 3000);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`فشل الحفظ: ${errorData.message || res.statusText}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(`خطأ في الشبكة أثناء الحفظ: ${err.message}`);
     }
   };
 
   const handleSync = async () => {
     setIsSyncing(true);
-    setSyncStatus({type: `idle', message: ''});
+    setSyncStatus({type: 'idle', message: ''});
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/v1/integration/daftra/sync/cost-centers`, {
-        method: `POST",
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setSyncStatus({type: `success', message: 'تمت مزامنة مراكز التكلفة والمشاريع مع دفترة بنجاح!'});
+        setSyncStatus({type: 'success', message: 'تمت مزامنة مراكز التكلفة والمشاريع مع دفترة بنجاح!'});
       } else {
         const errorData = await res.json().catch(() => ({}));
         let extMsg = errorData.message || 'فشل الاتصال بـ دفترة، يرجى التحقق من المفتاح والدومين.';
         if (Array.isArray(extMsg)) extMsg = extMsg[0];
         setSyncStatus({type: 'error', message: typeof extMsg === 'string' ? extMsg : 'فشل مجهول.'});
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setSyncStatus({type: 'error', message: 'حدث خطأ في الاتصال بالخادم الداخلي.'});
+      setSyncStatus({type: 'error', message: `مشكلة في الاتصال: ${err.message || String(err)}`});
     } finally {
       setIsSyncing(false);
       setTimeout(() => setSyncStatus({type: 'idle', message: ''}), 6000);
@@ -114,7 +118,7 @@ export default function SettingsPage() {
       });
       setResetDone(true);
       setShowResetModal(false);
-      setResetConfirmText(`");
+      setResetConfirmText("");
       setTimeout(() => setResetDone(false), 5000);
     } catch (err: any) {
       alert(err.response?.data?.message || "فشل التصفير. يرجى المحاولة مجدداً.");
@@ -218,7 +222,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
                     <Server size={14} className="text-emerald-400" /> الدومين الفرعي (Subdomain)
                   </label>
-                  {domain.includes(`@') && (
+                  {domain.includes('@') && (
                     <span className="text-xs text-rose-400 font-medium animate-pulse">
                       يرجى إدخال اسم الدومين فقط وليس الإيميل
                     </span>

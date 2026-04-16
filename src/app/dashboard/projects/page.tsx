@@ -42,7 +42,7 @@ export default function ProjectsPage() {
       });
       setProjects(res.data);
     } catch (err) {
-      console.error(`Failed to fetch projects");
+      console.error("Failed to fetch projects");
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ export default function ProjectsPage() {
       });
       fetchProjects();
     } catch (err: any) {
-      alert(err.response?.data?.message || `فشل حذف المشروع");
+      alert(err.response?.data?.message || "فشل حذف المشروع");
     }
   };
 
@@ -72,7 +72,7 @@ export default function ProjectsPage() {
 
   const filters = [
     { id: "ALL", label: "جميع المشاريع", count: projects.length },
-    { id: "ACTIVE", label: "نشطة", count: projects.filter(p => p.status === `ACTIVE').length },
+    { id: "ACTIVE", label: "نشطة", count: projects.filter(p => p.status === 'ACTIVE').length },
     { id: "PLANNING", label: "قيد التخطيط", count: projects.filter(p => p.status === 'PLANNING').length },
     { id: "COMPLETED", label: "مكتملة", count: projects.filter(p => p.status === 'COMPLETED').length },
   ];
@@ -225,12 +225,12 @@ export default function ProjectsPage() {
                       <div className="space-y-3.5 mb-2 mt-auto">
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <User size={16} className="text-slate-500 shrink-0" />
-                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "مدير غير محدد"}</span>
+                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}" : "مدير غير محدد"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <Wallet size={16} className="text-slate-500 shrink-0" />
                           <span className="font-mono text-emerald-400 font-medium">
-                            {project.budget ? `SAR ${Number(project.budget).toLocaleString()}` : "الميزانية غير محددة"}
+                            {project.budget ? `SAR ${Number(project.budget).toLocaleString()}" : "الميزانية غير محددة"}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">

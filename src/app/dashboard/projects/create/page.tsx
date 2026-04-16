@@ -41,7 +41,7 @@ export default function CreateProjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(`");
+    setError("");
 
     try {
       const token = localStorage.getItem("token");
@@ -55,7 +55,7 @@ export default function CreateProjectPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      router.push(`/dashboard/projects");
+      router.push("/dashboard/projects");
     } catch (err: any) {
       setError(err.response?.data?.message || "حدث خطأ أثناء حفظ المشروع. تأكد من أن كود المشروع غير مستخدم مسبقاً.");
     } finally {
@@ -137,7 +137,7 @@ export default function CreateProjectPage() {
                 <option value="" disabled>-- اختر جهة مالكة من دليل العملاء --</option>
                 {clients.map(client => (
                   <option key={client.id} value={client.id}>
-                    {client.name} {client.daftraClientId ? `🟢 (مربوط بدفترة)' : '🔴 (غير مربوط)'}
+                    {client.name} {client.daftraClientId ? '🟢 (مربوط بدفترة)' : '🔴 (غير مربوط)'}
                   </option>
                 ))}
               </select>

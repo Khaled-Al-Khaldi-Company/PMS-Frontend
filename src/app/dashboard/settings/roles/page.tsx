@@ -54,7 +54,7 @@ export default function RolesMatrixPage() {
   const saveRolePermissions = async (role: any) => {
     setIsSaving(true);
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       await axios.patch(`${API_BASE_URL}/v1/users/roles/${role.id}/permissions`, {
         permissionNames: role.permissions.map((p: any) => p.name)
       }, {
@@ -62,7 +62,7 @@ export default function RolesMatrixPage() {
       });
       alert(`تم حفظ صلاحيات مسمى: ${role.name}`);
     } catch (err: any) {
-      alert(`فشل الحفظ");
+      alert("فشل الحفظ");
     }
     setIsSaving(false);
   };
@@ -126,7 +126,7 @@ export default function RolesMatrixPage() {
                           onChange={() => togglePermission(role.id, perm.name)}
                           className="sr-only"
                         />
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${isActive ? `bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-slate-800 text-transparent border border-slate-700 group-hover:border-indigo-500/50'}`}>
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${isActive ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-slate-800 text-transparent border border-slate-700 group-hover:border-indigo-500/50'}`}>
                           <Check size={14} className={isActive ? "opacity-100" : "opacity-0"} strokeWidth={3} />
                         </div>
                       </label>

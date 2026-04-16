@@ -45,7 +45,7 @@ export default function ProjectBudgetDashboard() {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      alert(`حدث خطأ أثناء تحميل بيانات الموازنة.");
+      alert("حدث خطأ أثناء تحميل بيانات الموازنة.");
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +128,7 @@ export default function ProjectBudgetDashboard() {
         </div>
 
         {/* Budget/Cost Card */}
-        <div className={`glass-dark border p-6 rounded-3xl relative overflow-hidden group transition-all ${isOverBudget ? `border-rose-500/30' : 'border-emerald-500/20'}`}>
+        <div className={`glass-dark border p-6 rounded-3xl relative overflow-hidden group transition-all ${isOverBudget ? 'border-rose-500/30' : 'border-emerald-500/20'}`}>
            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl transition-all ${isOverBudget ? 'bg-rose-500/10 group-hover:bg-rose-500/20' : 'bg-emerald-500/10 group-hover:bg-emerald-500/20'}`} />
            <p className="text-slate-400 font-bold text-sm mb-4 flex items-center gap-2 uppercase tracking-wide">
              <Wallet size={18} className={isOverBudget ? "text-rose-400" : "text-emerald-400"} /> التكلفة (Cost & Budget)

@@ -54,8 +54,8 @@ export default function ProjectDashboardPage() {
       setProject(res.data);
     } catch (err) {
       console.error(err);
-      alert(`استحالة الوصول للمشروع، الرجاء المحاولة مجدداً.");
-      router.push(`/dashboard/projects');
+      alert("استحالة الوصول للمشروع، الرجاء المحاولة مجدداً.");
+      router.push('/dashboard/projects');
     } finally {
       setIsLoading(false);
     }
@@ -70,11 +70,11 @@ export default function ProjectDashboardPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsBoqModalOpen(false);
-      setNewBoq({ itemCode: `', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
+      setNewBoq({ itemCode: '', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
       fetchProjectDetails(); // Refresh the table automatically
     } catch (err) {
       console.error(err);
-      alert(`حدث خطأ أثناء إضافة بند الكميات.");
+      alert("حدث خطأ أثناء إضافة بند الكميات.");
     } finally {
       setIsSubmittingBoq(false);
     }
@@ -276,7 +276,7 @@ export default function ProjectDashboardPage() {
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">مدير المشروع الأساسي</p>
-                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "لم يتم التعيين"}</p>
+                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}" : "لم يتم التعيين"}</p>
                       </div>
                     </div>
 

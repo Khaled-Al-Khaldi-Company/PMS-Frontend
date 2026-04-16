@@ -83,7 +83,7 @@ export default function CreateQuotationPage() {
         setShowClientDropdown(false);
       }
     };
-    document.addEventListener(`mousedown", handler);
+    document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
@@ -118,7 +118,7 @@ export default function CreateQuotationPage() {
       handleSelectClient(res.data);
       setShowClientModal(false);
       setNewClient({
-        name: `', commercialName: '', contactPerson: '', phone: '', email: '', 
+        name: '', commercialName: '', contactPerson: '', phone: '', email: '', 
         taxNumber: '', crNumber: '', address: '', activityType: '', notes: ''
       });
     } catch (err: any) {
@@ -145,7 +145,7 @@ export default function CreateQuotationPage() {
     const nextCode = (formData.items.length + 1).toString().padStart(2, '0');
     setFormData({
       ...formData,
-      items: [...formData.items, { itemCode: nextCode, description: `", unit: "م٢", quantity: 1, unitPrice: 0, estimatedUnitCost: 0 }]
+      items: [...formData.items, { itemCode: nextCode, description: "", unit: "م٢", quantity: 1, unitPrice: 0, estimatedUnitCost: 0 }]
     });
   };
 
@@ -176,7 +176,7 @@ export default function CreateQuotationPage() {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      router.push(`/dashboard/quotations");
+      router.push("/dashboard/quotations");
     } catch (err: any) {
       alert("حدث خطأ أثناء حفظ عرض السعر.");
     } finally {
@@ -188,7 +188,7 @@ export default function CreateQuotationPage() {
 
   useEffect(() => {
     setPrintMeta({
-      date: new Date().toLocaleDateString(`ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
+      date: new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }),
       ref: `QT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
     });
   }, []);

@@ -58,10 +58,10 @@ export default function DashboardPage() {
   }, []);
 
   const stats = [
-    { title: "إجمالي المشاريع النشطة", value: data.totalProjects.toString() || "0", trend: "+12%", up: true, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", glow: "from-blue-500/20 to-transparent" },
-    { title: "إجمالي الإيرادات (المعتمدة)", value: `SAR ${(data.certifiedValue / 1000).toFixed(1)}K", trend: "+8.3%", up: true, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "from-emerald-500/20 to-transparent" },
-    { title: "إجمالي التكاليف (مشتريات وباطن)", value: `SAR ${(data.totalCosts / 1000).toFixed(1)}K", trend: "-2%", up: false, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "from-rose-500/20 to-transparent" },
-    { title: "هامش الربح (Profit Margin)", value: `${data.profitMargin?.toFixed(1)}%", trend: data.profitMargin > 0 ? "إيجابي" : "سلبي", up: data.profitMargin > 0, icon: Activity, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", glow: "from-indigo-500/20 to-transparent" }
+    { title: "إجمالي المشاريع النشطة", value: (data.totalProjects || 0).toString(), trend: "+12%", up: true, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", glow: "from-blue-500/20 to-transparent" },
+    { title: "إجمالي الإيرادات (المعتمدة)", value: `SAR ${((data.certifiedValue || 0) / 1000).toFixed(1)}K", trend: "+8.3%", up: true, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "from-emerald-500/20 to-transparent" },
+    { title: "إجمالي التكاليف (مشتريات وباطن)", value: `SAR ${(((data as any).totalCosts || 0) / 1000).toFixed(1)}K", trend: "-2%", up: false, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "from-rose-500/20 to-transparent" },
+    { title: "هامش الربح (Profit Margin)", value: `${((data as any).profitMargin || 0).toFixed(1)}%", trend: ((data as any).profitMargin || 0) >= 0 ? "إيجابي" : "سلبي", up: ((data as any).profitMargin || 0) >= 0, icon: Activity, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", glow: "from-indigo-500/20 to-transparent" }
   ];
 
   const maxChartValue = Math.max(...data.chartData.map(d => Math.max(d.revenue, d.cost)), 1000); 

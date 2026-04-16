@@ -33,7 +33,7 @@ export default function MappingPage() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<'suppliers' | 'clients' | 'projects'>('suppliers');
 
-  const [hasConnectionError, setHasConnectionError] = useState(false);
+  const [hasConnectionError, setHasConnectionError] = useState<string | false>(false);
 
   useEffect(() => {
     fetchData();
@@ -60,9 +60,9 @@ export default function MappingPage() {
       setDaftraClients(daftraClientsRes.data);
       setPmsProjects(pmsProjectsRes.data);
       setDaftraCostCenters(costCentersRes.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setHasConnectionError(true);
+      setHasConnectionError(err.message || "Unknown Network Error");
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +71,7 @@ export default function MappingPage() {
   const handleLinkSupplier = async (pmsId: string, daftraId: string | null) => {
     setIsSaving(pmsId);
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       await axios.post(`${API_BASE_URL}/v1/integration/daftra/link-supplier/${pmsId}`, 
         { daftraId }, 
         { headers: { Authorization: `Bearer ${token}` } }
@@ -80,7 +80,7 @@ export default function MappingPage() {
       // Update local state to reflect the checkmark immediately
       setPmsSuppliers(prev => prev.map(s => s.id === pmsId ? { ...s, daftraSupplierId: daftraId } : s));
     } catch (err: any) {
-      alert(`حدث خطأ أثناء حفظ الربط. يرجى المحاولة مرة أخرى.");
+      alert("حدث خطأ أثناء حفظ الربط. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsSaving(null);
     }
@@ -96,7 +96,7 @@ export default function MappingPage() {
       );
       setPmsClients(prev => prev.map(c => c.id === pmsId ? { ...c, daftraClientId: daftraId } : c));
     } catch (err: any) {
-      alert(`حدث خطأ أثناء الربط.");
+      alert("حدث خطأ أثناء الربط.");
     } finally {
       setIsSaving(null);
     }
@@ -112,7 +112,7 @@ export default function MappingPage() {
       );
       setPmsProjects(prev => prev.map(p => p.id === pmsId ? { ...p, daftraCostCenterId } : p));
     } catch {
-      alert(`حدث خطأ أثناء ربط المشروع.");
+      alert("حدث خطأ أثناء ربط المشروع.");
     } finally {
       setIsSaving(null);
     }
@@ -163,7 +163,7 @@ export default function MappingPage() {
           </div>
           <div>
             <h3 className="text-rose-400 font-bold text-lg mb-1">فشل الاتصال بسيرفرات دفترة</h3>
-            <p className="text-rose-300/70 text-sm">تأكد من إدخال "الدومين" و "مفتاح الربط API Key" بشكل صحيح في تبويب (إعدادات الربط) قبل الدخول هنا.</p>
+            <p className="text-rose-300/70 text-sm">تأكد من إدخال "الدومين" و "مفتاح الربط API Key" بشكل صحيح، السبب: {hasConnectionError}</p>
           </div>
         </motion.div>
       )}
@@ -172,7 +172,7 @@ export default function MappingPage() {
         
         <div className="flex border-b border-white/10 mb-8 w-fit gap-1 padding-1 bg-slate-900/50 rounded-xl p-1">
           <button 
-            onClick={() => { setActiveTab(`suppliers'); setSearch(''); }}
+            onClick={() => { setActiveTab('suppliers'); setSearch(''); }}
             className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'suppliers' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
           >
             مطابقة الموردين (Suppliers)

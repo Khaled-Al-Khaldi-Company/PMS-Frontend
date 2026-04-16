@@ -46,7 +46,7 @@ export default function ContactsPage() {
   const openNewModal = () => {
     setEditingItem(null);
     setFormData({
-      name: `', commercialName: '', contactPerson: '', phone: '', email: '', 
+      name: '', commercialName: '', contactPerson: '', phone: '', email: '', 
       taxNumber: '', crNumber: '', address: '', activityType: '', notes: ''
     });
     setIsModalOpen(true);
@@ -70,7 +70,7 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
+    if (!confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_BASE_URL}/v1/contacts/${activeTab}/${id}`, {
@@ -78,7 +78,7 @@ export default function ContactsPage() {
       });
       fetchData();
     } catch (err) {
-      alert(`حدث خطأ أثناء الحذف، ربما السجل مرتبط بعمليات مالية!");
+      alert("حدث خطأ أثناء الحذف، ربما السجل مرتبط بعمليات مالية!");
     }
   };
 
@@ -103,7 +103,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className=`p-6 md:p-10 space-y-8 animate-in fade-in zoom-in duration-500">
+    <div className="p-6 md:p-10 space-y-8 animate-in fade-in zoom-in duration-500">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/50 p-6 rounded-3xl border border-slate-800 backdrop-blur-xl">
@@ -121,7 +121,7 @@ export default function ContactsPage() {
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 font-medium"
         >
           <Plus size={20} />
-          إضافة {activeTab === `suppliers' ? 'مورد جديد' : 'عميل جديد'}
+          إضافة {activeTab === 'suppliers' ? 'مورد جديد' : 'عميل جديد'}
         </button>
       </div>
 
@@ -176,7 +176,7 @@ export default function ContactsPage() {
                    <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800/50 text-indigo-400"><FileText size={14} /></div>
                    <div className="flex-1">
                      <p className="text-slate-500 text-xs">الرقم الضريبي والسجل</p>
-                     <p className="text-slate-300">{item.taxNumber ? `ضريبي: ${item.taxNumber}` : 'لا يوجد ضرائب'} {item.crNumber ? `| س.ت: ${item.crNumber}` : ''}</p>
+                     <p className="text-slate-300">{item.taxNumber ? `ضريبي: ${item.taxNumber}' : 'لا يوجد ضرائب'} {item.crNumber ? `| س.ت: ${item.crNumber}' : ''}</p>
                    </div>
                  </div>
                  

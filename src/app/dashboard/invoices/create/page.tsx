@@ -50,7 +50,7 @@ function InvoiceCreateContent() {
       setBoqItems(resBoq.data);
     } catch (err) {
       console.error(err);
-      alert(`حدث خطأ أثناء تحميل البيانات.");
+      alert("حدث خطأ أثناء تحميل البيانات.");
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +90,7 @@ function InvoiceCreateContent() {
       
       router.push(`/dashboard/invoices/${res.data.id}`);
     } catch (err: any) {
-      alert(err.response?.data?.message || `حدث خطأ أثناء إنشاء المستخلص.");
+      alert(err.response?.data?.message || "حدث خطأ أثناء إنشاء المستخلص.");
     } finally {
       setIsSubmitting(false);
     }
@@ -200,7 +200,7 @@ function InvoiceCreateContent() {
                       <tr 
                         key={item.id} 
                         className={`transition-all duration-300 group ${
-                          isCompleted ? `bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
+                          isCompleted ? 'bg-slate-900/50 opacity-40 grayscale-50 backdrop-blur-sm' : 
                           isActive ? 'bg-emerald-500/[0.03] shadow-[inset_2px_0_0_rgba(16,185,129,0.5)]' : 
                           'hover:bg-white/[0.02]'
                         }`}

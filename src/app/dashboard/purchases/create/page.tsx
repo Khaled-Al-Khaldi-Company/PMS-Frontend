@@ -54,7 +54,7 @@ export default function CreatePurchasePage() {
 
   const fetchSuppliers = async () => {
     try {
-      const token = localStorage.getItem(`token");
+      const token = localStorage.getItem("token");
       const res = await axios.get(`${API_BASE_URL}/v1/integration/daftra/pms-suppliers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -69,7 +69,7 @@ export default function CreatePurchasePage() {
   const handleAddItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { materialName: `", unit: "حبه", qty: 1, price: 0 }]
+      items: [...formData.items, { materialName: "", unit: "حبه", qty: 1, price: 0 }]
     });
   };
 
@@ -98,7 +98,7 @@ export default function CreatePurchasePage() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      router.push(`/dashboard/purchases");
+      router.push("/dashboard/purchases");
     } catch (err: any) {
       alert("حدث خطأ أثناء رفع أمر الشراء.");
     } finally {
@@ -167,7 +167,7 @@ export default function CreatePurchasePage() {
                 autoComplete="off"
               />
               <datalist id="suppliersDropdown">
-                {suppliers.map(s => <option key={s.id} value={s.name}>{s.daftraSupplierId ? `✅ مربوط بدفترة' : ''}</option>)}
+                {suppliers.map(s => <option key={s.id} value={s.name}>{s.daftraSupplierId ? '✅ مربوط بدفترة' : ''}</option>)}
               </datalist>
             </div>
 

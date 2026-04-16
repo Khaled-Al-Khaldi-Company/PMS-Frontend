@@ -71,7 +71,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className=`space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 max-w-[1500px] mx-auto pb-12 print:bg-white print:text-black">
+    <div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 max-w-[1500px] mx-auto pb-12 print:bg-white print:text-black">
       {/* Hidden print styles injected */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
@@ -106,7 +106,7 @@ export default function ReportsPage() {
         <div className="bg-slate-900/40 p-4 rounded-2xl border border-white/5 space-y-2">
            <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Filter size={14}/> نوع التقرير</label>
            <div className="flex flex-col gap-2">
-             <button onClick={() => setReportType(`FINANCIAL_SUMMARY')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
+             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
                <TrendingUp size={16}/> الكفاءة المالية
              </button>
              <button onClick={() => setReportType('BOQ_PROGRESS')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'BOQ_PROGRESS' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
