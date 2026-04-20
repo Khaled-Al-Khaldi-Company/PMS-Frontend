@@ -56,10 +56,13 @@ export default function InvoiceViewPage() {
       await axios.post(`${API_BASE_URL}/v1/invoices/${invoiceId}/sync-payment`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchInvoice();
+      await fetchInvoice();
+      alert('تم تحديث حالة السداد من دفترة بنجاح!');
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || "خطأ مجهول";
       alert(`فشل المزامنة مع دفترة: ${msg}`);
+      // If reverted to DRAFT, reload to show new status
+      await fetchInvoice();
     } finally {
       setIsSyncing(false);
     }
@@ -150,13 +153,26 @@ export default function InvoiceViewPage() {
             </button>
           )}
 
-          {invoice.status === 'CERTIFIED' && invoice.daftraInvoiceId?.startsWith('DAFTRA-INV') && (
-            <button 
+          {/* زر الاعتماد - يظهر للمسودات فقط */}
+          {invoice.status === 'DRAFT' && (
+            <button
               onClick={handleCertify}
-              className="flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white rounded-xl transition-all border border-orange-500/20 shadow-lg font-bold group animate-pulse"
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white rounded-xl transition-all border border-emerald-500/20 shadow-lg font-bold group"
             >
-              <RefreshCcw size={18} className="group-hover:rotate-180 transition-transform duration-500" /> 
-              إعادة محاولة الربط بـ دفترة
+              <BadgeCheck size={18} className="group-hover:scale-110 transition-transform" />
+              اعتماد المستخلص رسمياً
+            </button>
+          )}
+
+          {/* زر تحديث من دفترة - يظهر للمستخلصات المعتمدة المربوطة بدفترة */}
+          {invoice.status === 'CERTIFIED' && invoice.daftraInvoiceId && (
+            <button 
+              onClick={handleSyncPayment}
+              disabled={isSyncing}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white rounded-xl transition-all border border-blue-500/20 shadow-lg font-bold group disabled:opacity-50"
+            >
+              <RefreshCcw size={18} className={`transition-transform duration-500 ${isSyncing ? 'animate-spin' : 'group-hover:rotate-180'}`} /> 
+              {isSyncing ? 'جاري التحديث...' : 'تحديث من دفترة'}
             </button>
           )}
 

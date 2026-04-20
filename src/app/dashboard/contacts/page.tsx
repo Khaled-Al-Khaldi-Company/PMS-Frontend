@@ -176,7 +176,7 @@ export default function ContactsPage() {
                    <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800/50 text-indigo-400"><FileText size={14} /></div>
                    <div className="flex-1">
                      <p className="text-slate-500 text-xs">الرقم الضريبي والسجل</p>
-                     <p className="text-slate-300">{item.taxNumber ? `ضريبي: ${item.taxNumber}' : 'لا يوجد ضرائب'} {item.crNumber ? `| س.ت: ${item.crNumber}' : ''}</p>
+                     <p className="text-slate-300">{item.taxNumber ? `ضريبي: ${item.taxNumber}` : 'لا يوجد ضرائب'} {item.crNumber ? `| س.ت: ${item.crNumber}` : ''}</p>
                    </div>
                  </div>
                  

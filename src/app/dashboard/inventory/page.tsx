@@ -215,7 +215,7 @@ export default function InventoryDashboard() {
               onChange={(e) => setSelectedWarehouse(e.target.value)}
             >
               {warehouses.map(w => (
-                <option key={w.id} value={w.id}>{w.name} {w.project ? `(موقع: ${w.project.name})' : '(مستودع رئيسي)'}</option>
+                <option key={w.id} value={w.id}>{w.name} {w.project ? `(موقع: ${w.project.name})` : '(مستودع رئيسي)'}</option>
               ))}
             </select>
           </div>

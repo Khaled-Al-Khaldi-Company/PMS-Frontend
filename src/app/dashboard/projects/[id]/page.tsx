@@ -276,7 +276,7 @@ export default function ProjectDashboardPage() {
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">مدير المشروع الأساسي</p>
-                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}" : "لم يتم التعيين"}</p>
+                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "لم يتم التعيين"}</p>
                       </div>
                     </div>
 

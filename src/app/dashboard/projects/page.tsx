@@ -225,12 +225,12 @@ export default function ProjectsPage() {
                       <div className="space-y-3.5 mb-2 mt-auto">
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <User size={16} className="text-slate-500 shrink-0" />
-                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}" : "مدير غير محدد"}</span>
+                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "مدير غير محدد"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <Wallet size={16} className="text-slate-500 shrink-0" />
                           <span className="font-mono text-emerald-400 font-medium">
-                            {project.budget ? `SAR ${Number(project.budget).toLocaleString()}" : "الميزانية غير محددة"}
+                            {project.budget ? `SAR ${Number(project.budget).toLocaleString()}` : "الميزانية غير محددة"}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">

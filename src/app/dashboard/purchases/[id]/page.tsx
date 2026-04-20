@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
-import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package } from "lucide-react";
+import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw } from "lucide-react";
 import axios from "axios";
 
 export default function ViewPurchaseOrderPage() {
@@ -13,6 +13,7 @@ export default function ViewPurchaseOrderPage() {
   
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (orderId) fetchOrder();
@@ -30,6 +31,29 @@ export default function ViewPurchaseOrderPage() {
       router.back();
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSyncFromDaftra = async () => {
+    if (!order.daftraId) {
+      alert('أمر الشراء هذا غير مربوط بدفترة بعد.');
+      return;
+    }
+    setIsSyncing(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_BASE_URL}/v1/purchases/${orderId}/sync-daftra`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('تم التحقق من دفترة - أمر الشراء موجود ومتزامن.');
+      await fetchOrder();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'خطأ مجهول';
+      alert(msg);
+      // إعادة تحميل الصفحة لعرض الحالة الجديدة (PENDING) إذا تم الحذف من دفترة
+      await fetchOrder();
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -64,9 +88,21 @@ export default function ViewPurchaseOrderPage() {
               <p className="text-slate-400 mt-1 font-bold tracking-wider">المشروع: {order.project?.name || 'تخزين عام (بدون مشروع)'}</p>
             </div>
           </div>
-          <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition animate-pulse hover:-translate-y-1">
-            <Printer size={18} /> معاينة وطباعة رسمية
-          </button>
+          <div className="flex items-center gap-3">
+            {order.status === 'APPROVED' && order.daftraId && (
+              <button
+                onClick={handleSyncFromDaftra}
+                disabled={isSyncing}
+                className="flex items-center gap-2 px-5 py-3 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-xl font-bold border border-blue-500/30 transition disabled:opacity-50"
+              >
+                <RefreshCcw size={18} className={isSyncing ? 'animate-spin' : 'group-hover:rotate-180'} />
+                {isSyncing ? 'جاري التحقق...' : 'تحديث من دفترة'}
+              </button>
+            )}
+            <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition hover:-translate-y-1">
+              <Printer size={18} /> معاينة وطباعة رسمية
+            </button>
+          </div>
         </div>
 
         <div className="glass-dark border border-white/5 p-12 rounded-3xl text-center shadow-2xl relative overflow-hidden">

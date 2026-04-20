@@ -173,7 +173,7 @@ export default function InvoicesPage() {
           </button>
           
           <Link 
-            href={selectedContractId ? `/dashboard/invoices/create?contract=${selectedContractId}&&project=${selectedProjectId}" : "#"}
+            href={selectedContractId ? `/dashboard/invoices/create?contract=${selectedContractId}&project=${selectedProjectId}` : "#"}
             className={`flex items-center gap-2 font-bold py-3 px-6 rounded-2xl transition-all group relative overflow-hidden ${
               selectedContractId 
                 ? "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] hover:-translate-y-1 cursor-pointer" 
