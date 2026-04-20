@@ -96,13 +96,17 @@ export default function InventoryDashboard() {
         axios.get(`${API_BASE_URL}/v1/materials`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/v1/projects`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      setPurchaseOrders(pos.data.filter((p:any) => p.status === 'APPROVED' || p.status === 'PENDING'));
+      const posData = Array.isArray(pos.data) ? pos.data : (pos.data?.items || []);
+      const matsData = Array.isArray(mats.data) ? mats.data : (mats.data?.items || []);
+      const projsData = Array.isArray(projs.data) ? projs.data : (projs.data?.items || []);
+
+      setPurchaseOrders(posData.filter((p:any) => p.status === 'APPROVED' || p.status === 'PENDING'));
       
       // ONLY physical materials (NOT services/equipment) can enter a warehouse
-      const physicalMats = mats.data.filter((m:any) => m.type !== 'SERVICE');
+      const physicalMats = matsData.filter((m:any) => m.type !== 'SERVICE');
       setMaterials(physicalMats);
       
-      setProjects(projs.data);
+      setProjects(projsData);
     } catch (e) {}
   };
 
@@ -154,7 +158,10 @@ export default function InventoryDashboard() {
       setShowWarehouseModal(false);
       fetchWarehouses();
       alert("تمت إضافة المستودع بنجاح!");
-    } catch (e) { alert("حدث خطأ"); }
+    } catch (e: any) { 
+      const msg = e.response?.data?.message || e.message || 'حدث خطأ في إضافة المستودع';
+      alert(msg);
+    }
   };
 
   if (isLoading) return <div className="p-12 text-center text-slate-400">جاري تحميل بيانات المخازن...</div>;
