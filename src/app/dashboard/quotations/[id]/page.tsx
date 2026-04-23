@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { exportToCsv } from "@/lib/exportUtils";
 
 export default function EditQuotationPage() {
   const router = useRouter();
@@ -176,6 +177,19 @@ export default function EditQuotationPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleExportExcel = () => {
+    if (!formData.items || formData.items.length === 0) return;
+    const exportData = formData.items.map((item: any) => ({
+      "م": item.itemCode,
+      "وصف البند": item.description,
+      "الوحدة": item.unit,
+      "الكمية": item.quantity,
+      "سعر الوحدة": item.unitPrice,
+      "الإجمالي": item.quantity * item.unitPrice
+    }));
+    exportToCsv(`Quotation_${printMeta.ref || 'Draft'}.csv`, exportData);
   };
 
   if (isFetching) {
