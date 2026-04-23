@@ -9,10 +9,13 @@ import {
   Save,
   Plus,
   ArrowDownToLine,
-  ArrowUpFromLine
+  ArrowUpFromLine,
+  Boxes,
+  Warehouse
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function InventoryDashboard() {
   const [activeTab, setActiveTab] = useState("STOCKS"); // STOCKS, TRANSACTIONS, WAREHOUSES
@@ -102,7 +105,6 @@ export default function InventoryDashboard() {
 
       setPurchaseOrders(posData.filter((p:any) => p.status === 'APPROVED' || p.status === 'PENDING'));
       
-      // ONLY physical materials (NOT services/equipment) can enter a warehouse
       const physicalMats = matsData.filter((m:any) => m.type !== 'SERVICE');
       setMaterials(physicalMats);
       
@@ -164,60 +166,74 @@ export default function InventoryDashboard() {
     }
   };
 
-  if (isLoading) return <div className="p-12 text-center text-slate-400">جاري تحميل بيانات المخازن...</div>;
+  if (isLoading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <Boxes className="animate-bounce text-indigo-500 mb-4" size={48} />
+      <p className="text-slate-400 font-bold">جاري تجهيز إدارة المستودعات...</p>
+    </div>
+  );
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6 pb-12 animate-in-erp">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/20">
-              <Building2 className="text-indigo-400" size={24} />
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-12 animate-in fade-in zoom-in-95 duration-500 relative">
+      
+      {/* HEADER SECTION */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-[#0f1015]/80 p-8 rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
+        
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-400 to-teal-400 flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+              <Warehouse className="text-indigo-400" size={28} />
             </div>
-            إدارة المخازن ومواد الموقع
+            إدارة مستودعات الموقع
           </h1>
-          <p className="text-slate-400 text-sm mt-2">تسجيل الاستلامات، حركات الصرف للمشاريع، ومراقبة المخزون</p>
+          <p className="text-slate-400 text-lg mt-3 font-medium">نظام متكامل لتتبع وإدارة الأرصدة، تسجيل الاستلامات، وإصدار سندات الصرف.</p>
         </div>
         
-        <div className="flex gap-2">
-          <button onClick={() => setShowWarehouseModal(true)} className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all border border-slate-700">
-            <Plus size={18} /> مستودع جديد
+        <div className="relative z-10 flex flex-wrap gap-3 w-full lg:w-auto">
+          <button onClick={() => setShowWarehouseModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-white font-bold transition-all shadow-lg hover:-translate-y-1">
+            <Plus size={18} /> إضافة مستودع
           </button>
-          <button onClick={() => setShowGrnModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all">
+          <button onClick={() => setShowGrnModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] hover:-translate-y-1">
             <ArrowDownToLine size={18} /> سند استلام (GRN)
           </button>
-          <button onClick={() => setShowMisModal(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all">
+          <button onClick={() => setShowMisModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:shadow-[0_0_25px_rgba(244,63,94,0.3)] hover:-translate-y-1">
             <ArrowUpFromLine size={18} /> سند صرف مواد
           </button>
         </div>
       </div>
 
-      {/* SAP Fiori Style Tabs */}
-      <div className="flex bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 w-fit">
+      {/* MODERN TABS */}
+      <div className="flex bg-[#0f1015]/60 p-2 rounded-2xl border border-white/5 w-fit backdrop-blur-md shadow-xl">
         <button 
           onClick={() => setActiveTab("STOCKS")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'STOCKS' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 ${activeTab === 'STOCKS' ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
-          <PackageSearch size={18} /> الأرصدة الحالية
+          <PackageSearch size={20} /> الأرصدة الحالية والمخزون
         </button>
         <button 
           onClick={() => setActiveTab("TRANSACTIONS")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'TRANSACTIONS' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 ${activeTab === 'TRANSACTIONS' ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
-          <ArrowRightLeft size={18} /> حركة المواد (السجل)
+          <ArrowRightLeft size={20} /> سجل حركات المواد الدقيق
         </button>
       </div>
 
-      {/* Content Area */}
-      <div className="glass-dark border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+      {/* MAIN CONTENT AREA */}
+      <div className="bg-[#0f1015]/60 backdrop-blur-md border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
         
-        {/* WAREHOUSE SELECTOR (Common for Stocks) */}
+        {/* WAREHOUSE SELECTOR FOR STOCKS */}
         {activeTab === "STOCKS" && (
-          <div className="p-6 border-b border-white/5 bg-white/5 flex gap-4 items-center">
-            <span className="text-slate-300 font-bold">عرض مستودع:</span>
+          <div className="p-6 border-b border-white/5 bg-slate-900/40 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                 <Building2 className="text-blue-400" size={20} />
+               </div>
+               <span className="text-white font-black text-lg">عرض أرصدة مستودع:</span>
+            </div>
             <select 
-              className="bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-xl outline-none"
+              className="bg-slate-950 border border-slate-800 text-white px-5 py-3 rounded-xl outline-none min-w-[250px] focus:border-indigo-500 transition-colors shadow-inner font-bold"
               value={selectedWarehouse}
               onChange={(e) => setSelectedWarehouse(e.target.value)}
             >
@@ -228,28 +244,35 @@ export default function InventoryDashboard() {
           </div>
         )}
 
-        <div className="overflow-x-auto custom-scrollbar">
+        {/* DATA TABLES */}
+        <div className="overflow-x-auto p-2">
           {activeTab === "STOCKS" && (
-            <table className="enterprise-table">
+            <table className="w-full text-right border-separate border-spacing-y-2 px-4 pb-4">
               <thead>
-                <tr>
-                  <th>كود المادة</th>
-                  <th>اسم المادة</th>
-                  <th>الوحدة</th>
-                  <th className="text-left">الرصيد الفعلي</th>
+                <tr className="text-slate-400 text-xs font-black uppercase tracking-wider">
+                  <th className="px-6 py-4">كود المادة</th>
+                  <th className="px-6 py-4">اسم المادة</th>
+                  <th className="px-6 py-4">الوحدة</th>
+                  <th className="px-6 py-4 text-left">الرصيد الفعلي المتوفر</th>
                 </tr>
               </thead>
               <tbody>
                 {stocks.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center py-12 text-slate-500">لا يوجد أرصدة في هذا المستودع</td></tr>
+                  <tr><td colSpan={4} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">لا يوجد أرصدة في هذا المستودع حالياً</td></tr>
                 ) : (
                   stocks.map((stock) => (
-                    <tr key={stock.id}>
-                      <td className="font-mono text-slate-400 text-xs">{stock.material.code}</td>
-                      <td className="font-bold text-white">{stock.material.name}</td>
-                      <td><span className="badge-erp bg-slate-800 text-slate-300 border-slate-700">{stock.material.unit}</span></td>
-                      <td className="text-left font-black text-lg text-emerald-400" dir="ltr">{stock.quantity}</td>
-                    </tr>
+                    <motion.tr initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} key={stock.id} className="bg-slate-900/40 hover:bg-slate-800/60 transition-colors group">
+                      <td className="px-6 py-5 rounded-r-2xl font-mono text-slate-500 text-sm font-bold border-y border-r border-white/5 group-hover:border-indigo-500/30">{stock.material.code}</td>
+                      <td className="px-6 py-5 text-white font-bold border-y border-white/5 group-hover:border-indigo-500/30">{stock.material.name}</td>
+                      <td className="px-6 py-5 border-y border-white/5 group-hover:border-indigo-500/30">
+                        <span className="bg-slate-950 text-slate-300 px-3 py-1 rounded-lg text-xs font-bold border border-slate-800">{stock.material.unit}</span>
+                      </td>
+                      <td className="px-6 py-5 rounded-l-2xl text-left border-y border-l border-white/5 group-hover:border-indigo-500/30">
+                        <span className="bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl font-black text-xl font-mono border border-emerald-500/20 inline-block shadow-inner" dir="ltr">
+                          {stock.quantity}
+                        </span>
+                      </td>
+                    </motion.tr>
                   ))
                 )}
               </tbody>
@@ -257,43 +280,45 @@ export default function InventoryDashboard() {
           )}
 
           {activeTab === "TRANSACTIONS" && (
-            <table className="enterprise-table">
+            <table className="w-full text-right border-separate border-spacing-y-2 px-4 pb-4">
               <thead>
-                <tr>
-                  <th>التاريخ</th>
-                  <th>الرقم المرجعي</th>
-                  <th>الحركة</th>
-                  <th>المستودع</th>
-                  <th>المادة</th>
-                  <th className="text-left">الكمية</th>
-                  <th>أمر الشراء / البند</th>
+                <tr className="text-slate-400 text-xs font-black uppercase tracking-wider">
+                  <th className="px-6 py-4">التاريخ</th>
+                  <th className="px-6 py-4">الرقم المرجعي</th>
+                  <th className="px-6 py-4">نوع الحركة</th>
+                  <th className="px-6 py-4">المستودع</th>
+                  <th className="px-6 py-4">المادة</th>
+                  <th className="px-6 py-4 text-left">الكمية</th>
+                  <th className="px-6 py-4 text-left">مرجع (PO/BOQ)</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-slate-500">لا توجد حركات مسجلة</td></tr>
+                  <tr><td colSpan={7} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">لا توجد حركات مسجلة حتى الآن</td></tr>
                 ) : (
                   transactions.map((trx) => (
-                    <tr key={trx.id}>
-                      <td className="text-sm text-slate-400 whitespace-nowrap">{new Date(trx.date).toLocaleDateString('ar-EG')}</td>
-                      <td className="font-mono text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded inline-block mt-2">{trx.referenceNo}</td>
-                      <td>
+                    <motion.tr initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} key={trx.id} className="bg-slate-900/40 hover:bg-slate-800/60 transition-colors group">
+                      <td className="px-6 py-4 rounded-r-2xl font-mono text-slate-400 text-sm border-y border-r border-white/5 group-hover:border-indigo-500/30">{new Date(trx.date).toLocaleDateString('en-GB')}</td>
+                      <td className="px-6 py-4 border-y border-white/5 group-hover:border-indigo-500/30">
+                        <span className="bg-slate-950 border border-slate-800 text-indigo-400 font-mono text-xs px-3 py-1.5 rounded-lg font-bold inline-block">{trx.referenceNo}</span>
+                      </td>
+                      <td className="px-6 py-4 border-y border-white/5 group-hover:border-indigo-500/30">
                         {trx.type === 'RECEIPT' 
-                          ? <span className="badge-erp text-emerald-400 border-emerald-400/30 bg-emerald-400/10"><ArrowDownToLine size={12}/> استلام</span>
-                          : <span className="badge-erp text-rose-400 border-rose-400/30 bg-rose-400/10"><ArrowUpFromLine size={12}/> صرف لموقع</span>
+                          ? <span className="flex items-center gap-1.5 w-max bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/20"><ArrowDownToLine size={14}/> استلام وارد</span>
+                          : <span className="flex items-center gap-1.5 w-max bg-rose-500/10 text-rose-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-rose-500/20"><ArrowUpFromLine size={14}/> صرف لموقع</span>
                         }
                       </td>
-                      <td className="text-sm">{trx.warehouse.name}</td>
-                      <td className="font-bold">{trx.material.name}</td>
-                      <td className="text-left font-black" dir="ltr">
-                        <span className={trx.type === 'RECEIPT' ? 'text-emerald-400' : 'text-rose-400'}>
-                          {trx.type === 'RECEIPT' ? '+' : ''}{trx.quantity}
+                      <td className="px-6 py-4 text-slate-300 font-bold text-sm border-y border-white/5 group-hover:border-indigo-500/30">{trx.warehouse.name}</td>
+                      <td className="px-6 py-4 text-white font-bold border-y border-white/5 group-hover:border-indigo-500/30">{trx.material.name}</td>
+                      <td className="px-6 py-4 text-left border-y border-white/5 group-hover:border-indigo-500/30">
+                        <span className={`font-mono font-black text-lg ${trx.type === 'RECEIPT' ? 'text-emerald-400' : 'text-rose-400'}`} dir="ltr">
+                          {trx.type === 'RECEIPT' ? '+' : '-'}{trx.quantity}
                         </span>
                       </td>
-                      <td className="text-xs text-slate-400 max-w-[200px] truncate">
-                        {trx.po?.poNumber || trx.boqItem?.description || '-'}
+                      <td className="px-6 py-4 rounded-l-2xl text-left border-y border-l border-white/5 group-hover:border-indigo-500/30 text-xs text-slate-500 font-mono">
+                        {trx.po?.poNumber || trx.boqItem?.description || 'صرف/استلام حر'}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))
                 )}
               </tbody>
@@ -302,122 +327,125 @@ export default function InventoryDashboard() {
         </div>
       </div>
 
-      {/* GRN Modal */}
-      {showGrnModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#18181b] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl">
-            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2"><ArrowDownToLine className="text-emerald-400" /> تسجيل استلام مواد (GRN)</h2>
-              <button onClick={() => setShowGrnModal(false)} className="text-slate-400 hover:text-white"><X /></button>
-            </div>
-            <form onSubmit={handleGrnSubmit} className="space-y-4">
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">لصالح مستودع</label>
-                 <select required className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setGrnForm({...grnForm, warehouseId: e.target.value})}>
-                   <option value="">-- اختر المستودع --</option>
-                   {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                 </select>
+      {/* MODERN MODALS */}
+      <AnimatePresence>
+        {showGrnModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-xl shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowDownToLine className="text-emerald-400" size={28}/> سند استلام مواد (GRN)</h2>
+                <button onClick={() => setShowGrnModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
               </div>
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">مربوط بأمر شراء (اختياري)</label>
-                 <select className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setGrnForm({...grnForm, poId: e.target.value})}>
-                   <option value="">-- استلام حر بدون PO --</option>
-                   {purchaseOrders.map(p => <option key={p.id} value={p.id}>{p.poNumber}</option>)}
-                 </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <label className="text-xs text-slate-400 mb-1 block">المادة المستلمة</label>
-                   <select required className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setGrnForm({...grnForm, materialId: e.target.value})}>
-                     <option value="">-- اختر --</option>
-                     {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              <form onSubmit={handleGrnSubmit} className="space-y-5 relative z-10">
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">لصالح مستودع</label>
+                   <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, warehouseId: e.target.value})}>
+                     <option value="">-- اختر المستودع --</option>
+                     {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                    </select>
-                 </div>
-                 <div>
-                   <label className="text-xs text-slate-400 mb-1 block">الكمية المستلمة الفعليا</label>
-                   <input required type="number" step="0.01" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setGrnForm({...grnForm, quantity: e.target.value})} />
-                 </div>
-              </div>
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">ملاحظات الفحص</label>
-                 <input className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setGrnForm({...grnForm, remarks: e.target.value})} />
-              </div>
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
-                <Save size={18} /> ترحيل السند وإضافة المواذ للرصيد
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MIS Modal */}
-      {showMisModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#18181b] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl">
-            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2"><ArrowUpFromLine className="text-indigo-400" /> صرف مواد لموقع (MIS)</h2>
-              <button onClick={() => setShowMisModal(false)} className="text-slate-400 hover:text-white"><X /></button>
-            </div>
-            <form onSubmit={handleMisSubmit} className="space-y-4">
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">من مستودع</label>
-                 <select required className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setMisForm({...misForm, warehouseId: e.target.value})}>
-                   <option value="">-- اختر المستودع --</option>
-                   {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                 </select>
-              </div>
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">لصالح مشروع (اختياري)</label>
-                 <select className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setMisForm({...misForm, projectId: e.target.value})}>
-                   <option value="">-- صرف حر للإدارة --</option>
-                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                 </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <label className="text-xs text-slate-400 mb-1 block">المادة المُراد صرفها</label>
-                   <select required className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setMisForm({...misForm, materialId: e.target.value})}>
-                     <option value="">-- اختر --</option>
-                     {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </div>
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">مربوط بأمر شراء (اختياري)</label>
+                   <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, poId: e.target.value})}>
+                     <option value="">-- استلام حر بدون أمر شراء --</option>
+                     {purchaseOrders.map(p => <option key={p.id} value={p.id}>{p.poNumber}</option>)}
                    </select>
-                 </div>
-                 <div>
-                   <label className="text-xs text-slate-400 mb-1 block">الكمية المصروفة</label>
-                   <input required type="number" step="0.01" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setMisForm({...misForm, quantity: e.target.value})} />
-                 </div>
-              </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
-                <ArrowUpFromLine size={18} /> صرف وخصم من الرصيد
-              </button>
-            </form>
+                </div>
+                <div className="grid grid-cols-2 gap-5">
+                   <div>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">المادة المستلمة</label>
+                     <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, materialId: e.target.value})}>
+                       <option value="">-- اختر --</option>
+                       {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                     </select>
+                   </div>
+                   <div>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">الكمية المستلمة</label>
+                     <input required type="number" step="0.01" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors font-mono text-lg" onChange={e => setGrnForm({...grnForm, quantity: e.target.value})} />
+                   </div>
+                </div>
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">ملاحظات الفحص</label>
+                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, remarks: e.target.value})} placeholder="حالة المواد عند الاستلام..." />
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-1">
+                  <Save size={22} /> ترحيل السند وإضافة المواذ للرصيد
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Create Warehouse Modal */}
-      {showWarehouseModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#18181b] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl">
-            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2"><Building2 className="text-indigo-400" /> إضافة مستودع جديد</h2>
-              <button onClick={() => setShowWarehouseModal(false)} className="text-slate-400 hover:text-white"><X /></button>
-            </div>
-            <form onSubmit={handleWarehouseSubmit} className="space-y-4">
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">اسم المستودع</label>
-                 <input required className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" placeholder="مثال: المستودع الرئيسي" onChange={e => setWarehouseForm({...warehouseForm, name: e.target.value})} />
+        {showMisModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-xl shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowUpFromLine className="text-rose-400" size={28}/> سند صرف مواد (MIS)</h2>
+                <button onClick={() => setShowMisModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
               </div>
-              <div>
-                 <label className="text-xs text-slate-400 mb-1 block">موقع المستودع</label>
-                 <input className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none" onChange={e => setWarehouseForm({...warehouseForm, location: e.target.value})} />
-              </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
-                <Plus size={18} /> حفظ المستودع
-              </button>
-            </form>
+              <form onSubmit={handleMisSubmit} className="space-y-5 relative z-10">
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">من مستودع</label>
+                   <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, warehouseId: e.target.value})}>
+                     <option value="">-- اختر المستودع --</option>
+                     {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                   </select>
+                </div>
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">لصالح مشروع (اختياري)</label>
+                   <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, projectId: e.target.value})}>
+                     <option value="">-- صرف حر بدون تحديد مشروع --</option>
+                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                   </select>
+                </div>
+                <div className="grid grid-cols-2 gap-5">
+                   <div>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">المادة المُراد صرفها</label>
+                     <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, materialId: e.target.value})}>
+                       <option value="">-- اختر --</option>
+                       {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                     </select>
+                   </div>
+                   <div>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">الكمية المصروفة</label>
+                     <input required type="number" step="0.01" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-rose-400 outline-none focus:border-rose-500/50 transition-colors font-mono text-lg font-black" onChange={e => setMisForm({...misForm, quantity: e.target.value})} />
+                   </div>
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all hover:-translate-y-1">
+                  <ArrowUpFromLine size={22} /> صرف وخصم من الرصيد
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+
+        {showWarehouseModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-lg shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><Building2 className="text-indigo-400" size={28}/> إضافة مستودع جديد</h2>
+                <button onClick={() => setShowWarehouseModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
+              </div>
+              <form onSubmit={handleWarehouseSubmit} className="space-y-5 relative z-10">
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">اسم المستودع</label>
+                   <input required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder="مثال: المستودع الرئيسي" onChange={e => setWarehouseForm({...warehouseForm, name: e.target.value})} />
+                </div>
+                <div>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">موقع المستودع</label>
+                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder="العنوان أو المربع..." onChange={e => setWarehouseForm({...warehouseForm, location: e.target.value})} />
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-1">
+                  <Plus size={22} /> إضافة واعتماد المستودع
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
