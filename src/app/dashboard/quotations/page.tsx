@@ -24,9 +24,25 @@ export default function QuotationsPage() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
+  const [userPerms, setUserPerms] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState("");
+
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserPerms(u.permissions || []);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     fetchQuotations();
   }, []);
+
+  const hasPermission = (perm: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    return userPerms.includes(perm);
+  };
 
   const fetchQuotations = async () => {
     setIsLoading(true);
@@ -88,10 +104,12 @@ export default function QuotationsPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/quotations/create" className="flex items-center gap-2 font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] group bg-pink-600 hover:bg-pink-500 text-white">
-            <PlusCircle size={18} className="group-hover:rotate-90 transition-transform" />
-            <span>تسعير جديد</span>
-          </Link>
+          {hasPermission('QUOTATION_CREATE') && (
+            <Link href="/dashboard/quotations/create" className="flex items-center gap-2 font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] group bg-pink-600 hover:bg-pink-500 text-white">
+              <PlusCircle size={18} className="group-hover:rotate-90 transition-transform" />
+              <span>تسعير جديد</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -165,20 +183,24 @@ export default function QuotationsPage() {
                       <div className="flex items-center justify-center gap-2">
                         {quote.status !== 'APPROVED' ? (
                           <>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleConvert(quote.id); }}
-                              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all font-bold border border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]"
-                              title="اعتماد"
-                            >
-                              <CheckCircle2 size={16} />
-                            </button>
-                            <button 
-                              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all font-bold border border-rose-500/20 hover:border-rose-500 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]"
-                              onClick={(e) => handleDelete(e, quote.id)}
-                              title="حذف القائمة"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            {hasPermission('QUOTATION_APPROVE') && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleConvert(quote.id); }}
+                                className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all font-bold border border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]"
+                                title="اعتماد وتحويل لمشروع"
+                              >
+                                <CheckCircle2 size={16} />
+                              </button>
+                            )}
+                            {hasPermission('QUOTATION_CREATE') && (
+                              <button 
+                                className="flex items-center justify-center gap-1 px-3 py-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all font-bold border border-rose-500/20 hover:border-rose-500 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]"
+                                onClick={(e) => handleDelete(e, quote.id)}
+                                title="حذف العرض"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
                           </>
                         ) : (
                           <span className="text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 mx-auto w-max shadow-sm">
