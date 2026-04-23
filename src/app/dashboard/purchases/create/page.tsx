@@ -211,7 +211,21 @@ export default function CreatePurchasePage() {
                   </div>
                   <div className="w-full md:w-28 relative">
                      <span className="md:hidden text-xs text-slate-500 font-bold mb-1 block">الوحدة</span>
-                     <input type="text" required value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder="حبه / لفة..." className="w-full bg-slate-900/50 border border-white/10 hover:border-white/20 rounded-xl py-2.5 px-4 text-sm font-bold text-white text-center focus:outline-none focus:border-indigo-500 transition-colors shadow-inner" />
+                     <input type="text" required list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder="حبه / لفة..." className="w-full bg-slate-900/50 border border-white/10 hover:border-white/20 rounded-xl py-2.5 px-4 text-sm font-bold text-white text-center focus:outline-none focus:border-indigo-500 transition-colors shadow-inner" />
+                     <datalist id={`units-list-${index}`}>
+                       <option value="م٢" />
+                       <option value="م.ط" />
+                       <option value="م٣" />
+                       <option value="مقطوعية" />
+                       <option value="عدد" />
+                       <option value="حبة" />
+                       <option value="كجم" />
+                       <option value="طن" />
+                       <option value="يوم" />
+                       <option value="شهر" />
+                       <option value="ساعة" />
+                       <option value="لفة" />
+                     </datalist>
                   </div>
                   <div className="w-full md:w-28 relative">
                      <span className="md:hidden text-xs text-slate-500 font-bold mb-1 block">الكمية</span>

@@ -468,7 +468,21 @@ export default function CreateQuotationPage() {
                        <input type="text" required value={item.description} onChange={e => handleItemChange(index, "description", e.target.value)} placeholder="اكتب تفاصيل البند هنا..." className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all font-medium" />
                     </div>
                     <div className="col-span-1">
-                       <input type="text" required value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder="مثال: م٢, مقطوعية" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
+                       <input type="text" required list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder="مثال: م٢, مقطوعية" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
+                       <datalist id={`units-list-${index}`}>
+                         <option value="م٢" />
+                         <option value="م.ط" />
+                         <option value="م٣" />
+                         <option value="مقطوعية" />
+                         <option value="عدد" />
+                         <option value="حبة" />
+                         <option value="كجم" />
+                         <option value="طن" />
+                         <option value="يوم" />
+                         <option value="شهر" />
+                         <option value="ساعة" />
+                         <option value="لفة" />
+                       </datalist>
                     </div>
                     <div className="col-span-1">
                        <input type="number" required min="1" step="any" value={item.quantity || ''} onChange={e => handleItemChange(index, "quantity", Number(e.target.value))} placeholder="الكمية" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-2 text-sm text-center text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all" />
