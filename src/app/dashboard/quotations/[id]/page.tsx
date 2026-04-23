@@ -31,6 +31,9 @@ export default function EditQuotationPage() {
   const [isFetching, setIsFetching] = useState(true);
   const [printMeta, setPrintMeta] = useState({ date: "", ref: "" });
   
+  const [userPerms, setUserPerms] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState("");
+
   const [formData, setFormData] = useState({
     title: "",
     clientName: "",
@@ -43,10 +46,24 @@ export default function EditQuotationPage() {
   });
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserPerms(u.permissions || []);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
+
     if (quotationId) {
       fetchQuotation();
     }
   }, [quotationId]);
+
+  const hasPermission = (perm: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    return userPerms.includes(perm);
+  };
 
   const fetchQuotation = async () => {
     try {
@@ -204,8 +221,8 @@ export default function EditQuotationPage() {
               <select 
                 value={formData.status} 
                 onChange={e => setFormData({...formData, status: e.target.value})}
-                disabled={!!formData.projectId}
-                className={`bg-slate-950 border rounded-lg px-3 py-1.5 text-sm font-bold outline-none transition-colors appearance-none cursor-pointer ${
+                disabled={!!formData.projectId || !hasPermission('QUOTATION_APPROVE')}
+                className={`bg-slate-950 border rounded-lg px-3 py-1.5 text-sm font-bold outline-none transition-colors appearance-none ${hasPermission('QUOTATION_APPROVE') ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'} ${
                   formData.status === 'APPROVED' ? 'text-emerald-400 border-emerald-500/30' : 
                   formData.status === 'REJECTED' ? 'text-rose-400 border-rose-500/30' : 
                   formData.status === 'SUBMITTED' ? 'text-blue-400 border-blue-500/30' : 
@@ -220,17 +237,22 @@ export default function EditQuotationPage() {
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              {formData.status === 'APPROVED' && !formData.projectId && (
+              {formData.status === 'APPROVED' && !formData.projectId && hasPermission('QUOTATION_APPROVE') && (
                 <button type="button" onClick={handleConvertToProject} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-all animate-pulse text-sm">
                   <Wand2 size={18} /> تحويل لمشروع تنفيذي
                 </button>
               )}
+              <button type="button" onClick={handleExportExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-lg text-sm">
+                <FileSpreadsheet size={18} /> Excel
+              </button>
               <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold transition-all shadow-lg text-sm">
                 <Printer size={18} /> معاينة وطباعة PDF
               </button>
-              <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
-                {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحديث البيانات
-              </button>
+              {hasPermission('QUOTATION_CREATE') && (
+                <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
+                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحديث البيانات
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -397,27 +419,42 @@ export default function EditQuotationPage() {
       </div>
 
       {/* PRINT ONLY */}
-      <div className="hidden print:block print:!bg-white print:!text-black w-full min-h-screen pt-32 pb-10 px-8 font-sans" dir="rtl">
-        <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-end">
-           <div>
-             <h1 className="text-4xl font-black text-slate-900 mb-1 tracking-tight">عــرض ســعــر</h1>
-             <p className="text-lg font-bold text-slate-500">QUOTATION</p>
+      <div className="hidden print:block print:!bg-white print:!text-black w-full min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
+        {/* Professional Header */}
+        <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
+           <div className="absolute top-0 right-0 w-full h-1 bg-indigo-600 rounded-t"></div>
+           <div className="flex flex-col gap-1 mt-2">
+             <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">عرض سعر</h1>
+             <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Quotation</h2>
+             
+             <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block">
+               <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
+               <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
+             </div>
            </div>
-           <div className="text-left font-bold text-sm text-slate-600">
-             <p className="text-xl font-bold text-indigo-700 mb-2">PMS Contracting Est.</p>
-             <p>Date: <span className="font-mono text-slate-900">{printMeta.date}</span></p>
-             <p>Ref: <span className="font-mono text-slate-900">{printMeta.ref}</span></p>
+           
+           <div className="text-left flex flex-col items-end">
+             <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
+               <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
+             </div>
+             <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
+             <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
+             <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
+             <div className="mt-2 text-xs text-slate-600 font-bold grid grid-cols-1 gap-1 text-right" dir="ltr">
+               <p>VAT No: <span className="font-mono">300000000000003</span></p>
+               <p>CR No: <span className="font-mono">1010101010</span></p>
+             </div>
            </div>
         </div>
 
         <div className="mb-10 grid grid-cols-2 gap-8 text-sm">
-           <div className="bg-slate-50 p-4 border-l-4 border-indigo-600 rounded-r-lg">
-              <p className="text-slate-500 font-bold mb-1 uppercase text-xs">مقدم إلى العميل (Billed To):</p>
+           <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+              <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2">عناية العميل (Billed To):</p>
               <h2 className="text-xl font-black text-slate-900">{formData.clientName || '_______________'}</h2>
            </div>
-           <div className="bg-slate-50 p-4 border-r-4 border-indigo-600 rounded-l-lg text-left text-right" dir="rtl">
-              <p className="text-slate-500 font-bold mb-1 uppercase text-xs">المشروع / البيان (Subject):</p>
-              <h2 className="text-lg font-bold text-slate-900">{formData.title || '_______________'}</h2>
+           <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+              <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2 text-right" dir="rtl">المشروع / البيان (Project/Subject):</p>
+              <h2 className="text-lg font-bold text-slate-900 text-right" dir="rtl">{formData.title || '_______________'}</h2>
            </div>
         </div>
 

@@ -18,10 +18,12 @@ import {
   Loader2,
   AlertCircle,
   Edit3,
-  RefreshCcw
+  RefreshCcw,
+  FileSpreadsheet
 } from "lucide-react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { exportToCsv } from "@/lib/exportUtils";
 
 export default function InvoiceViewPage() {
   const router = useRouter();
@@ -30,10 +32,25 @@ export default function InvoiceViewPage() {
   const [invoice, setInvoice] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [userPerms, setUserPerms] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserPerms(u.permissions || []);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     if (invoiceId) fetchInvoice();
   }, [invoiceId]);
+
+  const hasPermission = (perm: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    return userPerms.includes(perm);
+  };
 
   const fetchInvoice = async () => {
     try {
@@ -116,6 +133,20 @@ export default function InvoiceViewPage() {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!invoice?.details) return;
+    const exportData = invoice.details.map((detail: any, index: number) => ({
+      "م": index + 1,
+      "البند": detail.boqItem?.description,
+      "الكمية السابقة": detail.previousQty,
+      "الكمية الحالية": detail.currentQty,
+      "إجمالي الكمية": detail.totalQty,
+      "سعر الوحدة": detail.unitPrice,
+      "القيمة الحالية": detail.currentValue
+    }));
+    exportToCsv(`Invoice_${invoice.invoiceNumber}.csv`, exportData);
+  };
+
   return (
     <>
     {/* Screen View */}
@@ -144,17 +175,17 @@ export default function InvoiceViewPage() {
             {statusInfo.label}
           </div>
           
-          {invoice.status === 'DRAFT' && (
+          {invoice.status === 'DRAFT' && hasPermission('INVOICE_CREATE') && (
             <button 
               onClick={() => router.push(`/dashboard/invoices/${invoiceId}/edit`)}
               className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-white rounded-xl transition-all border border-amber-500/20 shadow-lg font-medium group"
             >
-              <Edit3 size={18} className="group-hover:rotate-12 transition-transform" /> تعديل המסودة
+              <Edit3 size={18} className="group-hover:rotate-12 transition-transform" /> تعديل المسودة
             </button>
           )}
 
           {/* زر الاعتماد - يظهر للمسودات فقط */}
-          {invoice.status === 'DRAFT' && (
+          {invoice.status === 'DRAFT' && hasPermission('INVOICE_APPROVE') && (
             <button
               onClick={handleCertify}
               className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white rounded-xl transition-all border border-emerald-500/20 shadow-lg font-bold group"
@@ -165,7 +196,7 @@ export default function InvoiceViewPage() {
           )}
 
           {/* زر تحديث من دفترة - يظهر للمستخلصات المعتمدة المربوطة بدفترة */}
-          {invoice.status === 'CERTIFIED' && invoice.daftraInvoiceId && (
+          {invoice.status === 'CERTIFIED' && invoice.daftraInvoiceId && hasPermission('INVOICE_APPROVE') && (
             <button 
               onClick={handleSyncPayment}
               disabled={isSyncing}
@@ -176,6 +207,9 @@ export default function InvoiceViewPage() {
             </button>
           )}
 
+          <button onClick={handleExportExcel} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white rounded-xl transition-all border border-indigo-500/20 shadow-lg font-medium group">
+             <FileSpreadsheet size={18} className="group-hover:scale-110 transition-transform" /> Excel
+          </button>
           <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors border border-slate-700 shadow-lg font-medium">
             <Printer size={18} /> طباعة رسمية
           </button>
@@ -313,7 +347,7 @@ export default function InvoiceViewPage() {
                   <h4 className="text-slate-300 font-bold flex items-center gap-2">
                     <Wallet size={18} className="text-indigo-400" /> الإدارة المالية 
                   </h4>
-                  {invoice.status === 'CERTIFIED' && (
+                  {invoice.status === 'CERTIFIED' && hasPermission('INVOICE_APPROVE') && (
                     <button 
                       onClick={handleSyncPayment}
                       disabled={isSyncing}
@@ -354,7 +388,7 @@ export default function InvoiceViewPage() {
                 </div>
               </div>
 
-             {invoice.status === 'DRAFT' && (
+             {invoice.status === 'DRAFT' && hasPermission('INVOICE_APPROVE') && (
                <button 
                  onClick={handleCertify}
                  className="w-full mt-4 flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1">
@@ -368,23 +402,45 @@ export default function InvoiceViewPage() {
     </div>
 
     {/* Print View (Professional Certificate) */}
-    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-32 pb-10 px-8 font-sans" dir="rtl">
-      {/* Document Header */}
-      <div className="text-center mb-10 border-b-2 border-slate-800 pb-4">
-        <h1 className="text-3xl font-black uppercase mb-2">شهادة إنجاز ومستخلص أعمال</h1>
-        <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">Payment Certificate / Invoice</p>
+    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
+      {/* Professional Header */}
+      <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
+         <div className="absolute top-0 right-0 w-full h-1 bg-emerald-600 rounded-t"></div>
+         <div className="flex flex-col gap-1 mt-2 text-right">
+           <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">شهادة إنجاز ومستخلص</h1>
+           <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Payment Certificate</h2>
+           
+           <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block text-right">
+             <p className="text-sm font-bold text-slate-800">رقم المستخلص (No): <span className="font-mono text-emerald-700">#{invoice.invoiceNumber}</span></p>
+             <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
+           </div>
+         </div>
+         
+         <div className="text-left flex flex-col items-end">
+           <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
+             <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
+           </div>
+           <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
+           <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
+           <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
+           <div className="mt-2 text-xs text-slate-600 font-bold grid grid-cols-1 gap-1 text-right" dir="ltr">
+             <p>VAT No: <span className="font-mono">300000000000003</span></p>
+             <p>CR No: <span className="font-mono">1010101010</span></p>
+           </div>
+         </div>
       </div>
 
       {/* Meta Info */}
       <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
-        <div className="border-2 border-slate-800 rounded-xl p-4">
-          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">المشروع (Project):</span> <span className="font-bold text-lg font-mono">{invoice.project?.code}</span> | {invoice.project?.name}</p>
-          <p><span className="font-bold text-slate-500 w-32 inline-block">تاريخ المستخلص:</span> <span className="font-bold font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
+        <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+          <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2">بيانات المشروع (Project Details):</p>
+          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">المشروع:</span> <span className="font-bold text-lg font-mono text-emerald-700">{invoice.project?.code}</span> | <span className="font-bold">{invoice.project?.name}</span></p>
+          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">تاريخ المستخلص:</span> <span className="font-bold font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
         </div>
-        <div className="border-2 border-slate-800 rounded-xl p-4">
-          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">المقاول/الجهة:</span> <span className="font-bold text-lg">{invoice.contract?.type === 'MAIN_CONTRACT' ? invoice.project?.client?.name : invoice.contract?.subcontractor?.name}</span></p>
-          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">رقم العقد:</span> <span className="font-bold font-mono">{invoice.contract?.referenceNumber}</span></p>
-          <p><span className="font-bold text-slate-500 w-32 inline-block">رقم المستخلص:</span> <span className="font-bold text-lg font-mono">#{invoice.invoiceNumber}</span></p>
+        <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+          <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2">المقاول/الجهة (Contractor/Client Details):</p>
+          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">الاسم:</span> <span className="font-black text-lg text-slate-900">{invoice.contract?.type === 'MAIN_CONTRACT' ? invoice.project?.client?.name : invoice.contract?.subcontractor?.name}</span></p>
+          <p className="mb-2"><span className="font-bold text-slate-500 w-32 inline-block">رقم العقد (Ref):</span> <span className="font-bold font-mono text-indigo-700">{invoice.contract?.referenceNumber}</span></p>
         </div>
       </div>
 
@@ -416,32 +472,32 @@ export default function InvoiceViewPage() {
 
       {/* Financial Summary */}
       <div className="flex justify-end mb-12 break-inside-avoid">
-        <div className="w-1/2 border-2 border-slate-800 rounded-lg overflow-hidden">
+        <div className="w-2/3 border-2 border-slate-900 rounded-lg overflow-hidden shadow-md">
           <table className="w-full text-right border-collapse">
             <tbody>
-              <tr className="border-b border-slate-800">
-                 <td className="p-3 font-bold bg-slate-100">إجمالي الأعمال الحالية:</td>
-                 <td className="p-3 font-mono font-black text-left">{Number(invoice.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+              <tr className="border-b border-slate-200">
+                 <td className="p-4 font-bold bg-slate-50 text-slate-700">إجمالي الأعمال الحالية (Gross Amount):</td>
+                 <td className="p-4 font-mono font-black text-left">{Number(invoice.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
               {Number(invoice.retentionAmount) > 0 && (
-                <tr className="border-b border-slate-400 text-black">
-                   <td className="p-3 font-bold">يخصم محتجز ضمان ({invoice.retentionPercent}%):</td>
-                   <td className="p-3 font-mono font-black text-left">- {Number(invoice.retentionAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <tr className="border-b border-slate-200 text-black">
+                   <td className="p-4 font-bold text-slate-600">يخصم محتجز ضمان ({invoice.retentionPercent}%):</td>
+                   <td className="p-4 font-mono font-bold text-left text-rose-700">- {Number(invoice.retentionAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 </tr>
               )}
               {totalDeductions > Number(invoice.retentionAmount) && (
-                <tr className="border-b border-slate-400 text-black">
-                   <td className="p-3 font-bold">خصومات واعتمادات أخرى:</td>
-                   <td className="p-3 font-mono font-black text-left">- {(totalDeductions - Number(invoice.retentionAmount)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <tr className="border-b border-slate-200 text-black">
+                   <td className="p-4 font-bold text-slate-600">خصومات واعتمادات أخرى (Other Deductions):</td>
+                   <td className="p-4 font-mono font-bold text-left text-rose-700">- {(totalDeductions - Number(invoice.retentionAmount)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 </tr>
               )}
-              <tr className="border-b border-slate-800 text-black">
-                 <td className="p-3 font-bold">يضاف ضريبة القيمة المضافة ({invoice.taxPercent}%):</td>
-                 <td className="p-3 font-mono font-black text-left">+ {Number(invoice.taxAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+              <tr className="border-b border-slate-200 text-black">
+                 <td className="p-4 font-bold bg-slate-50 text-slate-700">يضاف ضريبة القيمة المضافة ({invoice.taxPercent}%):</td>
+                 <td className="p-4 font-mono font-black text-left text-indigo-700">+ {Number(invoice.taxAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
-              <tr className="bg-slate-200 text-lg">
-                 <td className="p-4 font-black">الصافي المعتمـد للصرف:</td>
-                 <td className="p-4 font-mono font-black text-left">SAR {Number(invoice.netAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+              <tr className="bg-slate-900 text-white text-lg">
+                 <td className="p-5 font-black uppercase tracking-widest">الصافي المعتمـد للصرف (Net Total):</td>
+                 <td className="p-5 font-mono font-black text-left text-2xl">SAR {Number(invoice.netAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
             </tbody>
           </table>
@@ -449,26 +505,32 @@ export default function InvoiceViewPage() {
       </div>
 
       {/* Signatures */}
-      <div className="mt-16 pt-8 break-inside-avoid text-black">
-        <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800">الاعتمادات والموافقات:</h3>
+      <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
+        <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800 uppercase tracking-widest">الاعتمادات والموافقات (Approvals):</h3>
         <div className="grid grid-cols-4 gap-8 text-center text-sm">
           <div>
-            <p className="font-bold text-slate-800 mb-12">المقاول المـُنفذ</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">المقاول المـُنفذ (Contractor)</p>
             <p className="text-slate-400">.......................................</p>
           </div>
           <div>
-            <p className="font-bold text-slate-800 mb-12">مهندس الموقع (الاستلام)</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">مهندس الموقع (Site Engineer)</p>
             <p className="text-slate-400">.......................................</p>
           </div>
           <div>
-             <p className="font-bold text-slate-800 mb-12">مدير المشروع (Technical)</p>
+             <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">مدير المشروع (Project Manager)</p>
              <p className="text-slate-400">.......................................</p>
           </div>
           <div>
-            <p className="font-bold text-slate-800 mb-12">الإدارة والموافقة النهائية</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">الاعتماد المالي (Finance Approval)</p>
             <p className="text-slate-400">.......................................</p>
           </div>
         </div>
+      </div>
+
+      {/* Print Footer */}
+      <div className="fixed bottom-0 left-0 w-full text-center text-[10px] text-slate-400 font-medium py-4 border-t border-slate-200 bg-white">
+        <p>This is a computer generated document. No signature is required if sent electronically.</p>
+        <p className="mt-1">© {new Date().getFullYear()} PMS Contracting. All rights reserved.</p>
       </div>
 
     </div>

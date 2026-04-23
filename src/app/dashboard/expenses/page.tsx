@@ -12,14 +12,18 @@ import {
   Building,
   Calendar,
   AlertCircle,
-  Printer
+  Printer,
+  FileSpreadsheet
 } from "lucide-react";
+import { exportToCsv } from "@/lib/exportUtils";
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [userPerms, setUserPerms] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState("");
 
   // Form
   const [form, setForm] = useState({
@@ -31,9 +35,22 @@ export default function ExpensesPage() {
   });
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserPerms(u.permissions || []);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     fetchExpenses();
     fetchProjects();
   }, []);
+
+  const hasPermission = (perm: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    return userPerms.includes(perm);
+  };
 
   const fetchExpenses = async () => {
     setIsLoading(true);
@@ -113,12 +130,29 @@ export default function ExpensesPage() {
         </div>
         <div className="flex items-center gap-3 print:hidden">
           <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition-all border border-white/10"
+            onClick={() => {
+              const exportData = expenses.map((exp, idx) => ({
+                "م": idx + 1,
+                "المرجع": exp.expenseNo,
+                "التاريخ": new Date(exp.date).toLocaleDateString('en-US'),
+                "المشروع": exp.project?.name || "عام",
+                "التصنيف": categoryMap[exp.category] || exp.category,
+                "البيان": exp.description,
+                "المبلغ": exp.amount
+              }));
+              exportToCsv(`Expenses_PettyCash_${new Date().toISOString().split('T')[0]}.csv`, exportData);
+            }}
+            className="flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold px-5 py-3 rounded-xl transition-all border border-indigo-500/30 shadow-lg"
           >
-            <Printer size={20} /> طباعة كشف تسوية
+            <FileSpreadsheet size={20} /> تصدير Excel
           </button>
-          {!isFormOpen && (
+          <button 
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl font-bold transition-all border border-white/10 shadow-lg"
+          >
+            <Printer size={20} /> كشف تسوية عهدة
+          </button>
+          {!isFormOpen && hasPermission('EXPENSE_CREATE') && (
             <button 
               onClick={() => setIsFormOpen(true)}
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all"
@@ -222,9 +256,11 @@ export default function ExpensesPage() {
                     <td className="px-6 py-4 truncate max-w-[200px]" title={exp.description}>{exp.description}</td>
                     <td className="px-6 py-4 font-mono font-black text-rose-400 text-left" dir="ltr">- {Number(exp.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                     <td className="px-6 py-4 text-center print:hidden">
-                       <button onClick={() => handleDelete(exp.id)} title="حذف" className="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-lg transition-colors border border-rose-500/20 shadow-sm mx-auto flex items-center justify-center">
-                         <Trash2 size={16} />
-                       </button>
+                       {hasPermission('EXPENSE_APPROVE') && (
+                         <button onClick={() => handleDelete(exp.id)} title="حذف" className="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-lg transition-colors border border-rose-500/20 shadow-sm mx-auto flex items-center justify-center">
+                           <Trash2 size={16} />
+                         </button>
+                       )}
                     </td>
                  </tr>
               ))}
@@ -235,66 +271,90 @@ export default function ExpensesPage() {
     </div>
 
     {/* Print View (Professional Document) */}
-    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-32 pb-10 px-8 font-sans" dir="rtl">
-      {/* 
-        pt-32 (128px) top margin to allow for official company letterhead (ورق مروس).
-      */}
-      <div className="text-center mb-8 border-b-2 border-gray-800 pb-4">
-        <h1 className="text-3xl font-bold uppercase tracking-wider mb-2">كشف تسوية عُهدة نقدية ومصروفات</h1>
-        <p className="text-gray-600 font-bold uppercase tracking-widest text-sm">Petty Cash Settlement Report</p>
-      </div>
-
-      <div className="flex justify-between items-center mb-6 font-bold text-lg">
-        <div>التاريخ: {currentDate}</div>
-        <div>رقم الكشف: {Date.now().toString().slice(-6)}</div>
+    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
+      {/* Professional Header */}
+      <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
+         <div className="absolute top-0 right-0 w-full h-1 bg-emerald-600 rounded-t"></div>
+         <div className="flex flex-col gap-1 mt-2 text-right">
+           <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">كشف تسوية عُهدة نقدية ومصروفات</h1>
+           <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Petty Cash Settlement Report</h2>
+           
+           <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block text-right">
+             <p className="text-sm font-bold text-slate-800">تاريخ الكشف (Date): <span className="font-mono text-emerald-700">{currentDate}</span></p>
+             <p className="text-sm font-bold text-slate-800 mt-1">الرقم المرجعي (Ref): <span className="font-mono">PC-{Date.now().toString().slice(-6)}</span></p>
+           </div>
+         </div>
+         
+         <div className="text-left flex flex-col items-end">
+           <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
+             <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
+           </div>
+           <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
+           <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
+           <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
+         </div>
       </div>
 
       <table className="w-full text-right border-collapse mb-8 print:w-full">
         <thead>
-          <tr className="bg-gray-100 border-2 border-gray-800 text-black">
-            <th className="p-3 border-2 border-gray-800 w-12 text-center text-sm font-black">م</th>
-            <th className="p-3 border-2 border-gray-800 text-sm font-black">التاريخ</th>
-            <th className="p-3 border-2 border-gray-800 text-sm font-black">المشروع</th>
-            <th className="p-3 border-2 border-gray-800 text-sm font-black">التصنيف</th>
-            <th className="p-3 border-2 border-gray-800 w-1/3 text-sm font-black">البيان والتفاصيل</th>
-            <th className="p-3 border-2 border-gray-800 text-left text-sm font-black">المبلغ (ريال)</th>
+          <tr className="bg-slate-900 border-2 border-slate-900 text-white font-black text-xs uppercase">
+            <th className="p-3 border border-slate-900 w-12 text-center text-slate-200">م</th>
+            <th className="p-3 border border-slate-900 text-slate-200">التاريخ</th>
+            <th className="p-3 border border-slate-900 text-slate-200">المشروع</th>
+            <th className="p-3 border border-slate-900 text-slate-200">التصنيف</th>
+            <th className="p-3 border border-slate-900 w-1/3 text-slate-200">البيان والتفاصيل</th>
+            <th className="p-3 border border-slate-900 text-left text-slate-200">المبلغ (SAR)</th>
           </tr>
         </thead>
         <tbody>
           {expenses.map((exp, idx) => (
-            <tr key={exp.id} className="border-2 border-gray-800 text-black break-inside-avoid">
-              <td className="p-3 border-2 border-gray-800 text-center font-bold text-sm">{idx + 1}</td>
-              <td className="p-3 border-2 border-gray-800 text-sm font-bold font-mono">{new Date(exp.date).toLocaleDateString('en-US')}</td>
-              <td className="p-3 border-2 border-gray-800 font-bold text-sm">{exp.project?.name || "عام (مشتريات إدارة)"}</td>
-              <td className="p-3 border-2 border-gray-800 font-bold text-sm">{categoryMap[exp.category] || exp.category}</td>
-              <td className="p-3 border-2 border-gray-800 text-sm">{exp.description}</td>
-              <td className="p-3 border-2 border-gray-800 text-left font-black text-sm" dir="ltr">{Number(exp.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <tr key={exp.id} className="border border-slate-300 text-black break-inside-avoid">
+              <td className="p-3 border border-slate-300 text-center font-bold text-sm text-slate-600">{idx + 1}</td>
+              <td className="p-3 border border-slate-300 text-sm font-bold font-mono text-slate-800">{new Date(exp.date).toLocaleDateString('en-US')}</td>
+              <td className="p-3 border border-slate-300 font-bold text-sm text-slate-900">{exp.project?.name || "عام (مشتريات إدارة)"}</td>
+              <td className="p-3 border border-slate-300 font-bold text-sm text-slate-700">{categoryMap[exp.category] || exp.category}</td>
+              <td className="p-3 border border-slate-300 text-sm text-slate-900 font-medium">{exp.description}</td>
+              <td className="p-3 border border-slate-300 text-left font-black text-sm text-slate-900 bg-slate-50" dir="ltr">{Number(exp.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
             </tr>
           ))}
-          {/* Total Row */}
-          <tr className="bg-gray-200 border-2 border-gray-800 text-black font-black text-lg break-inside-avoid">
-            <td colSpan={5} className="p-4 border-2 border-gray-800 text-left">الإجمالي الكلي للمصروفات (Total Expenses)</td>
-            <td className="p-4 border-2 border-gray-800 text-left text-xl" dir="ltr">{totalAmount.toLocaleString('en-US', {minimumFractionDigits: 2})} <span className="text-sm text-gray-700">SAR</span></td>
-          </tr>
         </tbody>
       </table>
+      
+      <div className="flex justify-end mb-16 break-inside-avoid">
+        <div className="w-1/2 border-2 border-slate-900 rounded-lg overflow-hidden shadow-md">
+           <table className="w-full">
+             <tbody>
+                <tr className="bg-slate-900 text-white font-black text-lg break-inside-avoid">
+                  <td className="p-4 text-right uppercase tracking-widest">الإجمالي الكلي للمصروفات (Total Expenses)</td>
+                  <td className="p-4 text-left font-mono text-2xl" dir="ltr">SAR {totalAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                </tr>
+             </tbody>
+           </table>
+        </div>
+      </div>
 
-      <div className="mt-20 pt-8 break-inside-avoid">
-        <h3 className="font-bold text-xl mb-16">التوقيعات والاعتمادات:</h3>
-        <div className="grid grid-cols-3 gap-8 text-center">
+      <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
+        <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800 uppercase tracking-widest">التوقيعات والاعتمادات (Approvals):</h3>
+        <div className="grid grid-cols-3 gap-8 text-center text-sm">
           <div>
-            <p className="font-bold text-gray-700 mb-12">إعداد / صاحب العهدة</p>
-            <p className="text-gray-400">.......................................</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">إعداد / صاحب العهدة (Prepared By)</p>
+            <p className="text-slate-400">.....................................................</p>
           </div>
           <div>
-            <p className="font-bold text-gray-700 mb-12">المراجعة (قسم الحسابات)</p>
-            <p className="text-gray-400">.......................................</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">المراجعة (قسم الحسابات / Finance)</p>
+            <p className="text-slate-400">.....................................................</p>
           </div>
           <div>
-            <p className="font-bold text-gray-700 mb-12">موافقة المدير المالي / الإدارة</p>
-            <p className="text-gray-400">.......................................</p>
+            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">اعتماد الإدارة العليا (General Manager)</p>
+            <p className="text-slate-400">.....................................................</p>
           </div>
         </div>
+      </div>
+      
+      {/* Print Footer */}
+      <div className="fixed bottom-0 left-0 w-full text-center text-[10px] text-slate-400 font-medium py-4 border-t border-slate-200 bg-white">
+        <p>This is a computer generated document. No signature is required if sent electronically.</p>
+        <p className="mt-1">© {new Date().getFullYear()} PMS Contracting. All rights reserved.</p>
       </div>
     </div>
     </>

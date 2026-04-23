@@ -29,10 +29,26 @@ export default function PurchasesPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
+  
+  const [userPerms, setUserPerms] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserPerms(u.permissions || []);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     fetchOrders();
   }, []);
+
+  const hasPermission = (perm: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    return userPerms.includes(perm);
+  };
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -68,11 +84,13 @@ export default function PurchasesPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/purchases/create" className="relative flex items-center gap-2 font-black py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white overflow-hidden hover:-translate-y-1">
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-            <PlusCircle size={20} className="group-hover:rotate-90 transition-transform relative z-10" />
-            <span className="relative z-10 text-sm">إنشاء طلب شراء (PO)</span>
-          </Link>
+          {hasPermission('PO_CREATE') && (
+            <Link href="/dashboard/purchases/create" className="relative flex items-center gap-2 font-black py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white overflow-hidden hover:-translate-y-1">
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <PlusCircle size={20} className="group-hover:rotate-90 transition-transform relative z-10" />
+              <span className="relative z-10 text-sm">إنشاء طلب شراء (PO)</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -192,56 +210,61 @@ export default function PurchasesPage() {
                     <td className="px-6 py-5 text-center">
                       {ord.status === 'PENDING' ? (
                         <div className="flex items-center justify-center gap-2">
-                          <button 
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if(!confirm("هل أنت متأكد من اعتماد طلب الشراء؟ (سيتم ترحيله إلى دفترة)")) return;
-                              try {
-                                await axios.patch(`${API_BASE_URL}/v1/purchases/${ord.id}/approve`, {}, {
-                                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                                });
-                                fetchOrders();
-                              } catch(err: any) {
-                                const errData = err.response?.data || err.message;
-                                alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
-                              }
-                            }}
-                            title="اعتماد وترحيل الشراء"
-                            className="p-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
-                          >
-                            <CheckCircle2 size={18} />
-                          </button>
+                          {hasPermission('PO_APPROVE') && (
+                            <button 
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if(!confirm("هل أنت متأكد من اعتماد طلب الشراء؟ (سيتم ترحيله إلى دفترة)")) return;
+                                try {
+                                  await axios.patch(`${API_BASE_URL}/v1/purchases/${ord.id}/approve`, {}, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                  });
+                                  fetchOrders();
+                                } catch(err: any) {
+                                  const errData = err.response?.data || err.message;
+                                  alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
+                                }
+                              }}
+                              title="اعتماد وترحيل الشراء"
+                              className="p-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
+                            >
+                              <CheckCircle2 size={18} />
+                            </button>
+                          )}
 
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              alert('شاشة التعديل قيد التطوير وستتوفر قريباً!');
-                              // router.push(`/dashboard/purchases/edit/${ord.id}`);
-                            }}
-                            title="تعديل طلب الشراء"
-                            className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if(!confirm("هل أنت متأكد من حذف وإلغاء طلب الشراء بشكل نهائي؟")) return;
-                              try {
-                                await axios.delete(`${API_BASE_URL}/v1/purchases/${ord.id}`, {
-                                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                                });
-                                fetchOrders();
-                              } catch(err: any) {
-                                alert("فشل الحذف. قد يكون الطلب معتمداً مسبقاً.");
-                              }
-                            }}
-                            title="إلغاء وحذف الطلب"
-                            className="p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          {hasPermission('PO_CREATE') && (
+                            <>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  alert('شاشة التعديل قيد التطوير وستتوفر قريباً!');
+                                }}
+                                title="تعديل طلب الشراء"
+                                className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
+                              >
+                                <Edit size={18} />
+                              </button>
+                              
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if(!confirm("هل أنت متأكد من حذف وإلغاء طلب الشراء بشكل نهائي؟")) return;
+                                  try {
+                                    await axios.delete(`${API_BASE_URL}/v1/purchases/${ord.id}`, {
+                                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                    });
+                                    fetchOrders();
+                                  } catch(err: any) {
+                                    alert("فشل الحذف. قد يكون الطلب معتمداً مسبقاً.");
+                                  }
+                                }}
+                                title="إلغاء وحذف الطلب"
+                                className="p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       ) : (
                         <div className="flex justify-center">

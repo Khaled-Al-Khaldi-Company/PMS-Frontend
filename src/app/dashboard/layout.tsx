@@ -62,8 +62,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { icon: FileSignature, label: "العقود والمقاولين", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
     { icon: Receipt, label: "المستخلصات", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
     { icon: Banknote, label: "العهد والمصروفات", path: "/dashboard/expenses", req: ["EXPENSE_CREATE", "EXPENSE_APPROVE"] },
+    { icon: PieChart, label: "أرباح وخسائر المشاريع (P&L)", path: "/dashboard/analytics", req: [] }, // Or restrict to Admin
     { icon: UserCircle, label: "العملاء والموردين", path: "/dashboard/contacts", req: ["PROJECT_MANAGE", "CONTRACT_CREATE", "PO_CREATE"] },
-    { icon: PieChart, label: "التقارير والاستعلامات", path: "/dashboard/reports", req: ["FINANCE_VIEW", "INVOICE_APPROVE"] },
     { icon: Building2, label: "بيانات هوية المنشأة الأساسية", path: "/dashboard/settings/company", req: ["MANAGE_USERS"] },
     { icon: Settings, label: "إعدادات دفترة (الربط)", path: "/dashboard/settings", req: ["MANAGE_USERS"] },
     { icon: UserCircle, label: "إدارة المستخدمين", path: "/dashboard/settings/users", req: ["MANAGE_USERS"] },
