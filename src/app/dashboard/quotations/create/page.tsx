@@ -19,10 +19,12 @@ import {
   ChevronDown,
   UserPlus,
   Search,
-  X
+  X,
+  LayoutTemplate
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import PrintHeader from "../../components/PrintHeader";
 
 export default function CreateQuotationPage() {
   const router = useRouter();
@@ -60,6 +62,10 @@ export default function CreateQuotationPage() {
   });
   const [isSubmittingClient, setIsSubmittingClient] = useState(false);
 
+  // ── Template State ────────────────────────────────────────────────
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -70,7 +76,19 @@ export default function CreateQuotationPage() {
         setClients(res.data || []);
       } catch {}
     };
+
+    const fetchTemplates = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${API_BASE_URL}/v1/quotation-templates`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTemplates(res.data || []);
+      } catch {}
+    };
+
     fetchClients();
+    fetchTemplates();
   }, []);
 
   // Close dropdown on outside click
@@ -400,7 +418,65 @@ export default function CreateQuotationPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/40 p-6 rounded-2xl border border-white/5 shadow-inner">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/40 p-6 rounded-2xl border border-white/5 shadow-inner relative">
+               {/* Template Selector Float */}
+               <div className="md:col-span-2 flex justify-end mb-2">
+                 <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={() => setShowTemplates(!showTemplates)}
+                      className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg"
+                    >
+                      <LayoutTemplate size={14} />
+                      {showTemplates ? 'إغلاق القوالب' : 'إدراج من قالب جاهز'}
+                    </button>
+
+                    <AnimatePresence>
+                      {showTemplates && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
+                        >
+                           <div className="p-3 border-b border-white/5 mb-1">
+                              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
+                           </div>
+                           <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                              {templates.length === 0 ? (
+                                <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
+                              ) : (
+                                templates.map(t => (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData({
+                                        ...formData,
+                                        technicalOffer: t.technicalOffer || "",
+                                        termsConditions: t.termsConditions || ""
+                                      });
+                                      setShowTemplates(false);
+                                    }}
+                                    className="w-full text-right p-3 hover:bg-white/5 rounded-xl transition-colors group"
+                                  >
+                                    <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-400">{t.name}</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{t.technicalOffer?.substring(0, 40)}...</p>
+                                  </button>
+                                ))
+                              )}
+                           </div>
+                           <div className="p-2 border-t border-white/5 mt-1">
+                              <a href="/dashboard/settings/templates" target="_blank" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
+                                إدارة القوالب ⚙️
+                              </a>
+                           </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                 </div>
+               </div>
+
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileText size={14} className="text-pink-400" />
@@ -542,16 +618,17 @@ export default function CreateQuotationPage() {
       <div className="hidden print-doc w-full p-8 sm:p-12 font-sans shadow-none">
         
         {/* Print Header */}
-        <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-end">
-           <div>
+        <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-end relative">
+           <div className="flex flex-col gap-1 mt-2">
              <h1 className="text-4xl font-black text-slate-900 mb-1 tracking-tight">عــرض ســعــر</h1>
-             <p className="text-lg font-bold text-slate-500">QUOTATION</p>
+             <p className="text-lg font-bold text-slate-500 mb-4">QUOTATION</p>
+             <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block">
+               <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
+               <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
+             </div>
            </div>
-           <div className="text-left font-bold text-sm text-slate-600">
-             <p className="text-xl font-bold text-indigo-700 mb-2">PMS Contracting Est.</p>
-             <p>Date: <span className="font-mono text-slate-900">{printMeta.date}</span></p>
-             <p>Ref: <span className="font-mono text-slate-900">{printMeta.ref}</span></p>
-           </div>
+           
+           <PrintHeader />
         </div>
 
         {/* Client & Project Info */}
@@ -566,14 +643,7 @@ export default function CreateQuotationPage() {
            </div>
         </div>
 
-        {formData.technicalOffer && (
-          <div className="mb-8 pl-2">
-            <h3 className="text-sm font-black text-slate-800 mb-2 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني:</h3>
-            <div className="text-xs text-slate-700 leading-relaxed font-bold whitespace-pre-wrap">
-              {formData.technicalOffer}
-            </div>
-          </div>
-        )}
+
 
         {/* Formal Table */}
         <table className="w-full text-right text-sm border-collapse mb-10">
@@ -623,14 +693,30 @@ export default function CreateQuotationPage() {
           </div>
         </div>
 
-        {formData.termsConditions && (
-          <div className="mb-10 bg-slate-50 p-6 border-2 border-slate-200 rounded-xl break-inside-avoid">
-            <h3 className="text-sm font-black text-slate-900 mb-3 flex items-center gap-2">
-              الشروط والأحكام (Terms & Conditions):
-            </h3>
-            <div className="text-xs text-slate-800 leading-loose font-bold whitespace-pre-wrap">
-              {formData.termsConditions}
-            </div>
+        {/* --- PAGE 2 --- */}
+        <div style={{ pageBreakBefore: 'always' }} className="pt-10"></div>
+        
+        {(formData.technicalOffer || formData.termsConditions) && (
+          <div className="mb-10">
+            {formData.technicalOffer && (
+              <div className="mb-8 pl-2">
+                <h3 className="text-sm font-black text-slate-800 mb-3 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني (Scope of Work):</h3>
+                <div className="text-xs text-slate-700 leading-relaxed font-bold whitespace-pre-wrap bg-white p-4 border border-slate-200 rounded-lg">
+                  {formData.technicalOffer}
+                </div>
+              </div>
+            )}
+
+            {formData.termsConditions && (
+              <div className="mb-10 bg-slate-50 p-6 border-2 border-slate-200 rounded-xl break-inside-avoid">
+                <h3 className="text-sm font-black text-slate-900 mb-3 flex items-center gap-2 border-b-2 border-slate-200 inline-block pb-1">
+                  الشروط والأحكام (Terms & Conditions):
+                </h3>
+                <div className="text-xs text-slate-800 leading-loose font-bold whitespace-pre-wrap mt-2">
+                  {formData.termsConditions}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

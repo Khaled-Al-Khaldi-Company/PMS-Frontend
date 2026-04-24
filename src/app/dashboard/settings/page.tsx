@@ -287,6 +287,21 @@ export default function SettingsPage() {
                   <LayoutTemplate size={16} />
                 </div>
               </a>
+
+              <a href="/dashboard/settings/templates" className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-all text-emerald-300 group shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shadow-inner">
+                    <LayoutTemplate size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white mb-0.5">قوالب عروض الأسعار</h3>
+                    <p className="text-xs text-slate-400">تحكم بنصوص المواصفات والشروط الجاهزة</p>
+                  </div>
+                </div>
+                <div className="text-slate-500 group-hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg group-hover:-translate-x-1 duration-300">
+                  <Save size={16} />
+                </div>
+              </a>
             </div>
           </div>
         </div>

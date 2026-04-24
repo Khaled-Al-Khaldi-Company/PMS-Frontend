@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw, FileSpreadsheet } from "lucide-react";
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
+import PrintHeader from "../../components/PrintHeader";
 
 export default function ViewPurchaseOrderPage() {
   const router = useRouter();
@@ -146,18 +147,7 @@ export default function ViewPurchaseOrderPage() {
              </div>
            </div>
            
-           <div className="text-left flex flex-col items-end">
-             <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
-               <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
-             </div>
-             <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
-             <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
-             <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
-             <div className="mt-2 text-xs text-slate-600 font-bold grid grid-cols-1 gap-1 text-right" dir="ltr">
-               <p>VAT No: <span className="font-mono">300000000000003</span></p>
-               <p>CR No: <span className="font-mono">1010101010</span></p>
-             </div>
-           </div>
+           <PrintHeader />
         </div>
 
         <div className="grid grid-cols-2 gap-8 mb-10 text-sm break-inside-avoid">
@@ -226,17 +216,31 @@ export default function ViewPurchaseOrderPage() {
         <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
           <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800 uppercase tracking-widest">الاعتمادات والموافقات (Approvals):</h3>
           <div className="grid grid-cols-3 gap-8 text-center text-sm">
-            <div>
-              <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">مُعِد الطلب / المشتريات (Procurement)</p>
-              <p className="text-slate-400">.......................................</p>
+            <div className="flex flex-col items-center">
+              <p className="font-bold text-slate-800 mb-4 uppercase tracking-widest text-xs">مُعِد الطلب / المشتريات (Procurement)</p>
+              <div className="border-2 border-slate-200 bg-slate-50 text-slate-700 p-2 rounded-xl inline-block text-center shadow-sm w-48 relative overflow-hidden">
+                <div className="absolute inset-0 bg-slate-100 opacity-50"></div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1 border-b border-slate-200 pb-1 relative z-10">مُسجل إلكترونياً (E-Prepared)</p>
+                <p className="text-xs font-black mt-1 relative z-10">{order.createdBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'مسؤول المشتريات'}</p>
+                <p className="text-[9px] font-mono mt-1 relative z-10">{new Date(order.createdAt).toLocaleDateString('en-GB')}</p>
+              </div>
             </div>
-            <div>
+            <div className="flex flex-col items-center">
               <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">المدير المالي (Finance Manager)</p>
-              <p className="text-slate-400">.......................................</p>
+              <p className="text-slate-400 w-full border-b-2 border-dashed border-slate-400 mt-auto"></p>
             </div>
-            <div>
-               <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">الاعتماد النهائي (General Manager)</p>
-               <p className="text-slate-400">.......................................</p>
+            <div className="flex flex-col items-center">
+               <p className="font-bold text-slate-800 mb-4 uppercase tracking-widest text-xs">الاعتماد النهائي (General Manager)</p>
+               {order.status === 'APPROVED' ? (
+                 <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
+                   <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
+                   <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
+                   <p className="text-sm font-black mt-1 relative z-10">{order.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير العام'}</p>
+                   <p className="text-[9px] font-mono mt-1 relative z-10">{order.approvedAt ? new Date(order.approvedAt).toLocaleString('en-GB') : new Date(order.updatedAt).toLocaleString('en-GB')}</p>
+                 </div>
+               ) : (
+                 <p className="text-slate-400 w-full border-b-2 border-dashed border-slate-400 mt-auto"></p>
+               )}
             </div>
           </div>
         </div>

@@ -69,10 +69,23 @@ export default function EditInvoicePage() {
       setDraftQuantities(draftMap);
       setExecutionData(execMap);
 
-      const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${fetchedInvoice.projectId}/boq`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBoqItems(resBoq.data);
+      if (fetchedInvoice.contract?.items && fetchedInvoice.contract.items.length > 0) {
+        const mappedItems = fetchedInvoice.contract.items.map((ci: any) => ({
+          id: ci.boqItemId,
+          itemCode: ci.boqItem?.itemCode,
+          description: ci.boqItem?.description,
+          unit: ci.boqItem?.unit,
+          quantity: ci.assignedQty,
+          unitPrice: ci.unitPrice,
+          executedQty: ci.boqItem?.executedQty || 0
+        }));
+        setBoqItems(mappedItems);
+      } else {
+        const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${fetchedInvoice.projectId}/boq`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setBoqItems(resBoq.data);
+      }
       
     } catch (err) {
       console.error(err);

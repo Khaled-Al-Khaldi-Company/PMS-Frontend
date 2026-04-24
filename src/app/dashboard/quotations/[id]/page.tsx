@@ -18,11 +18,13 @@ import {
   ScrollText,
   Wand2,
   CheckCircle2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  LayoutTemplate
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
+import PrintHeader from "../../components/PrintHeader";
 
 export default function EditQuotationPage() {
   const router = useRouter();
@@ -44,8 +46,16 @@ export default function EditQuotationPage() {
     termsConditions: "",
     status: "DRAFT",
     projectId: null as string | null,
+    createdBy: "",
+    approvedBy: "",
+    approvedAt: "",
+    createdAt: "",
+    updatedAt: "",
     items: [{ itemCode: "01", description: "", unit: "م٢", quantity: 1, unitPrice: 0 }]
   });
+
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -60,7 +70,18 @@ export default function EditQuotationPage() {
     if (quotationId) {
       fetchQuotation();
     }
+    fetchTemplates();
   }, [quotationId]);
+
+  const fetchTemplates = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/quotation-templates`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTemplates(res.data || []);
+    } catch {}
+  };
 
   const hasPermission = (perm: string) => {
     if (userRole === "Admin" || userRole === "System Admin") return true;
@@ -83,6 +104,11 @@ export default function EditQuotationPage() {
         termsConditions: q.termsConditions || "",
         status: q.status || "DRAFT",
         projectId: q.projectId || null,
+        createdBy: q.createdBy || "",
+        approvedBy: q.approvedBy || "",
+        approvedAt: q.approvedAt || "",
+        createdAt: q.createdAt || "",
+        updatedAt: q.updatedAt || "",
         items: q.items?.length > 0 ? q.items.map((i: any) => ({
           itemCode: i.itemCode,
           description: i.description,
@@ -176,6 +202,23 @@ export default function EditQuotationPage() {
     }
   };
 
+  const handleDeleteQuotation = async () => {
+    if (!confirm("هل أنت متأكد من حذف عرض السعر بشكل نهائي؟ هذا الإجراء لا يمكن التراجع عنه.")) return;
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/v1/quotations/${quotationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("تم حذف عرض السعر بنجاح.");
+      router.push("/dashboard/quotations");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "فشل حذف عرض السعر.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -201,6 +244,8 @@ export default function EditQuotationPage() {
       </div>
     );
   }
+
+  const isEditable = formData.status !== 'APPROVED' || hasPermission('QUOTATION_FORCE_EDIT');
 
   return (
     <>
@@ -263,9 +308,14 @@ export default function EditQuotationPage() {
               <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold transition-all shadow-lg text-sm">
                 <Printer size={18} /> معاينة وطباعة PDF
               </button>
-              {hasPermission('QUOTATION_CREATE') && (
+              {isEditable && hasPermission('QUOTATION_CREATE') && (
                 <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
                   {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحديث البيانات
+                </button>
+              )}
+              {formData.status === 'APPROVED' && hasPermission('QUOTATION_FORCE_DELETE') && (
+                <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
+                  <Trash2 size={18} /> حذف العرض
                 </button>
               )}
             </div>
@@ -285,9 +335,10 @@ export default function EditQuotationPage() {
                 <input 
                   type="text" 
                   required 
+                  disabled={!isEditable}
                   value={formData.clientName} 
                   onChange={e => setFormData({...formData, clientName: e.target.value})} 
-                  className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-base placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner" 
+                  className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-base placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                 />
               </div>
 
@@ -299,9 +350,10 @@ export default function EditQuotationPage() {
                 <input 
                   type="text" 
                   required 
+                  disabled={!isEditable}
                   value={formData.title} 
                   onChange={e => setFormData({...formData, title: e.target.value})} 
-                  className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-base placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner" 
+                  className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-base placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                 />
               </div>
 
@@ -309,16 +361,76 @@ export default function EditQuotationPage() {
                 <label className="flex items-center gap-3 bg-slate-950/80 border border-slate-800 p-4 rounded-xl cursor-pointer hover:border-indigo-500/30 transition-colors w-max">
                   <input 
                     type="checkbox" 
+                    disabled={!isEditable}
                     checked={formData.hasVat} 
                     onChange={e => setFormData({...formData, hasVat: e.target.checked})}
-                    className="w-5 h-5 rounded accent-indigo-500 border-slate-700" 
+                    className={`w-5 h-5 rounded accent-indigo-500 border-slate-700 ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                   />
-                  <span className="font-bold text-white text-sm">تطبيق ضريبة القيمة المضافة 15% 🇸🇦</span>
+                  <span className={`font-bold text-sm ${!isEditable ? 'text-slate-400' : 'text-white'}`}>تطبيق ضريبة القيمة المضافة 15% 🇸🇦</span>
                 </label>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/40 p-6 rounded-2xl border border-white/5 shadow-inner">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/40 p-6 rounded-2xl border border-white/5 shadow-inner relative">
+               {/* Template Selector Float */}
+               <div className="md:col-span-2 flex justify-end mb-2">
+                 <div className="relative">
+                    <button 
+                      type="button"
+                      disabled={!isEditable}
+                      onClick={() => setShowTemplates(!showTemplates)}
+                      className={`flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg ${!isEditable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <LayoutTemplate size={14} />
+                      {showTemplates ? 'إغلاق القوالب' : 'إدراج من قالب جاهز'}
+                    </button>
+
+                    <AnimatePresence>
+                      {showTemplates && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
+                        >
+                           <div className="p-3 border-b border-white/5 mb-1">
+                              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
+                           </div>
+                           <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                              {templates.length === 0 ? (
+                                <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
+                              ) : (
+                                templates.map(t => (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData({
+                                        ...formData,
+                                        technicalOffer: t.technicalOffer || "",
+                                        termsConditions: t.termsConditions || ""
+                                      });
+                                      setShowTemplates(false);
+                                    }}
+                                    className="w-full text-right p-3 hover:bg-white/5 rounded-xl transition-colors group"
+                                  >
+                                    <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-400">{t.name}</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{t.technicalOffer?.substring(0, 40)}...</p>
+                                  </button>
+                                ))
+                              )}
+                           </div>
+                           <div className="p-2 border-t border-white/5 mt-1">
+                              <a href="/dashboard/settings/templates" target="_blank" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
+                                إدارة القوالب ⚙️
+                              </a>
+                           </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                 </div>
+               </div>
+
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileText size={14} className="text-indigo-400" />
@@ -326,9 +438,10 @@ export default function EditQuotationPage() {
                 </label>
                 <textarea 
                   rows={4}
+                  disabled={!isEditable}
                   value={formData.technicalOffer} 
                   onChange={e => setFormData({...formData, technicalOffer: e.target.value})} 
-                  className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px]" 
+                  className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px] ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                   placeholder="مثال: يختص هذا العرض بتوريد وتركيب الأنظمة الموضحة بالجدول بموجب المواصفات العالمية المعتمدة..." 
                 />
               </div>
@@ -340,9 +453,10 @@ export default function EditQuotationPage() {
                 </label>
                 <textarea 
                   rows={4}
+                  disabled={!isEditable}
                   value={formData.termsConditions} 
                   onChange={e => setFormData({...formData, termsConditions: e.target.value})} 
-                  className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px]" 
+                  className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px] ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                   placeholder="مثال: مدة التنفيذ 45 يوماً من تاريخ استلام الدفعة المقدمة. الدفعة المقدمة 50%..." 
                 />
               </div>
@@ -354,9 +468,11 @@ export default function EditQuotationPage() {
                   <ListOrdered className="text-indigo-400" size={24} />
                   جداول التكلفة التفصيلية
                 </h3>
-                <button type="button" onClick={handleAddItem} className="flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/20 hover:border-indigo-500 px-4 py-2 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.5)]">
-                  <Plus size={18} /> إدراج بند جديد
-                </button>
+                {isEditable && (
+                  <button type="button" onClick={handleAddItem} className="flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/20 hover:border-indigo-500 px-4 py-2 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+                    <Plus size={18} /> إدراج بند جديد
+                  </button>
+                )}
               </div>
 
               <div className="hidden lg:grid grid-cols-12 gap-4 px-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">
@@ -380,10 +496,10 @@ export default function EditQuotationPage() {
                        <input type="text" value={item.itemCode} onChange={e => handleItemChange(index, "itemCode", e.target.value)} className="w-full bg-slate-900/80 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-500 font-mono font-bold" readOnly />
                     </div>
                     <div className="col-span-1 lg:col-span-4">
-                       <input type="text" required value={item.description} onChange={e => handleItemChange(index, "description", e.target.value)} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium" />
+                       <input type="text" required disabled={!isEditable} value={item.description} onChange={e => handleItemChange(index, "description", e.target.value)} className={`w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} />
                     </div>
                     <div className="col-span-1 lg:col-span-2">
-                       <input type="text" required list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all" />
+                       <input type="text" required disabled={!isEditable} list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} className={`w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} />
                        <datalist id={`units-list-${index}`}>
                          <option value="م٢" />
                          <option value="م.ط" />
@@ -400,18 +516,20 @@ export default function EditQuotationPage() {
                        </datalist>
                     </div>
                     <div className="col-span-1">
-                       <input type="number" required min="1" step="any" value={item.quantity || ''} onChange={e => handleItemChange(index, "quantity", Number(e.target.value))} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-2 text-sm text-center text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all" />
+                       <input type="number" required disabled={!isEditable} min="1" step="any" value={item.quantity || ''} onChange={e => handleItemChange(index, "quantity", Number(e.target.value))} className={`w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-2 text-sm text-center text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} />
                     </div>
                     <div className="col-span-1 lg:col-span-2">
-                       <input type="number" required min="0" step="any" value={item.unitPrice || ''} onChange={e => handleItemChange(index, "unitPrice", Number(e.target.value))} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-rose-300 font-mono font-bold focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all" />
+                       <input type="number" required disabled={!isEditable} min="0" step="any" value={item.unitPrice || ''} onChange={e => handleItemChange(index, "unitPrice", Number(e.target.value))} className={`w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-rose-300 font-mono font-bold focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} />
                     </div>
                     <div className="col-span-1 lg:col-span-2 flex items-center gap-2">
                       <div className="flex-1 bg-slate-900/80 py-2.5 px-3 rounded-lg text-left font-black text-white font-mono text-sm border border-slate-700/50 shadow-inner group-hover:bg-slate-800 transition-colors">
                         {(item.quantity * item.unitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
-                      <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title="حذف البند">
-                        <Trash2 size={18} />
-                      </button>
+                      {isEditable && (
+                        <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title="حذف البند">
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
@@ -462,18 +580,7 @@ export default function EditQuotationPage() {
              </div>
            </div>
            
-           <div className="text-left flex flex-col items-end">
-             <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
-               <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
-             </div>
-             <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
-             <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
-             <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
-             <div className="mt-2 text-xs text-slate-600 font-bold grid grid-cols-1 gap-1 text-right" dir="ltr">
-               <p>VAT No: <span className="font-mono">300000000000003</span></p>
-               <p>CR No: <span className="font-mono">1010101010</span></p>
-             </div>
-           </div>
+           <PrintHeader />
         </div>
 
         <div className="mb-10 grid grid-cols-2 gap-8 text-sm">
@@ -487,14 +594,7 @@ export default function EditQuotationPage() {
            </div>
         </div>
 
-         {formData.technicalOffer && (
-           <div className="mb-8 pl-2">
-             <h3 className="text-sm font-black text-slate-800 mb-2 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني:</h3>
-             <div className="text-xs text-slate-700 leading-relaxed font-bold whitespace-pre-wrap">
-               {formData.technicalOffer}
-             </div>
-           </div>
-         )}
+
 
         <table className="w-full text-right text-sm border-collapse mb-10">
           <thead>
@@ -542,25 +642,50 @@ export default function EditQuotationPage() {
           </div>
         </div>
 
-        {formData.termsConditions && (
-          <div className="mb-10 bg-slate-50 p-6 border-2 border-slate-200 rounded-xl break-inside-avoid">
-            <h3 className="text-sm font-black text-slate-900 mb-3 flex items-center gap-2">
-              الشروط والأحكام (Terms & Conditions):
-            </h3>
-            <div className="text-xs text-slate-800 leading-loose font-bold whitespace-pre-wrap">
-              {formData.termsConditions}
-            </div>
+        {/* --- PAGE 2 --- */}
+        <div style={{ pageBreakBefore: 'always' }} className="pt-10"></div>
+        
+        {(formData.technicalOffer || formData.termsConditions) && (
+          <div className="mb-10">
+            {formData.technicalOffer && (
+              <div className="mb-8 pl-2">
+                <h3 className="text-sm font-black text-slate-800 mb-3 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني (Scope of Work):</h3>
+                <div className="text-xs text-slate-700 leading-relaxed font-bold whitespace-pre-wrap bg-white p-4 border border-slate-200 rounded-lg">
+                  {formData.technicalOffer}
+                </div>
+              </div>
+            )}
+
+            {formData.termsConditions && (
+              <div className="mb-10 bg-slate-50 p-6 border-2 border-slate-200 rounded-xl break-inside-avoid">
+                <h3 className="text-sm font-black text-slate-900 mb-3 flex items-center gap-2 border-b-2 border-slate-200 inline-block pb-1">
+                  الشروط والأحكام (Terms & Conditions):
+                </h3>
+                <div className="text-xs text-slate-800 leading-loose font-bold whitespace-pre-wrap mt-2">
+                  {formData.termsConditions}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-8">
-          <div>
-            <p className="mb-12">المدير العام (General Manager)</p>
-            <p className="border-t border-slate-900 border-dashed pt-2 mx-6">التوقيع والختم</p>
+          <div className="flex flex-col items-center">
+            <p className="mb-4 text-slate-800 font-black">المدير العام (General Manager)</p>
+            {formData.status === 'APPROVED' ? (
+               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
+                 <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
+                 <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير العام'}</p>
+                 <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
+               </div>
+            ) : (
+               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
+            )}
           </div>
-          <div>
+          <div className="flex flex-col items-center">
             <p className="mb-12">موافقة العميل (Client Approval)</p>
-            <p className="border-t border-slate-900 border-dashed pt-2 mx-6">Signature / Stamp</p>
+            <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">Signature / Stamp</p>
           </div>
         </div>
       </div>

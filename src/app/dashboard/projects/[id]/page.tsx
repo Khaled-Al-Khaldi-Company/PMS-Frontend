@@ -34,7 +34,7 @@ export default function ProjectDashboardPage() {
   
   const [project, setProject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOQ' | 'CONTRACTS' | 'DAFTRA'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOQ' | 'CONTRACTS' | 'DAFTRA' | 'DPR'>('OVERVIEW');
 
   // BOQ ADD STATE
   const [isBoqModalOpen, setIsBoqModalOpen] = useState(false);
@@ -120,10 +120,20 @@ export default function ProjectDashboardPage() {
     ?.filter((inv: any) => inv.status === 'CERTIFIED')
     .reduce((acc: number, inv: any) => acc + Number(inv.grossAmount || 0), 0) || 0;
 
-  // Real cost = sum of certified invoice net amounts (what we pay to subcontractors)
-  const totalCertifiedCost = project.invoices
+  // Real cost = sum of certified invoice net amounts + POs + Expenses
+  const subcontractorCost = project.invoices
     ?.filter((inv: any) => inv.status === 'CERTIFIED')
     .reduce((acc: number, inv: any) => acc + Number(inv.netAmount || 0), 0) || 0;
+
+  const poCost = project.purchaseOrders
+    ?.filter((po: any) => po.status !== 'CANCELLED')
+    .reduce((acc: number, po: any) => acc + Number(po.netAmount || po.totalAmount || 0), 0) || 0;
+
+  const expensesCost = project.expenses
+    ?.filter((exp: any) => exp.status !== 'REJECTED')
+    .reduce((acc: number, exp: any) => acc + Number(exp.amount || 0), 0) || 0;
+
+  const totalCertifiedCost = subcontractorCost + poCost + expensesCost;
 
   const certifiedInvoicesCount = project.invoices?.filter((inv: any) => inv.status === 'CERTIFIED').length || 0;
 
@@ -176,6 +186,7 @@ export default function ProjectDashboardPage() {
           { id: 'BOQ', label: 'بنود الأعمال (BOQ)', icon: ClipboardList, badge: project.boqItems?.length },
           { id: 'CONTRACTS', label: 'العقود (رئيسي / باطن)', icon: FileSignature, badge: project.contracts?.length },
           { id: 'DAFTRA', label: 'مزامنة دفترة (ERP)', icon: Activity, badge: 'Live' },
+          { id: 'DPR', label: 'التقارير اليومية', icon: FileText, badge: project.dailyReports?.length || 0 },
         ].map(tab => (
           <button
             key={tab.id}
@@ -404,24 +415,9 @@ export default function ProjectDashboardPage() {
                   <div className="bg-slate-900/50 rounded-2xl p-4 border border-white/5 shadow-inner">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">إجمالي العقد المتفق عليه</p>
                     <p className={`text-lg font-black font-mono ${isMain ? 'text-amber-300' : 'text-indigo-300'}`}>
-                      SAR {Number(contract.totalValue).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                );
-              }) : (
-                <div className="col-span-full min-h-[40vh] flex flex-col items-center justify-center text-slate-500 glass-dark rounded-3xl border border-white/5 px-4 text-center">
-                  <FileSignature size={48} className="mb-4 opacity-50 text-indigo-500" />
-                  <p className="text-lg font-bold text-slate-300 mb-1">لا توجد عقود لتنفيذ المشروع بعد</p>
-                  <p className="text-sm">يمكنك البدء بإرساء بنود الأعمال وإصدار عقود لمقاولي الباطن.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* DAFTRA TAB */}
-          {activeTab === 'DAFTRA' && (
-            <div className="space-y-6">
+                      SAR {Number           {/* DAFTRA TAB */}
+           {activeTab === 'DAFTRA' && (
+             <div className="space-y-6">
                <div className="glass-dark border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
                  <div>
@@ -450,11 +446,25 @@ export default function ProjectDashboardPage() {
                   </div>
 
                   {/* Cost Card */}
-                  <div className="glass p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-rose-500/30 transition-colors">
+                  <div className="glass p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-rose-500/30 transition-colors flex flex-col justify-between">
                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all" />
-                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">تكاليف المقاولين (فواتير مشتريات)</h3>
-                     <p className="text-3xl font-mono font-black text-white mb-1"><span className="text-sm text-rose-500 mr-1">SAR</span>{totalCertifiedCost.toLocaleString('en-US', {maximumFractionDigits:0})}</p>
-                     <p className="text-xs text-rose-400 font-bold flex items-center gap-1"><TrendingDown size={14} /> -مصاريف مقاولي الباطن</p>
+                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">تكاليف المشروع الفعلية (مشتريات ومقاولين)</h3>
+                     <p className="text-3xl font-mono font-black text-white mb-2"><span className="text-sm text-rose-500 mr-1">SAR</span>{totalCertifiedCost.toLocaleString('en-US', {maximumFractionDigits:0})}</p>
+                     
+                     <div className="space-y-1.5 mt-2 border-t border-white/5 pt-3">
+                       <div className="flex justify-between items-center text-[11px] font-bold">
+                         <span className="text-slate-500 flex items-center gap-1.5"><HardHat size={12}/> مقاولي باطن:</span>
+                         <span className="text-rose-400 font-mono text-xs">{subcontractorCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-[11px] font-bold">
+                         <span className="text-slate-500 flex items-center gap-1.5"><ClipboardList size={12}/> أوامر شراء (مواد):</span>
+                         <span className="text-rose-400 font-mono text-xs">{poCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-[11px] font-bold">
+                         <span className="text-slate-500 flex items-center gap-1.5"><Wallet size={12}/> مصروفات ونثريات:</span>
+                         <span className="text-rose-400 font-mono text-xs">{expensesCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                       </div>
+                     </div>
                   </div>
 
                   {/* Profitability Card */}
@@ -490,8 +500,73 @@ export default function ProjectDashboardPage() {
                    </p>
                  </div>
                </div>
-            </div>
-          )}
+             </div>
+           )}
+
+           {/* DPR TAB */}
+           {activeTab === 'DPR' && (
+             <div className="glass-dark border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden min-h-[50vh]">
+               <div className="flex justify-between items-center mb-8 pb-6 border-b border-white/5">
+                 <div>
+                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                     <FileText className="text-amber-500" size={24} /> 
+                     التقارير اليومية للموقع (DPR)
+                   </h2>
+                   <p className="text-sm text-slate-400 mt-1">سجل يومي دقيق لعدد العمالة والمعدات والإنجازات بالموقع.</p>
+                 </div>
+                 <Link href={`/dashboard/projects/${projectId}/dpr/create`} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg hover:-translate-y-0.5 text-sm">
+                   <Plus size={18} /> تقرير جديد
+                 </Link>
+               </div>
+
+               {project.dailyReports?.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   {project.dailyReports.map((report: any) => (
+                     <div key={report.id} className="glass border border-white/5 rounded-2xl p-5 hover:border-amber-500/30 transition-all group">
+                       <div className="flex justify-between items-center mb-3">
+                         <span className="text-xs font-mono font-bold bg-slate-900 text-slate-300 px-3 py-1 rounded-lg border border-white/5">
+                           {new Date(report.reportDate).toLocaleDateString('ar-SA')}
+                         </span>
+                         <span className="text-[10px] uppercase tracking-widest font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                           {report.status}
+                         </span>
+                       </div>
+                       
+                       <div className="space-y-4 mb-4">
+                         <p className="text-sm text-white line-clamp-2" title={report.workPerformed}>
+                           {report.workPerformed || "لم يتم تدوين أعمال"}
+                         </p>
+                         
+                         <div className="grid grid-cols-2 gap-3">
+                           <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                             <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><User size={10}/> عمالة</p>
+                             <p className="font-bold font-mono text-blue-300">{report.labors?.reduce((sum: number, l: any) => sum + l.count, 0) || 0} فرد</p>
+                           </div>
+                           <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                             <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><HardHat size={10}/> معدات</p>
+                             <p className="font-bold font-mono text-amber-300">{report.equipments?.reduce((sum: number, e: any) => sum + e.count, 0) || 0} آلية</p>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <div className="flex justify-between items-center pt-3 border-t border-white/5">
+                         <span className="text-xs text-slate-500">{report.createdBy || 'المهندس'}</span>
+                         <button className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
+                           <FileText size={12} /> عرض
+                         </button>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="flex flex-col items-center justify-center text-slate-500 min-h-[30vh]">
+                   <FileText size={48} className="mb-4 opacity-50 text-amber-500" />
+                   <p className="text-lg font-bold text-slate-300 mb-1">لا توجد تقارير يومية حتى الآن</p>
+                   <p className="text-sm">قم بتسجيل التقرير الأول اليوم لتتبع سير العمل.</p>
+                 </div>
+               )}
+             </div>
+           )}
 
         </motion.div>
       </AnimatePresence>

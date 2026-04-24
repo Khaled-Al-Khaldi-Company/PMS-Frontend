@@ -44,10 +44,23 @@ function InvoiceCreateContent() {
       });
       setContractDetails(resContract.data);
 
-      const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}/boq`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBoqItems(resBoq.data);
+      if (resContract.data?.items && resContract.data.items.length > 0) {
+        const mappedItems = resContract.data.items.map((ci: any) => ({
+          id: ci.boqItemId,
+          itemCode: ci.boqItem?.itemCode,
+          description: ci.boqItem?.description,
+          unit: ci.boqItem?.unit,
+          quantity: ci.assignedQty,
+          unitPrice: ci.unitPrice,
+          executedQty: ci.boqItem?.executedQty || 0
+        }));
+        setBoqItems(mappedItems);
+      } else {
+        const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${projectId}/boq`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setBoqItems(resBoq.data);
+      }
     } catch (err) {
       console.error(err);
       alert("حدث خطأ أثناء تحميل البيانات.");

@@ -16,6 +16,7 @@ import {
   FileSpreadsheet
 } from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
+import PrintHeader from "../components/PrintHeader";
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -285,14 +286,7 @@ export default function ExpensesPage() {
            </div>
          </div>
          
-         <div className="text-left flex flex-col items-end">
-           <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
-             <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
-           </div>
-           <h3 className="font-black text-xl text-slate-900 uppercase">PMS Contracting Est.</h3>
-           <p className="text-xs text-slate-600 font-bold mt-1">مؤسسة إدارة المشاريع للمقاولات</p>
-           <p className="text-xs text-slate-500 mt-1">شارع العليا، الرياض، المملكة العربية السعودية</p>
-         </div>
+          <PrintHeader />
       </div>
 
       <table className="w-full text-right border-collapse mb-8 print:w-full">
@@ -336,17 +330,22 @@ export default function ExpensesPage() {
       <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
         <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800 uppercase tracking-widest">التوقيعات والاعتمادات (Approvals):</h3>
         <div className="grid grid-cols-3 gap-8 text-center text-sm">
-          <div>
-            <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">إعداد / صاحب العهدة (Prepared By)</p>
-            <p className="text-slate-400">.....................................................</p>
+          <div className="flex flex-col items-center">
+            <p className="font-bold text-slate-800 mb-4 uppercase tracking-widest text-xs">إعداد / صاحب العهدة (Prepared By)</p>
+            <div className="border-2 border-slate-200 bg-slate-50 text-slate-700 p-2 rounded-xl inline-block text-center shadow-sm w-48 relative overflow-hidden">
+              <div className="absolute inset-0 bg-slate-100 opacity-50"></div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1 border-b border-slate-200 pb-1 relative z-10">مُسجل إلكترونياً (E-Prepared)</p>
+              <p className="text-xs font-black mt-1 relative z-10">{(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'مسؤول المصروفات'}</p>
+              <p className="text-[9px] font-mono mt-1 relative z-10">{new Date().toLocaleDateString('en-GB')}</p>
+            </div>
           </div>
-          <div>
+          <div className="flex flex-col items-center">
             <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">المراجعة (قسم الحسابات / Finance)</p>
-            <p className="text-slate-400">.....................................................</p>
+            <p className="text-slate-400 w-full border-b-2 border-dashed border-slate-400 mt-auto"></p>
           </div>
-          <div>
+          <div className="flex flex-col items-center">
             <p className="font-bold text-slate-800 mb-16 uppercase tracking-widest text-xs">اعتماد الإدارة العليا (General Manager)</p>
-            <p className="text-slate-400">.....................................................</p>
+            <p className="text-slate-400 w-full border-b-2 border-dashed border-slate-400 mt-auto"></p>
           </div>
         </div>
       </div>
