@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for the Modular Monolith
+  postgres:
+    image: postgres:15-alpine
+    container_name: erp_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: erp_user
+      POSTGRES_PASSWORD: erp_password
+      POSTGRES_DB: erp_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis for Caching and Background Jobs (Daftra Sync)
+  redis:
+    image: redis:7-alpine
+    container_name: erp_redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
