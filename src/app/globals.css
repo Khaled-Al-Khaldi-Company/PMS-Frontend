@@ -140,7 +140,7 @@
    */
   .print-on-letterhead {
     /* الورقة كخلفية */
-    background-image: url('/company_letterhead_1778702088189.png') !important;
+    background-image: url('/letterhead.png') !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
     background-attachment: fixed !important;
