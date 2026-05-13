@@ -7,6 +7,7 @@ import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw,
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
 import PrintHeader from "../../components/PrintHeader";
+import PrintFooter from "../../components/PrintFooter";
 
 export default function ViewPurchaseOrderPage() {
   const router = useRouter();
@@ -245,10 +246,9 @@ export default function ViewPurchaseOrderPage() {
           </div>
         </div>
         
-        {/* Print Footer */}
-        <div className="fixed bottom-0 left-0 w-full text-center text-[10px] text-slate-400 font-medium py-4 border-t border-slate-200 bg-white">
-          <p>This is a computer generated document. No signature is required if sent electronically.</p>
-          <p className="mt-1">© {new Date().getFullYear()} PMS Contracting. All rights reserved.</p>
+        {/* Print Footer — الورقة الرسمية */}
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
         </div>
       </div>
     </>

@@ -26,6 +26,7 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
 import PrintHeader from "../../components/PrintHeader";
+import PrintFooter from "../../components/PrintFooter";
 
 export default function EditQuotationPage() {
   const router = useRouter();
@@ -712,6 +713,11 @@ export default function EditQuotationPage() {
             <p className="mb-12">موافقة العميل (Client Approval)</p>
             <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">Signature / Stamp</p>
           </div>
+        </div>
+
+        {/* Print Footer — الورقة الرسمية */}
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
         </div>
       </div>
     </>

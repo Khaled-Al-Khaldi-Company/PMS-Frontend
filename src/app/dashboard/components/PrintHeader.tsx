@@ -1,53 +1,49 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
+/**
+ * PrintHeader — الترويسة الرسمية لشركة خالد حمد الخالدي للمقاولات
+ * تُستخدم في جميع النماذج المطبوعة: المستخلصات، العقود، عروض الأسعار، أوامر الشراء
+ */
 export default function PrintHeader() {
-  const [company, setCompany] = useState<any>({
-    nameAr: "مؤسسة إدارة المشاريع للمقاولات",
-    nameEn: "PMS Contracting Est.",
-    address: "شارع العليا، الرياض، المملكة العربية السعودية",
-    taxNumber: "300000000000003",
-    crNumber: "1010101010",
-    logoUrl: ""
-  });
-
-  useEffect(() => {
-    const fetchCompany = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/v1/settings/company`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.data) {
-          setCompany(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch company profile", err);
-      }
-    };
-    fetchCompany();
-  }, []);
-
   return (
-    <div className="text-left flex flex-col items-end">
-      {company.logoUrl ? (
-        <img src={company.logoUrl} alt="Company Logo" className="w-48 h-16 object-contain mb-3" />
-      ) : (
-        <div className="w-48 h-16 bg-slate-50 border-2 border-slate-200 rounded flex items-center justify-center mb-3 shadow-sm">
-          <span className="font-black text-xl text-slate-400 tracking-wider">LOGO</span>
+    <div className="w-full" dir="rtl">
+      {/* ====== الترويسة الرسمية ====== */}
+      <div className="flex items-center justify-between w-full pb-3">
+
+        {/* يمين: الاسم بالعربية */}
+        <div className="text-right">
+          <p className="text-[22px] font-black text-[#1a3a6b] leading-tight tracking-wide">
+            شركة خالد حمد الخالدي
+          </p>
+          <p className="text-[16px] font-bold text-[#1a3a6b] tracking-widest">
+            للمقاولات
+          </p>
         </div>
-      )}
-      <h3 className="font-black text-xl text-slate-900 uppercase">{company.nameEn || "PMS Contracting Est."}</h3>
-      <p className="text-xs text-slate-600 font-bold mt-1">{company.nameAr || "مؤسسة إدارة المشاريع للمقاولات"}</p>
-      {company.address && <p className="text-xs text-slate-500 mt-1">{company.address}</p>}
-      <div className="mt-2 text-xs text-slate-600 font-bold grid grid-cols-1 gap-1 text-right" dir="ltr">
-        {company.taxNumber && <p>VAT No: <span className="font-mono">{company.taxNumber}</span></p>}
-        {company.crNumber && <p>CR No: <span className="font-mono">{company.crNumber}</span></p>}
+
+        {/* وسط: الشعار */}
+        <div className="flex items-center justify-center mx-4">
+          <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* المستطيل الرأسي */}
+            <rect x="42" y="4" width="18" height="52" fill="#1a3a6b" />
+            {/* السهم/الشكل الهندسي */}
+            <path d="M38 30 L20 8 L20 20 L4 20 L4 40 L20 40 L20 52 Z" fill="#1a3a6b" />
+          </svg>
+        </div>
+
+        {/* يسار: الاسم بالإنجليزية */}
+        <div className="text-left">
+          <p className="text-[18px] font-black text-[#1a3a6b] leading-tight tracking-wide">
+            Khalid H. Al Khaldi Company
+          </p>
+          <p className="text-[14px] font-bold text-[#1a3a6b] tracking-widest">
+            For Contracting
+          </p>
+        </div>
+
       </div>
+
+      {/* خط فاصل أزرق */}
+      <div className="w-full h-[3px] bg-[#1a3a6b]" />
     </div>
   );
 }
