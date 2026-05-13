@@ -8,6 +8,7 @@ import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
+import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function ViewPurchaseOrderPage() {
   const router = useRouter();
@@ -133,22 +134,18 @@ export default function ViewPurchaseOrderPage() {
         </div>
       </div>
 
-      {/* PRINT VIEW (Professional PO) */}
-      <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
-        {/* Professional Header */}
-        <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
-           <div className="absolute top-0 right-0 w-full h-1 bg-rose-600 rounded-t"></div>
-           <div className="flex flex-col gap-1 mt-2 text-right">
-             <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">أمــر شــراء</h1>
-             <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Purchase Order (PO)</h2>
-             
-             <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block text-right">
-               <p className="text-sm font-bold text-slate-800">رقم الأمر (PO No): <span className="font-mono text-rose-700">#{order.poNumber}</span></p>
-               <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(order.issueDate).toLocaleDateString('en-GB')}</span></p>
-             </div>
-           </div>
-           
-           <PrintHeader />
+      {/* PRINT VIEW */}
+      <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+        {/* ===== الورقة الرسمية كخلفية ===== */}
+        <PrintLetterhead />
+
+        {/* ===== البيانات فوق الورقة ===== */}
+        <div className="mb-8">
+          <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200 text-right">
+            <p className="text-sm font-bold text-slate-800">رقم الأمر (PO No): <span className="font-mono text-rose-700">#{order.poNumber}</span></p>
+            <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(order.issueDate).toLocaleDateString('en-GB')}</span></p>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 mt-3">أمر شراء — Purchase Order</h1>
         </div>
 
         <div className="grid grid-cols-2 gap-8 mb-10 text-sm break-inside-avoid">

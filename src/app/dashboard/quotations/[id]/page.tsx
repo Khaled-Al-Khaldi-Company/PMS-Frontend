@@ -27,6 +27,7 @@ import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
+import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function EditQuotationPage() {
   const router = useRouter();
@@ -591,22 +592,17 @@ export default function EditQuotationPage() {
         </motion.div>
       </div>
 
-      {/* PRINT ONLY */}
-      <div className="hidden print:block print:!bg-white print:!text-black w-full min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
-        {/* Professional Header */}
-        <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
-           <div className="absolute top-0 right-0 w-full h-1 bg-indigo-600 rounded-t"></div>
-           <div className="flex flex-col gap-1 mt-2">
-             <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">عرض سعر</h1>
-             <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Quotation</h2>
-             
-             <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block">
-               <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
-               <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
-             </div>
-           </div>
-           
-           <PrintHeader />
+      <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+        {/* ===== الورقة الرسمية كخلفية ===== */}
+        <PrintLetterhead />
+
+        {/* ===== البيانات فوق الورقة ===== */}
+        <div className="mb-8">
+          <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
+            <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 mt-3">عرض سعر — Quotation</h1>
         </div>
 
         <div className="mb-10 grid grid-cols-2 gap-8 text-sm">

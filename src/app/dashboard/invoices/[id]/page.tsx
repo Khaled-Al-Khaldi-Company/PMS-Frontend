@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import { exportToCsv } from "@/lib/exportUtils";
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
+import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function InvoiceViewPage() {
   const router = useRouter();
@@ -404,22 +405,18 @@ export default function InvoiceViewPage() {
     </div>
 
     {/* Print View (Professional Certificate) */}
-    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
-      {/* Professional Header */}
-      <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
-         <div className="absolute top-0 right-0 w-full h-1 bg-emerald-600 rounded-t"></div>
-         <div className="flex flex-col gap-1 mt-2 text-right">
-           <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">شهادة إنجاز ومستخلص</h1>
-           <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Payment Certificate</h2>
-           
-           <div className="bg-slate-100 p-3 rounded-lg border border-slate-200 inline-block text-right">
+    <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+      {/* ===== الورقة الرسمية كخلفية ===== */}
+      <PrintLetterhead />
+
+      {/* ===== البيانات فوق الورقة ===== */}
+         <div className="mb-8">
+           <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
              <p className="text-sm font-bold text-slate-800">رقم المستخلص (No): <span className="font-mono text-emerald-700">#{invoice.invoiceNumber}</span></p>
              <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
            </div>
+           <h1 className="text-3xl font-black text-slate-900 mt-3">شهادة إنجاز ومستخلص — Payment Certificate</h1>
          </div>
-         
-          <PrintHeader />
-      </div>
 
       {/* Meta Info */}
       <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
