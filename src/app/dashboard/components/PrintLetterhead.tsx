@@ -1,17 +1,9 @@
 "use client";
 
 /**
- * PrintLetterhead — صورة الورقة الرسمية كخلفية ثابتة
- * تُضاف داخل أي حاوية طباعة لتضع الورقة خلف البيانات
+ * PrintLetterhead — مكوّن وهمي، الورقة الرسمية تُضاف عبر CSS
+ * راجع: .print-on-letterhead في globals.css
  */
 export default function PrintLetterhead() {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/company_letterhead_1778702088189.png"
-      alt=""
-      className="letterhead-bg"
-      aria-hidden="true"
-    />
-  );
+  return null;
 }

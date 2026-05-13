@@ -110,6 +110,7 @@
 
 /* ================================================================
    PRINT — الطباعة على الورقة الرسمية كخلفية
+   الورقة تظهر عبر background-image على حاوية المحتوى
    ================================================================ */
 @media print {
   @page {
@@ -131,29 +132,27 @@
   }
 
   /*
-   * صورة الورقة الرسمية تُضاف عبر <img class="letterhead-bg"> في كل صفحة طباعة
-   * راجع: PrintLetterhead component
+   * الورقة الرسمية كخلفية — تستخدم background-attachment: fixed
+   * لتتكرر على كل صفحة مطبوعة
+   *
+   * ⚠️ تأكد من وجود ملف الورقة في: /public/letterhead.png
+   * استبدل الاسم إذا كان مختلفاً
    */
-  .letterhead-bg {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: fill !important;
-    z-index: 0 !important;
-    pointer-events: none !important;
-  }
-
-  /* المحتوى فوق الورقة — بادينج لتجنب التداخل مع الترويسة والذيل */
   .print-on-letterhead {
-    position: relative !important;
-    z-index: 1 !important;
+    /* الورقة كخلفية */
+    background-image: url('/company_letterhead_1778702088189.png') !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+
+    /* البادينج لتجنب الترويسة والذيل */
     padding-top: 130px !important;
     padding-bottom: 90px !important;
     padding-left: 40px !important;
     padding-right: 40px !important;
-    background: transparent !important;
+
+    /* صفحة A4 كاملة */
+    min-height: 100vh !important;
   }
 
   table { page-break-inside: auto !important; }
