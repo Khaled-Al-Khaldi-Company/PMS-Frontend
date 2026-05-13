@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FilePlus, 
@@ -467,9 +468,9 @@ export default function CreateQuotationPage() {
                               )}
                            </div>
                            <div className="p-2 border-t border-white/5 mt-1">
-                              <a href="/dashboard/settings/templates" target="_blank" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
+                              <Link href="/dashboard/settings/templates" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
                                 إدارة القوالب ⚙️
-                              </a>
+                              </Link>
                            </div>
                         </motion.div>
                       )}

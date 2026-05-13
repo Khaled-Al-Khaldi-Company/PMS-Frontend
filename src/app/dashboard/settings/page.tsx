@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
@@ -273,7 +274,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="mt-6">
-              <a href="/dashboard/settings/mappings" className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-indigo-500/5 hover:from-indigo-500/20 hover:to-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-indigo-300 group shadow-lg">
+              <Link href="/dashboard/settings/mappings" className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-indigo-500/5 hover:from-indigo-500/20 hover:to-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-indigo-300 group shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center shadow-inner">
                     <ArrowLeftRight size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
@@ -286,9 +287,9 @@ export default function SettingsPage() {
                 <div className="text-slate-500 group-hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg group-hover:-translate-x-1 duration-300">
                   <LayoutTemplate size={16} />
                 </div>
-              </a>
+              </Link>
 
-              <a href="/dashboard/settings/templates" className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-all text-emerald-300 group shadow-lg">
+              <Link href="/dashboard/settings/templates" className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-all text-emerald-300 group shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shadow-inner">
                     <LayoutTemplate size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -301,7 +302,7 @@ export default function SettingsPage() {
                 <div className="text-slate-500 group-hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg group-hover:-translate-x-1 duration-300">
                   <Save size={16} />
                 </div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -76,7 +76,8 @@ export default function QuotationTemplatesPage() {
       setEditingId(null);
       fetchTemplates();
     } catch (err: any) {
-      setMessage({type: 'error', text: err.response?.data?.message || 'فشل الحفظ'});
+      const errorMsg = err.response?.data?.message || err.message || 'فشل الحفظ';
+      setMessage({type: 'error', text: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg});
     } finally {
       setIsSaving(false);
     }

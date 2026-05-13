@@ -415,8 +415,19 @@ export default function ProjectDashboardPage() {
                   <div className="bg-slate-900/50 rounded-2xl p-4 border border-white/5 shadow-inner">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">إجمالي العقد المتفق عليه</p>
                     <p className={`text-lg font-black font-mono ${isMain ? 'text-amber-300' : 'text-indigo-300'}`}>
-                      SAR {Number           {/* DAFTRA TAB */}
-           {activeTab === 'DAFTRA' && (
+                      SAR {Number(contract.totalValue || 0).toLocaleString('en-US')}
+                    </p>
+                  </div>
+                </div>
+                );
+              }) : (
+                <div className="col-span-full py-20 text-center text-slate-500 font-bold">لا توجد عقود مسجلة لهذا المشروع بعد.</div>
+              )}
+            </div>
+          )}
+
+          {/* DAFTRA TAB */}
+          {activeTab === 'DAFTRA' && (
              <div className="space-y-6">
                <div className="glass-dark border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />

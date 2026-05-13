@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   FilePlus, 
   Save, 
@@ -19,7 +19,8 @@ import {
   Wand2,
   CheckCircle2,
   FileSpreadsheet,
-  LayoutTemplate
+  LayoutTemplate,
+  Link2Off
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
@@ -202,6 +203,23 @@ export default function EditQuotationPage() {
     }
   };
 
+  const handleUnlink = async () => {
+    if (!confirm("هل أنت متأكد من فك ارتباط عرض السعر بالمشروع يدوياً؟ سيتحول العرض لمسودة.")) return;
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API_BASE_URL}/v1/quotations/${quotationId}/unlink`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("تم فك الارتباط بنجاح. يمكنك الآن تعديل العرض أو حذفه.");
+      fetchQuotation();
+    } catch (err: any) {
+      alert("فشل فك الارتباط. تأكد من تحديث النظام.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDeleteQuotation = async () => {
     if (!confirm("هل أنت متأكد من حذف عرض السعر بشكل نهائي؟ هذا الإجراء لا يمكن التراجع عنه.")) return;
     setIsLoading(true);
@@ -314,9 +332,16 @@ export default function EditQuotationPage() {
                 </button>
               )}
               {formData.status === 'APPROVED' && hasPermission('QUOTATION_FORCE_DELETE') && (
-                <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
-                  <Trash2 size={18} /> حذف العرض
-                </button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  {formData.projectId && (
+                    <button type="button" onClick={handleUnlink} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold transition-all shadow-lg text-sm" title="فك الارتباط يدوياً">
+                      <Link2Off size={18} /> فك الارتباط
+                    </button>
+                  )}
+                  <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
+                    <Trash2 size={18} /> حذف العرض
+                  </button>
+                </div>
               )}
             </div>
           </div>
