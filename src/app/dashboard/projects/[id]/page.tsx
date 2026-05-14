@@ -23,7 +23,8 @@ import {
   TrendingUp,
   AlertCircle,
   Plus,
-  X
+  X,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 
