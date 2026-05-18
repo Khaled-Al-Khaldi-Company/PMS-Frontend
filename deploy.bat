@@ -7,7 +7,7 @@ echo.
 
 git add .
 git commit -m "fix: update missing imports and deploy"
-git push
+git push -u origin HEAD
 
 echo.
 echo ==========================================
