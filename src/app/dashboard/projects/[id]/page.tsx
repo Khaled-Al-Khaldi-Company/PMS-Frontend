@@ -24,7 +24,9 @@ import {
   AlertCircle,
   Plus,
   X,
-  FileText
+  FileText,
+  Edit,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,6 +43,8 @@ export default function ProjectDashboardPage() {
   const [isBoqModalOpen, setIsBoqModalOpen] = useState(false);
   const [isSubmittingBoq, setIsSubmittingBoq] = useState(false);
   const [newBoq, setNewBoq] = useState({ itemCode: '', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
+  const [isEditingBoq, setIsEditingBoq] = useState(false);
+  const [editingBoqId, setEditingBoqId] = useState("");
 
   useEffect(() => {
     if (projectId) fetchProjectDetails();
@@ -67,18 +71,56 @@ export default function ProjectDashboardPage() {
     setIsSubmittingBoq(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/v1/projects/${projectId}/boq`, newBoq, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setIsBoqModalOpen(false);
-      setNewBoq({ itemCode: '', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
+      if (isEditingBoq) {
+        await axios.patch(`${API_BASE_URL}/v1/projects/${projectId}/boq/${editingBoqId}`, newBoq, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post(`${API_BASE_URL}/v1/projects/${projectId}/boq`, newBoq, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      closeBoqModal();
       fetchProjectDetails(); // Refresh the table automatically
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء إضافة بند الكميات.");
+      alert("حدث خطأ أثناء حفظ البند.");
     } finally {
       setIsSubmittingBoq(false);
     }
+  };
+
+  const handleEditBoqClick = (item: any) => {
+    setNewBoq({
+      itemCode: item.itemCode || '',
+      description: item.description || '',
+      unit: item.unit || 'م٢',
+      quantity: item.quantity || 1,
+      unitPrice: item.unitPrice || 0
+    });
+    setEditingBoqId(item.id);
+    setIsEditingBoq(true);
+    setIsBoqModalOpen(true);
+  };
+
+  const handleDeleteBoqItem = async (id: string) => {
+    if (!window.confirm("هل أنت متأكد من حذف هذا البند؟")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/v1/projects/${projectId}/boq/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchProjectDetails();
+    } catch (err) {
+      alert("خطأ أثناء حذف البند");
+    }
+  };
+
+  const closeBoqModal = () => {
+    setIsBoqModalOpen(false);
+    setIsEditingBoq(false);
+    setEditingBoqId("");
+    setNewBoq({ itemCode: '', description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
   };
 
   const statusMap: Record<string, any> = {
@@ -341,6 +383,7 @@ export default function ProjectDashboardPage() {
                   </span>
                   <button 
                     onClick={() => {
+                      closeBoqModal();
                       setNewBoq({ itemCode: String((project.boqItems?.length || 0) + 1).padStart(2, '0'), description: '', unit: 'م٢', quantity: 1, unitPrice: 0 });
                       setIsBoqModalOpen(true);
                     }}
@@ -361,6 +404,7 @@ export default function ProjectDashboardPage() {
                       <th className="px-4 py-4 text-center font-mono text-blue-400/70">منفذ</th>
                       <th className="px-4 py-4 text-center">الفئة (SAR)</th>
                       <th className="px-6 py-4 text-center">إجمالي المتوقع</th>
+                      <th className="px-4 py-4 text-center">إجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -375,10 +419,28 @@ export default function ProjectDashboardPage() {
                         <td className="px-4 py-4 text-center font-mono font-bold text-blue-400 bg-blue-500/[0.02]">{item.executedQty}</td>
                         <td className="px-4 py-4 text-center font-mono text-slate-300">{Number(item.unitPrice).toLocaleString()}</td>
                         <td className="px-6 py-4 text-center font-mono font-bold text-slate-200">{(item.quantity * item.unitPrice).toLocaleString()}</td>
+                        <td className="px-4 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button 
+                              onClick={() => handleEditBoqClick(item)}
+                              className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors"
+                              title="تعديل"
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteBoqItem(item.id)}
+                              className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                              title="حذف"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     )) : (
                       <tr>
-                        <td colSpan={6} className="py-16 text-center text-slate-500 text-sm">لا توجد بنود كميات مسجلة لهذا المشروع بعد.</td>
+                        <td colSpan={7} className="py-16 text-center text-slate-500 text-sm">لا توجد بنود كميات مسجلة لهذا المشروع بعد.</td>
                       </tr>
                     )}
                   </tbody>
@@ -596,9 +658,9 @@ export default function ProjectDashboardPage() {
               <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Plus size={20} className="text-blue-400" />
-                  إضافة بند كميات (BOQ) مباشر
+                  {isEditingBoq ? "تعديل بند الكميات (BOQ)" : "إضافة بند كميات (BOQ) مباشر"}
                 </h2>
-                <button onClick={() => setIsBoqModalOpen(false)} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
+                <button onClick={closeBoqModal} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -637,11 +699,11 @@ export default function ProjectDashboardPage() {
                 </div>
 
                 <div className="mt-8 pt-4 flex gap-4">
-                  <button type="button" onClick={() => setIsBoqModalOpen(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors">
+                  <button type="button" onClick={closeBoqModal} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors">
                     إلغاء
                   </button>
                   <button type="submit" disabled={isSubmittingBoq} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2">
-                    {isSubmittingBoq ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />} إضافة واعتماد البند
+                    {isSubmittingBoq ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />} {isEditingBoq ? "تحديث البند" : "إضافة واعتماد البند"}
                   </button>
                 </div>
               </form>

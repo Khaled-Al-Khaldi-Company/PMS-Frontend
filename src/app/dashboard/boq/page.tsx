@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Wallet,
   Activity,
-  Box
+  Box,
+  Edit,
+  Trash2
 } from "lucide-react";
 import axios from "axios";
 
@@ -27,6 +29,8 @@ export default function BoqPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [importText, setImportText] = useState("");
   const [newItem, setNewItem] = useState({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string>("");
 
   useEffect(() => {
     fetchProjects();
@@ -71,16 +75,56 @@ export default function BoqPage() {
     
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq`, newItem, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (isEditing) {
+        await axios.patch(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq/${editingItemId}`, newItem, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq`, newItem, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
       
-      setIsAdding(false);
-      setNewItem({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
+      closeModal();
       fetchBoqItems(selectedProjectId); // Refresh list
     } catch (err) {
-      alert("حدث خطأ أثناء إضافة البند. تأكد من أن الرمز غير مكرر.");
+      alert("حدث خطأ أثناء حفظ البند. تأكد من صحة البيانات.");
     }
+  };
+
+  const handleEditClick = (item: any) => {
+    setNewItem({
+      itemCode: item.itemCode,
+      description: item.description,
+      unit: item.unit,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      executionType: item.executionType || "SELF",
+      subcontractorPrice: item.subcontractorPrice || 0
+    });
+    setEditingItemId(item.id);
+    setIsEditing(true);
+    setIsAdding(true);
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    if (!window.confirm("هل أنت متأكد من حذف هذا البند؟")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchBoqItems(selectedProjectId);
+    } catch (err) {
+      alert("خطأ أثناء حذف البند");
+    }
+  };
+
+  const closeModal = () => {
+    setIsAdding(false);
+    setIsEditing(false);
+    setEditingItemId("");
+    setNewItem({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
   };
 
   const handleBatchImport = async (e: React.FormEvent) => {
@@ -240,16 +284,17 @@ export default function BoqPage() {
                 <th className="px-6 py-4">استراتيجية التنفيذ</th>
                 <th className="px-6 py-4 text-emerald-400">الكمية المنفذة</th>
                 <th className="px-6 py-4 text-amber-400">الإجمالي للمالك</th>
+                <th className="px-6 py-4">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
               {isLoading ? (
                 <tr>
-                   <td colSpan={7} className="px-6 py-12 text-center text-slate-400"><Loader2 className="animate-spin mx-auto text-indigo-500" size={24} /></td>
+                   <td colSpan={8} className="px-6 py-12 text-center text-slate-400"><Loader2 className="animate-spin mx-auto text-indigo-500" size={24} /></td>
                 </tr>
               ) : boqItems.length === 0 ? (
                 <tr>
-                   <td colSpan={7} className="px-6 py-12 text-center text-slate-400">لا توجد بنود مضافة في هذا المشروع.</td>
+                   <td colSpan={8} className="px-6 py-12 text-center text-slate-400">لا توجد بنود مضافة في هذا المشروع.</td>
                 </tr>
               ) : (
                 boqItems.map((item, i) => (
@@ -287,6 +332,24 @@ export default function BoqPage() {
                     <td className="px-6 py-5 font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 drop-shadow-sm text-lg border-r border-white/5">
                       {(Number(item.quantity) * Number(item.unitPrice)).toLocaleString()}
                     </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleEditClick(item)}
+                          className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
+                          title="تعديل"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                          title="حذف"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </motion.tr>
                 ))
               )}
@@ -306,11 +369,11 @@ export default function BoqPage() {
             />
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-lg bg-slate-900 border border-white/10 shadow-2xl rounded-3xl p-6"
+              className="relative w-full max-w-lg bg-slate-900 border border-white/10 shadow-2xl rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">إضافة بند جديد (BOQ)</h3>
-                <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+                <h3 className="text-xl font-bold text-white">{isEditing ? "تعديل البند" : "إضافة بند جديد (BOQ)"}</h3>
+                <button onClick={closeModal} className="text-slate-400 hover:text-white"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleAddItem} className="space-y-4">
@@ -351,7 +414,7 @@ export default function BoqPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 border-t border-white/5 pt-4">
-                  <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm text-slate-300 hover:text-white">إلغاء</button>
+                  <button type="button" onClick={closeModal} className="px-4 py-2 text-sm text-slate-300 hover:text-white">إلغاء</button>
                   <button type="submit" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium flex items-center gap-2 transition-colors">
                     <Save size={16} /> اعتماد البند الحسابي
                   </button>
