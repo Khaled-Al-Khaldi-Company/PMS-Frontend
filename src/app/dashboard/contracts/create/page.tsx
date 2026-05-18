@@ -77,8 +77,10 @@ export default function CreateContractPage() {
   const handleAddItem = (item: any) => {
     if (selectedItems.find(it => it.boqItemId === item.id)) return;
     
-    // Calculate committed quantity from OTHER contracts
-    const committedToOthers = (item.contractItems || []).reduce((acc: any, ci: any) => acc + Number(ci.assignedQty), 0);
+    // Calculate committed quantity from OTHER contracts of the same type
+    const committedToOthers = (item.contractItems || [])
+      .filter((ci: any) => ci.contract?.type === formData.type)
+      .reduce((acc: any, ci: any) => acc + Number(ci.assignedQty), 0);
     const remaining = Math.max(0, item.quantity - committedToOthers);
 
     setSelectedItems([...selectedItems, {
@@ -297,7 +299,9 @@ export default function CreateContractPage() {
                       </div>
                     ) : (
                       projectBoq.map(it => {
-                        const committed = (it.contractItems || []).reduce((acc: number, ci: any) => acc + ci.assignedQty, 0);
+                        const committed = (it.contractItems || [])
+                          .filter((ci: any) => ci.contract?.type === formData.type)
+                          .reduce((acc: number, ci: any) => acc + ci.assignedQty, 0);
                         const remaining = it.quantity - committed;
                         const isFullyAssigned = remaining <= 0;
 
