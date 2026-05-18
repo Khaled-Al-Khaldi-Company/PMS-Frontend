@@ -230,7 +230,11 @@ export default function ProjectsPage() {
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <Wallet size={16} className="text-slate-500 shrink-0" />
                           <span className="font-mono text-emerald-400 font-medium">
-                            {project.budget ? `SAR ${Number(project.budget).toLocaleString()}` : "الميزانية غير محددة"}
+                            {(() => {
+                              const mainContractsSum = project.contracts?.reduce((acc: number, c: any) => acc + Number(c.totalValue), 0) || 0;
+                              const displayBudget = project.budget || mainContractsSum;
+                              return displayBudget > 0 ? `SAR ${Number(displayBudget).toLocaleString()}` : "الميزانية غير محددة";
+                            })()}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">

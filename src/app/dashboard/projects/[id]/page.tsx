@@ -156,8 +156,11 @@ export default function ProjectDashboardPage() {
     ?.filter((c: any) => c.type !== 'MAIN_CONTRACT')
     .reduce((acc: number, curr: any) => acc + Number(curr.totalValue), 0) || 0;
     
-  const mainContractValue = project.contracts
-    ?.find((c: any) => c.type === 'MAIN_CONTRACT')?.totalValue || project.budget || totalBoqValue;
+  const mainContractsSum = project.contracts
+    ?.filter((c: any) => c.type === 'MAIN_CONTRACT')
+    .reduce((acc: number, curr: any) => acc + Number(curr.totalValue), 0) || 0;
+    
+  const mainContractValue = mainContractsSum > 0 ? mainContractsSum : (project.budget || totalBoqValue);
   // Real revenue = sum of certified invoice gross amounts
   const totalCertifiedRevenue = project.invoices
     ?.filter((inv: any) => inv.status === 'CERTIFIED')
@@ -188,9 +191,12 @@ export default function ProjectDashboardPage() {
       {/* Hero Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <button onClick={() => router.push('/dashboard/projects')} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all shadow-lg hover:-translate-x-1">
+          <button onClick={() => router.push('/dashboard/projects')} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all shadow-lg hover:-translate-x-1" title="عودة للمشاريع">
             <ArrowRight size={22} />
           </button>
+          <Link href={`/dashboard/projects/edit/${project.id}`} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 transition-all shadow-lg hover:scale-105" title="تعديل بيانات المشروع">
+            <Edit size={20} />
+          </Link>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
                <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-sm line-clamp-1">

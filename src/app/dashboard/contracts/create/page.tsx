@@ -83,12 +83,14 @@ export default function CreateContractPage() {
       .reduce((acc: any, ci: any) => acc + Number(ci.assignedQty), 0);
     const remaining = Math.max(0, item.quantity - committedToOthers);
 
+    const defaultPrice = formData.type === "SUBCONTRACT" ? (item.subcontractorPrice || 0) : item.unitPrice;
+
     setSelectedItems([...selectedItems, {
       boqItemId: item.id,
       description: item.description,
       unit: item.unit,
       assignedQty: remaining, // default to what is actually available!
-      unitPrice: item.unitPrice, 
+      unitPrice: defaultPrice, 
     }]);
     setShowBoqSelector(false);
   };
