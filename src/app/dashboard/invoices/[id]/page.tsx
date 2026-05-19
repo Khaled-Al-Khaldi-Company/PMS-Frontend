@@ -128,16 +128,21 @@ export default function InvoiceViewPage() {
       await axios.patch(`${API_BASE_URL}/v1/invoices/${invoiceId}/certify`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert(`تم اعتماد المستخلص محلياً بنجاح! يمكنك الآن ترحيله إلى دفترة.`);
+      
+      const pushNow = confirm("تم اعتماد المستخلص محلياً بنجاح!\nهل تريد ترحيله إلى دفترة الآن؟");
       await fetchInvoice();
+      
+      if (pushNow) {
+        await handlePostToDaftra(true);
+      }
     } catch (err: any) {
       const errData = err.response?.data?.message || err.response?.data || err.message;
       alert(`حدث خطأ أثناء اعتماد المستخلص:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);
     }
   };
 
-  const handlePostToDaftra = async () => {
-    if (!confirm("هل أنت متأكد من رغبتك في ترحيل هذا المستخلص إلى دفترة؟")) return;
+  const handlePostToDaftra = async (bypassConfirm = false) => {
+    if (!bypassConfirm && !confirm("هل أنت متأكد من رغبتك في ترحيل هذا المستخلص إلى دفترة؟")) return;
 
     setIsPosting(true);
     try {
