@@ -69,6 +69,15 @@ export default function EditInvoicePage() {
       setDraftQuantities(draftMap);
       setExecutionData(execMap);
 
+      const contractInvoices = fetchedInvoice.contract?.invoices || [];
+      const executedQtyMap: Record<string, number> = {};
+      contractInvoices.forEach((inv: any) => {
+        const details = inv.details || [];
+        details.forEach((det: any) => {
+          executedQtyMap[det.boqItemId] = (executedQtyMap[det.boqItemId] || 0) + (det.currentQty || 0);
+        });
+      });
+
       if (fetchedInvoice.contract?.items && fetchedInvoice.contract.items.length > 0) {
         const mappedItems = fetchedInvoice.contract.items.map((ci: any) => ({
           id: ci.boqItemId,
@@ -77,14 +86,18 @@ export default function EditInvoicePage() {
           unit: ci.boqItem?.unit,
           quantity: ci.assignedQty,
           unitPrice: ci.unitPrice,
-          executedQty: ci.boqItem?.executedQty || 0
+          executedQty: executedQtyMap[ci.boqItemId] || 0
         }));
         setBoqItems(mappedItems);
       } else {
         const resBoq = await axios.get(`${API_BASE_URL}/v1/projects/${fetchedInvoice.projectId}/boq`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setBoqItems(resBoq.data);
+        const mappedItems = resBoq.data.map((item: any) => ({
+          ...item,
+          executedQty: executedQtyMap[item.id] || 0
+        }));
+        setBoqItems(mappedItems);
       }
       
     } catch (err) {
