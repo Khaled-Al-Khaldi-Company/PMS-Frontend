@@ -33,6 +33,8 @@ export default function InvoicesPage() {
   
   const [contracts, setContracts] = useState<any[]>([]);
   const [selectedContractId, setSelectedContractId] = useState<string>("");
+  const [selectedRevenueContractId, setSelectedRevenueContractId] = useState<string>("");
+  const [selectedCostContractId, setSelectedCostContractId] = useState<string>("");
   const [selectedContract, setSelectedContract] = useState<any>(null);
   
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -46,8 +48,15 @@ export default function InvoicesPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedProjectId) fetchContracts(selectedProjectId);
-    else { setContracts([]); setSelectedContractId(""); setSelectedContract(null); }
+    if (selectedProjectId) {
+      fetchContracts(selectedProjectId);
+    } else { 
+      setContracts([]); 
+      setSelectedContractId(""); 
+      setSelectedRevenueContractId("");
+      setSelectedCostContractId("");
+      setSelectedContract(null); 
+    }
   }, [selectedProjectId]);
 
   useEffect(() => {
@@ -84,6 +93,10 @@ export default function InvoicesPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(res.data);
+      setSelectedContractId("");
+      setSelectedRevenueContractId("");
+      setSelectedCostContractId("");
+      setSelectedContract(null);
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401) {
@@ -138,6 +151,9 @@ export default function InvoicesPage() {
   const totalRetention = invoices.reduce((sum, inv) => sum + Number(inv.retentionAmount || 0), 0);
   const totalGross = invoices.reduce((sum, inv) => sum + Number(inv.grossAmount || 0), 0);
   const completionPercent = totalValue > 0 ? ((totalGross / totalValue) * 100).toFixed(1) : "0.0";
+
+  const revenueContracts = contracts.filter(c => c.type === 'MAIN_CONTRACT');
+  const costContracts = contracts.filter(c => c.type !== 'MAIN_CONTRACT');
 
   const handlePrint = (e: React.MouseEvent, invoiceId: string) => {
     e.stopPropagation();
@@ -232,20 +248,46 @@ export default function InvoicesPage() {
             <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
           </div>
 
+          {/* عقود الإيرادات (المالك) */}
           <div className="flex-1 sm:flex-none relative">
             <select 
-              value={selectedContractId}
-              onChange={(e) => setSelectedContractId(e.target.value)}
-              disabled={!selectedProjectId || contracts.length === 0}
-              className="w-full sm:w-[260px] bg-slate-900/80 text-emerald-400 text-sm font-bold outline-none px-4 py-3 rounded-2xl border border-slate-700/50 appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:border-emerald-500/50 transition-all hover:bg-slate-800/80"
+              value={selectedRevenueContractId}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedRevenueContractId(val);
+                setSelectedCostContractId("");
+                setSelectedContractId(val);
+              }}
+              disabled={!selectedProjectId || revenueContracts.length === 0}
+              className="w-full sm:w-[240px] bg-slate-900/80 text-emerald-400 text-sm font-bold outline-none px-4 py-3 rounded-2xl border border-slate-700/50 appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:border-emerald-500/50 transition-all hover:bg-slate-800/80"
             >
-              <option value="" disabled className="bg-slate-900 text-slate-500">📄 حدد العقد (إيراد / تكلفة)</option>
-              {contracts.map(c => {
-                const name = c.type === 'MAIN_CONTRACT' ? 'عقد رئيسي (إيراد)' : (c.subcontractor?.name || 'مقاول باطن');
-                return <option key={c.id} value={c.id} className="bg-slate-900">{name} - {c.referenceNumber}</option>;
-              })}
+              <option value="" className="bg-slate-900 text-slate-500">📄 عقود الإيرادات (المالك)</option>
+              {revenueContracts.map(c => (
+                <option key={c.id} value={c.id} className="bg-slate-900 text-white">عقد رئيسي - {c.referenceNumber}</option>
+              ))}
             </select>
             <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-500/50">▼</div>
+          </div>
+
+          {/* عقود مقاولي الباطن */}
+          <div className="flex-1 sm:flex-none relative">
+            <select 
+              value={selectedCostContractId}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedCostContractId(val);
+                setSelectedRevenueContractId("");
+                setSelectedContractId(val);
+              }}
+              disabled={!selectedProjectId || costContracts.length === 0}
+              className="w-full sm:w-[240px] bg-slate-900/80 text-amber-400 text-sm font-bold outline-none px-4 py-3 rounded-2xl border border-slate-700/50 appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:border-emerald-500/50 transition-all hover:bg-slate-800/80"
+            >
+              <option value="" className="bg-slate-900 text-slate-500">👥 عقود الباطن (التكاليف)</option>
+              {costContracts.map(c => (
+                <option key={c.id} value={c.id} className="bg-slate-900 text-white">{(c.subcontractor?.name || 'مقاول باطن')} - {c.referenceNumber}</option>
+              ))}
+            </select>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-amber-500/50">▼</div>
           </div>
         </div>
       </div>
