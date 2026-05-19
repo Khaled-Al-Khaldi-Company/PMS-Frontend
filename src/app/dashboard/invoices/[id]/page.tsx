@@ -35,6 +35,7 @@ export default function InvoiceViewPage() {
   const [invoice, setInvoice] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
   const [userPerms, setUserPerms] = useState<string[]>([]);
   const [userRole, setUserRole] = useState("");
 
@@ -120,19 +121,38 @@ export default function InvoiceViewPage() {
   const totalDeductions = Number(invoice.retentionAmount) + Number(invoice.advanceDeduction) + Number(invoice.delayPenalty) + Number(invoice.otherDeductions);
 
   const handleCertify = async () => {
-    if (!confirm("هل أنت متأكد من رغبتك في اعتماد المستخلص؟ هذه الخطوة لا يمكن التراجع عنها وستقوم بإرساله لدفترة.")) return;
+    if (!confirm("هل أنت متأكد من رغبتك في اعتماد المستخلص؟")) return;
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.patch(`${API_BASE_URL}/v1/invoices/${invoiceId}/certify`, {}, {
+      await axios.patch(`${API_BASE_URL}/v1/invoices/${invoiceId}/certify`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const daftraId = response.data?.daftraExternalId || "N/A";
-      alert(`تم اعتماد المستخلص بنجاح!\nرقم الربط في دفترة: ${daftraId}`);
-      setInvoice({ ...invoice, status: 'CERTIFIED' });
+      alert(`تم اعتماد المستخلص محلياً بنجاح! يمكنك الآن ترحيله إلى دفترة.`);
+      await fetchInvoice();
     } catch (err: any) {
-      const errData = err.response?.data || err.message;
-      alert(`حدث خطأ أثناء المزامنة مع دفترة:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);
+      const errData = err.response?.data?.message || err.response?.data || err.message;
+      alert(`حدث خطأ أثناء اعتماد المستخلص:\n${typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData}`);
+    }
+  };
+
+  const handlePostToDaftra = async () => {
+    if (!confirm("هل أنت متأكد من رغبتك في ترحيل هذا المستخلص إلى دفترة؟")) return;
+
+    setIsPosting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(`${API_BASE_URL}/v1/integration/daftra/push-invoice/${invoiceId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const daftraId = response.data?.externalId || "N/A";
+      alert(`تم ترحيل المستخلص إلى دفترة بنجاح!\nرقم الربط في دفترة: ${daftraId}`);
+      await fetchInvoice();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || "خطأ مجهول";
+      alert(`فشل الترحيل إلى دفترة: ${msg}`);
+    } finally {
+      setIsPosting(false);
     }
   };
 
@@ -195,6 +215,18 @@ export default function InvoiceViewPage() {
             >
               <BadgeCheck size={18} className="group-hover:scale-110 transition-transform" />
               اعتماد المستخلص رسمياً
+            </button>
+          )}
+
+          {/* زر الترحيل لدفترة - يظهر للمستخلصات المعتمدة غير المربوطة بدفترة */}
+          {invoice.status === 'CERTIFIED' && !invoice.daftraInvoiceId && hasPermission('INVOICE_APPROVE') && (
+            <button
+              onClick={handlePostToDaftra}
+              disabled={isPosting}
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white rounded-xl transition-all border border-indigo-500/20 shadow-lg font-bold group disabled:opacity-50"
+            >
+              <RefreshCcw size={18} className={`transition-transform duration-500 ${isPosting ? 'animate-spin' : 'group-hover:rotate-180'}`} />
+              {isPosting ? 'جاري الترحيل...' : 'ترحيل إلى دفترة'}
             </button>
           )}
 
@@ -397,6 +429,16 @@ export default function InvoiceViewPage() {
                  className="w-full mt-4 flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1">
                  <BadgeCheck size={20} />
                  اعتماد المستخلص رسمياً
+               </button>
+             )}
+
+             {invoice.status === 'CERTIFIED' && !invoice.daftraInvoiceId && hasPermission('INVOICE_APPROVE') && (
+               <button 
+                 onClick={handlePostToDaftra}
+                 disabled={isPosting}
+                 className="w-full mt-4 flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                 <RefreshCcw size={20} className={isPosting ? "animate-spin" : ""} />
+                 {isPosting ? 'جاري الترحيل إلى دفترة...' : 'ترحيل إلى دفترة'}
                </button>
              )}
           </div>
