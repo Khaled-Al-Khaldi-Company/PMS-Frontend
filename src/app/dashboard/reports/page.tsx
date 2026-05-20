@@ -11,10 +11,20 @@ import {
   PieChart, 
   Briefcase, 
   ShoppingCart,
-  Download,
   Loader2,
   TrendingUp,
-  Wallet
+  TrendingDown,
+  DollarSign,
+  CheckCircle2,
+  Users,
+  FileText,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  Award,
+  Wallet,
+  Activity,
+  FileSpreadsheet
 } from "lucide-react";
 
 export default function ReportsPage() {
@@ -25,6 +35,7 @@ export default function ReportsPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [reportData, setReportData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -49,6 +60,7 @@ export default function ReportsPage() {
 
   const fetchReport = async () => {
     setIsLoading(true);
+    setExpandedInvoiceId(null);
     try {
       const token = localStorage.getItem("token");
       let url = `${API_BASE_URL}/v1/reports?reportType=${reportType}&projectId=${projectId}`;
@@ -70,74 +82,106 @@ export default function ReportsPage() {
     window.print();
   };
 
+  const toggleInvoiceDetails = (id: string) => {
+    if (expandedInvoiceId === id) {
+      setExpandedInvoiceId(null);
+    } else {
+      setExpandedInvoiceId(id);
+    }
+  };
+
   return (
-    <div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 max-w-[1500px] mx-auto pb-12 print:bg-white print:text-black">
+    <div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 max-w-[1600px] mx-auto pb-12 print:bg-white print:text-black">
       {/* Hidden print styles injected */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body * { visibility: hidden; }
           #printable-report, #printable-report * { visibility: visible; }
-          #printable-report { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; color: black !important; }
+          #printable-report { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 15px; color: black !important; }
           .print-hide { display: none !important; }
-          .print-border { border: 1px solid #ddd !important; }
+          .print-border { border: 1px solid #000 !important; }
+          .print-bg-gray { background-color: #f3f4f6 !important; }
           .print-text-black { color: #000 !important; }
+          table { width: 100% !important; border-collapse: collapse !important; }
+          th, td { border: 1px solid #ddd !important; padding: 8px !important; }
+          th { background-color: #f3f4f6 !important; color: black !important; }
         }
       `}} />
 
       {/* Header & Controls (Hidden in Print) */}
-      <div className="print-hide flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-2xl">
-        <div>
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 flex items-center gap-3">
-            <PieChart size={32} className="text-blue-500" /> مركز التقارير المتقدمة
+      <div className="print-hide flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="relative z-10">
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 flex items-center gap-3">
+            <PieChart size={32} className="text-blue-500" /> مركز التقارير الشامل والموحد
           </h1>
-          <p className="text-slate-400 mt-2 text-sm">استخراج، طباعة ومراقبة أداء المشاريع بأعلى معايير الدقة.</p>
+          <p className="text-slate-400 mt-2 text-sm">شاشة ذكية لاستخراج، تحليل وطباعة التقارير المالية والتعاقدية ومحاضر الإنجاز.</p>
         </div>
 
         <button 
           onClick={handlePrint}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
+          className="relative z-10 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
         >
-          <Printer size={18} /> طباعة التقرير
+          <Printer size={18} /> طباعة التقرير / تصدير PDF
         </button>
       </div>
 
-      {/* Filters Base (Hidden in Print) */}
-      <div className="print-hide grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900/40 p-4 rounded-2xl border border-white/5 space-y-2">
-           <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Filter size={14}/> نوع التقرير</label>
+      {/* Interactive Filters Panel (Hidden in Print) */}
+      <div className="print-hide grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Navigation Tabs */}
+        <div className="bg-slate-900/40 p-5 rounded-2xl border border-white/5 space-y-2">
+           <label className="text-slate-400 text-xs font-bold flex items-center gap-2 mb-3"><Filter size={14}/> تصفية حسب نوع التقرير</label>
            <div className="flex flex-col gap-2">
-             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
-               <TrendingUp size={16}/> الكفاءة المالية
+             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><DollarSign size={16}/> الأرباح والخسائر (P&L)</span>
+               <TrendingUp size={14} className="opacity-60"/>
              </button>
-             <button onClick={() => setReportType('BOQ_PROGRESS')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'BOQ_PROGRESS' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
-               <Filter size={16}/> حصر وإنجاز الكميات (BOQ)
+             
+             <button onClick={() => setReportType('CONTRACTS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CONTRACTS' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود الملاك ومقاولي الباطن</span>
+               <Award size={14} className="opacity-60"/>
              </button>
-             <button onClick={() => setReportType('PURCHASES')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'PURCHASES' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
-               <ShoppingCart size={16}/> المشتريات والتكاليف
+
+             <button onClick={() => setReportType('BOQ_PROGRESS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'BOQ_PROGRESS' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Layers size={16}/> كميات BOQ والمنفذ والمتبقي</span>
+               <Activity size={14} className="opacity-60"/>
              </button>
-             <button onClick={() => setReportType('SUBCONTRACTORS')} className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${reportType === 'SUBCONTRACTORS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400 border border-white/5 hover:bg-slate-700'}`}>
-               <Briefcase size={16}/> حالة مقاولي الباطن
+
+             <button onClick={() => setReportType('ACHIEVEMENT_RECORDS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><FileText size={16}/> محاضر الإنجاز المعتمدة</span>
+               <CheckCircle2 size={14} className="opacity-60"/>
+             </button>
+
+             <button onClick={() => setReportType('CONTACTS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Users size={16}/> حركة الموردين والعملاء المالي</span>
+               <Users size={14} className="opacity-60"/>
+             </button>
+
+             <button onClick={() => setReportType('PURCHASES')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'PURCHASES' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><ShoppingCart size={16}/> المشتريات والتكاليف العامة</span>
+               <ShoppingCart size={14} className="opacity-60"/>
              </button>
            </div>
         </div>
 
-        <div className="md:col-span-3 bg-slate-900/40 p-5 rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="space-y-3">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Building size={14}/> فلترة بالمشروع</label>
+        {/* Filters Details */}
+        <div className="lg:col-span-3 bg-slate-900/40 p-6 rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="space-y-2">
+              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Building size={14}/> فرز حسب المشروع</label>
               <select 
                 value={projectId} 
                 onChange={(e) => setProjectId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none"
               >
-                <option value="all">جميع المشاريع التابعة للشركة</option>
+                <option value="all">جميع المشاريع</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
            </div>
            
-           <div className="space-y-3">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> من تاريخ</label>
+           <div className="space-y-2">
+              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> تاريخ البداية</label>
               <input 
                 type="date" 
                 value={dateRange.start}
@@ -146,8 +190,8 @@ export default function ReportsPage() {
               />
            </div>
 
-           <div className="space-y-3">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> إلى تاريخ</label>
+           <div className="space-y-2">
+              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> تاريخ النهاية</label>
               <input 
                 type="date" 
                 value={dateRange.end}
@@ -159,215 +203,416 @@ export default function ReportsPage() {
       </div>
 
       {/* PRINTABLE AREA */}
-      <div id="printable-report" className="bg-slate-900/40 print:bg-white rounded-3xl border border-white/5 print:border-none p-8 min-h-[500px]">
+      <div id="printable-report" className="bg-[#0f1015]/60 backdrop-blur-xl print:bg-white rounded-3xl border border-white/5 print:border-none p-8 min-h-[500px] shadow-2xl relative">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64 opacity-50">
             <Loader2 className="animate-spin text-blue-500 mb-4" size={40} />
-            <p className="text-slate-400 print-hide">جاري تحليل وبناء التقرير...</p>
+            <p className="text-slate-400 print-hide">جاري استدعاء البيانات وتحليل المعطيات...</p>
           </div>
         ) : reportData ? (
           <>
-            <div className="mb-8 border-b border-white/10 print:border-black/20 pb-6 text-center print:text-right">
-               <h2 className="text-2xl font-black text-white print-text-black uppercase">
-                 {reportType === 'FINANCIAL_SUMMARY' ? 'تقرير الكفاءة المالية الموحد' : 
-                  reportType === 'PURCHASES' ? 'تقرير المشتريات وتحليل الموردين' : 
-                  reportType === 'BOQ_PROGRESS' ? 'تقرير حصر وإنجاز الكميات (BOQ التفصيلي)' :
-                  'تقرير مستخلصات مقاولي الباطن'}
-               </h2>
-               <p className="text-slate-400 print:text-slate-600 mt-2">
-                 تاريخ الإصدار: {new Date().toLocaleDateString('ar-SA')} | 
-                 المشروع: {projectId === 'all' ? 'كافة المشاريع' : projects.find(p=>p.id === projectId)?.name}
-               </p>
+            {/* Header of Report Document */}
+            <div className="mb-8 border-b border-white/10 print:border-black/20 pb-6 text-center print:text-right flex flex-col md:flex-row justify-between items-center gap-4">
+               <div className="text-right">
+                 <h2 className="text-2xl font-black text-white print-text-black uppercase">
+                   {reportType === 'FINANCIAL_SUMMARY' ? 'تقرير الأرباح والخسائر للمشاريع (P&L)' : 
+                    reportType === 'CONTRACTS' ? 'تقرير عقود المشاريع ومقاولي الباطن' :
+                    reportType === 'BOQ_PROGRESS' ? 'تقرير حصر كميات وبنود تعاقد BOQ المنجزة' :
+                    reportType === 'ACHIEVEMENT_RECORDS' ? 'سجل محاضر الإنجاز المعتمدة والمستخلصات' :
+                    reportType === 'CONTACTS' ? 'تقرير حركة جهات الاتصال (العملاء والموردين) المالي' :
+                    'تقرير المشتريات والتكاليف العامة'}
+                 </h2>
+                 <p className="text-slate-400 print:text-slate-600 mt-2 text-sm">
+                   المشروع المحدد: <span className="font-bold text-white print-text-black">{projectId === 'all' ? 'كافة المشاريع النشطة' : projects.find(p=>p.id === projectId)?.name}</span>
+                 </p>
+                 {(dateRange.start || dateRange.end) && (
+                   <p className="text-xs text-indigo-400 print:text-black mt-1">
+                     الفترة الزمنية: {dateRange.start ? `من ${dateRange.start}` : ''} {dateRange.end ? `إلى ${dateRange.end}` : ''}
+                   </p>
+                 )}
+               </div>
+               <div className="text-center md:text-left text-xs text-slate-500 print-text-black">
+                 <p>تاريخ استخراج التقرير</p>
+                 <p className="font-mono text-sm text-slate-300 print-text-black mt-1">{new Date().toLocaleString('ar-SA')}</p>
+               </div>
             </div>
 
-            {/* Smart Summary Widgets */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {/* Smart Summary Cards based on Report Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                {reportType === 'FINANCIAL_SUMMARY' && (
                  <>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي الإيرادات (الملاك)</p>
-                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalRevenue || 0).toLocaleString()}</p>
+                   <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي الإيرادات (المستخلصات المعتمدة)</p>
+                     <p className="text-2xl font-black text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي التكاليف والصرف</p>
-                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalCosts || 0).toLocaleString()}</p>
+                   <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي التكاليف (مقاولين + شراء + نثريات)</p>
+                     <p className="text-2xl font-black text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalCosts || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">صافي الربح التقديري</p>
-                     <p className="text-xl font-bold text-indigo-400 print-text-black">SAR {Number(reportData.summary?.profit || 0).toLocaleString()}</p>
+                   <div className={`p-5 bg-gradient-to-br rounded-2xl border border-white/5 print-border print:bg-white ${reportData.summary?.profit >= 0 ? 'from-emerald-950/20 to-slate-900' : 'from-rose-950/20 to-slate-900'}`}>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">صافي الربح / الخسارة</p>
+                     <p className={`text-2xl font-black ${reportData.summary?.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'} print-text-black`}>SAR {Number(reportData.summary?.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">هامش الربح</p>
-                     <p className="text-xl font-bold text-white print-text-black">{Number(reportData.summary?.margin || 0).toFixed(1)}%</p>
+                   <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">هامش الربح الإجمالي</p>
+                     <p className="text-2xl font-black text-indigo-400 print-text-black">{Number(reportData.summary?.margin || 0).toFixed(2)}%</p>
                    </div>
                  </>
                )}
-               {reportType === 'PURCHASES' && (
+
+               {reportType === 'CONTRACTS' && (
                  <>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي أوامر الشراء المنفذة</p>
-                     <p className="text-xl font-bold text-blue-400 print-text-black">{reportData.summary?.totalOrders || 0} أمر شراء</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عقود الملاك (العملاء)</p>
+                     <p className="text-xl font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalMainContractsValue || 0).toLocaleString()}</p>
+                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.mainContractsCount || 0}</span>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">حجم الصرف الإجمالي</p>
-                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSpent || 0).toLocaleString()}</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عقود مقاولي الباطن (التكلفة)</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSubcontractsValue || 0).toLocaleString()}</p>
+                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.subcontractsCount || 0}</span>
                    </div>
-                 </>
-               )}
-               {reportType === 'SUBCONTRACTORS' && (
-                 <>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي المستحقات (معتمدة)</p>
-                     <p className="text-xl font-bold text-amber-400 print-text-black">SAR {Number(reportData.summary?.totalDue || 0).toLocaleString()}</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">صافي حجم التعاقد الإجمالي</p>
+                     <p className="text-xl font-bold text-white print-text-black">SAR {Number(reportData.summary?.netContractingVolume || 0).toLocaleString()}</p>
+                     <span className="text-[10px] text-slate-500">الفرق بين المالك والباطن</span>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">المدفوع والمسدد (من المالية)</p>
-                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalPaid || 0).toLocaleString()}</p>
-                   </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">الجاري الصرف / المتأخرات</p>
-                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.remaining || 0).toLocaleString()}</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عدد العقود النشطة</p>
+                     <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContracts || 0} عقد</p>
                    </div>
                  </>
                )}
+
                {reportType === 'BOQ_PROGRESS' && (
                  <>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي قيمة المشروع (المخطط)</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">القيمة المخططة الإجمالية</p>
                      <p className="text-xl font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalPlannedValue || 0).toLocaleString()}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">قيمة المنفذ الفعلي</p>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">قيمة الأعمال المنفذة فعلياً</p>
                      <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalExecutedValue || 0).toLocaleString()}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
                      <p className="text-xs text-slate-400 print:text-black mb-1">القيمة المتبقية كمياً</p>
                      <p className="text-xl font-bold text-amber-400 print-text-black">SAR {Number(reportData.summary?.remainingValue || 0).toLocaleString()}</p>
                    </div>
-                   <div className="p-4 bg-slate-800/50 print-border rounded-xl">
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
                      <p className="text-xs text-slate-400 print:text-black mb-1">نسبة الإنجاز الإجمالية للمشروع</p>
                      <p className="text-xl font-bold text-white print-text-black">{reportData.summary?.overallProgress || 0}%</p>
                    </div>
                  </>
                )}
+
+               {reportType === 'ACHIEVEMENT_RECORDS' && (
+                 <>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">عدد محاضر الإنجاز المعتمدة</p>
+                     <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalRecords || 0} محضر</p>
+                     <span className="text-[10px] text-slate-500">ملاك: {reportData.summary?.mainContractsRecordsCount || 0} | مقاولين: {reportData.summary?.subcontractsRecordsCount || 0}</span>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">القيمة المعتمدة قبل الخصميات</p>
+                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalCertifiedGross || 0).toLocaleString()}</p>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">صافي المستحقات المعتمدة للجهات</p>
+                     <p className="text-xl font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalCertifiedNet || 0).toLocaleString()}</p>
+                   </div>
+                 </>
+               )}
+
+               {reportType === 'CONTACTS' && (
+                 <>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عدد جهات الاتصال</p>
+                     <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContacts || 0} جهة اتصال</p>
+                     <span className="text-[10px] text-slate-500">عملاء: {reportData.summary?.clientsCount || 0} | موردين: {reportData.summary?.suppliersCount || 0}</span>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات العملاء والمبيعات</p>
+                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalClientVolume || 0).toLocaleString()}</p>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات الموردين ومقاولي الباطن</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSupplierVolume || 0).toLocaleString()}</p>
+                   </div>
+                 </>
+               )}
+
+               {reportType === 'PURCHASES' && (
+                 <>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي أوامر الشراء</p>
+                     <p className="text-xl font-bold text-blue-400 print-text-black">{reportData.summary?.totalOrders || 0} أمر شراء</p>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">قيمة المشتريات والمصروفات</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSpent || 0).toLocaleString()}</p>
+                   </div>
+                 </>
+               )}
             </div>
 
-            {/* Data Table */}
+            {/* Data Tables */}
             <div className="overflow-x-auto print:overflow-visible">
-              <table className="w-full text-right text-sm print:text-xs">
-                <thead className="bg-slate-900/80 print:bg-slate-100 text-slate-400 print:text-black border-b border-white/10 print:border-black/20">
-                  <tr>
-                    {reportType === 'BOQ_PROGRESS' ? (
+              <table className="w-full text-right text-sm">
+                <thead>
+                  <tr className="bg-slate-900/80 print:bg-slate-100 text-slate-400 print:text-black border-b border-white/10 print:border-black/20">
+                    
+                    {reportType === 'FINANCIAL_SUMMARY' && (
                       <>
-                        <th className="px-4 py-3 font-bold">بند الأعمال / الكود</th>
-                        <th className="px-4 py-3 font-bold">المشروع</th>
-                        <th className="px-4 py-3 font-bold text-center">الكمية المقدرة</th>
-                        <th className="px-4 py-3 font-bold text-center">المنفذ الفعلي</th>
-                        <th className="px-4 py-3 font-bold text-center">المتبقي</th>
-                        <th className="px-4 py-3 font-bold">القيمة الحالية (SAR)</th>
-                        <th className="px-4 py-3 font-bold">نسبة إنجاز البند</th>
-                      </>
-                    ) : (
-                      <>
-                        <th className="px-4 py-3 font-bold">التاريخ</th>
-                        <th className="px-4 py-3 font-bold">المشروع</th>
-                        {reportType === 'FINANCIAL_SUMMARY' && (
-                          <>
-                            <th className="px-4 py-3 font-bold">نوع العملية</th>
-                            <th className="px-4 py-3 font-bold text-left">التدفق (SAR)</th>
-                          </>
-                        )}
-                        {reportType === 'PURCHASES' && (
-                          <>
-                            <th className="px-4 py-3 font-bold">المورد</th>
-                            <th className="px-4 py-3 font-bold">الضريبة</th>
-                            <th className="px-4 py-3 font-bold text-left">التكلفة (SAR)</th>
-                          </>
-                        )}
-                        {reportType === 'SUBCONTRACTORS' && (
-                          <>
-                            <th className="px-4 py-3 font-bold">مقاول الباطن</th>
-                            <th className="px-4 py-3 font-bold">الحالة المالية</th>
-                            <th className="px-4 py-3 font-bold text-left">المستحق (SAR)</th>
-                          </>
-                        )}
+                        <th className="px-4 py-3.5 font-bold">التاريخ</th>
+                        <th className="px-4 py-3.5 font-bold">المشروع</th>
+                        <th className="px-4 py-3.5 font-bold">العملية المالية</th>
+                        <th className="px-4 py-3.5 font-bold text-left">المبلغ التدفق (SAR)</th>
                       </>
                     )}
+
+                    {reportType === 'CONTRACTS' && (
+                      <>
+                        <th className="px-4 py-3.5 font-bold">رقم العقد/المرجع</th>
+                        <th className="px-4 py-3.5 font-bold">نوع العقد</th>
+                        <th className="px-4 py-3.5 font-bold">المشروع</th>
+                        <th className="px-4 py-3.5 font-bold">الطرف الآخر (عميل / مقاول)</th>
+                        <th className="px-4 py-3.5 font-bold text-center">قيمة العقد (SAR)</th>
+                        <th className="px-4 py-3.5 font-bold text-center">المصدر (المعتمد)</th>
+                        <th className="px-4 py-3.5 font-bold text-center">المسدد (المدفوع)</th>
+                        <th className="px-4 py-3.5 font-bold text-left">المتبقي (SAR)</th>
+                      </>
+                    )}
+
+                    {reportType === 'BOQ_PROGRESS' && (
+                      <>
+                        <th className="px-4 py-3.5 font-bold">بند الأعمال / الكود</th>
+                        <th className="px-4 py-3.5 font-bold">المشروع</th>
+                        <th className="px-4 py-3.5 font-bold text-center">سعر الوحدة</th>
+                        <th className="px-4 py-3.5 font-bold text-center">الكمية المقدرة</th>
+                        <th className="px-4 py-3.5 font-bold text-center">المنفذ الفعلي</th>
+                        <th className="px-4 py-3.5 font-bold text-center">الكمية المتبقية</th>
+                        <th className="px-4 py-3.5 font-bold text-center">قيمة الإنجاز المالي</th>
+                        <th className="px-4 py-3.5 font-bold text-left">نسبة التقدم</th>
+                      </>
+                    )}
+
+                    {reportType === 'ACHIEVEMENT_RECORDS' && (
+                      <>
+                        <th className="px-4 py-3.5 font-bold print-hide"></th>
+                        <th className="px-4 py-3.5 font-bold">رقم المحضر</th>
+                        <th className="px-4 py-3.5 font-bold">المشروع</th>
+                        <th className="px-4 py-3.5 font-bold">العقد</th>
+                        <th className="px-4 py-3.5 font-bold">تاريخ الاعتماد</th>
+                        <th className="px-4 py-3.5 font-bold">المعتمد</th>
+                        <th className="px-4 py-3.5 font-bold text-center">القيمة الإجمالية</th>
+                        <th className="px-4 py-3.5 font-bold text-left">صافي المستحق</th>
+                      </>
+                    )}
+
+                    {reportType === 'CONTACTS' && (
+                      <>
+                        <th className="px-4 py-3.5 font-bold">الاسم</th>
+                        <th className="px-4 py-3.5 font-bold">السجل التجاري</th>
+                        <th className="px-4 py-3.5 font-bold">نوع جهة الاتصال</th>
+                        <th className="px-4 py-3.5 font-bold text-center">الهاتف والبريد</th>
+                        <th className="px-4 py-3.5 font-bold text-center">عدد المشاريع</th>
+                        <th className="px-4 py-3.5 font-bold text-center">عدد العقود والـ PO</th>
+                        <th className="px-4 py-3.5 font-bold text-left">إجمالي حجم التعامل المالي (SAR)</th>
+                      </>
+                    )}
+
+                    {reportType === 'PURCHASES' && (
+                      <>
+                        <th className="px-4 py-3.5 font-bold">التاريخ</th>
+                        <th className="px-4 py-3.5 font-bold">رقم الـ PO</th>
+                        <th className="px-4 py-3.5 font-bold">المشروع</th>
+                        <th className="px-4 py-3.5 font-bold">المورد</th>
+                        <th className="px-4 py-3.5 font-bold">قيمة الضريبة</th>
+                        <th className="px-4 py-3.5 font-bold text-left">التكلفة الإجمالية (SAR)</th>
+                      </>
+                    )}
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 print:divide-black/10 text-slate-300 print-text-black">
                   {reportData.data?.length > 0 ? reportData.data.map((row: any, i: number) => (
-                    <tr key={i} className="hover:bg-slate-800/30 print:hover:bg-transparent">
-                      {reportType === 'BOQ_PROGRESS' ? (
-                        <>
-                          <td className="px-4 py-3">
-                             <div className="font-bold text-white print-text-black truncate max-w-[200px]" title={row.description}>{row.description}</div>
-                             <div className="text-xs text-slate-500 font-mono">{row.itemCode}</div>
-                          </td>
-                          <td className="px-4 py-3 font-bold text-xs">{row.project}</td>
-                          <td className="px-4 py-3 font-mono text-center">{row.plannedQty}</td>
-                          <td className="px-4 py-3 font-mono text-center font-bold text-emerald-400 print-text-black">{row.executedQty}</td>
-                          <td className="px-4 py-3 font-mono text-center text-rose-400 print-text-black">{row.remainingQty}</td>
-                          <td className="px-4 py-3 font-mono font-bold text-white print-text-black">{Number(row.executedValue).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                          <td className="px-4 py-3 font-mono text-xs">
-                             <div className="flex items-center gap-2">
-                               <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden print-hide">
-                                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(Number(row.completionPercentage), 100)}%` }} />
-                               </div>
-                               <span className={Number(row.completionPercentage) >= 100 ? 'text-emerald-400' : ''}>{row.completionPercentage}%</span>
-                             </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-4 py-3 font-mono">{new Date(row.date).toLocaleDateString('ar-SA')}</td>
-                          <td className="px-4 py-3 font-bold">{row.project || '-'}</td>
-                          
-                          {reportType === 'FINANCIAL_SUMMARY' && (
-                            <>
-                              <td className="px-4 py-3">{row.type}</td>
-                              <td className={`px-4 py-3 font-mono font-bold text-left ${row.amount > 0 ? 'text-emerald-400 print-text-black' : 'text-rose-400 print-text-black'}`}>
-                                {row.amount > 0 ? '+' : ''}{Number(row.amount).toLocaleString()}
-                              </td>
-                            </>
-                          )}
-                          
-                          {reportType === 'PURCHASES' && (
-                            <>
-                              <td className="px-4 py-3">{row.supplier}</td>
-                              <td className="px-4 py-3 font-mono text-slate-400">{Number(row.taxAmount).toLocaleString()}</td>
-                              <td className="px-4 py-3 font-mono font-bold text-rose-400 print-text-black text-left">{Number(row.total).toLocaleString()}</td>
-                            </>
-                          )}
+                    <>
+                      <tr key={row.id || i} className="hover:bg-slate-800/30 print:hover:bg-transparent">
+                        
+                        {reportType === 'FINANCIAL_SUMMARY' && (
+                          <>
+                            <td className="px-4 py-3.5 font-mono text-xs">{new Date(row.date).toLocaleDateString('ar-SA')}</td>
+                            <td className="px-4 py-3.5 font-bold">{row.project || 'عام'}</td>
+                            <td className="px-4 py-3.5">{row.type}</td>
+                            <td className={`px-4 py-3.5 font-mono font-bold text-left ${row.amount > 0 ? 'text-emerald-400 print-text-black' : 'text-rose-400 print-text-black'}`}>
+                              {row.amount > 0 ? '+' : ''}{Number(row.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                            </td>
+                          </>
+                        )}
 
-                          {reportType === 'SUBCONTRACTORS' && (
-                            <>
-                              <td className="px-4 py-3">{row.subcontractor}</td>
-                              <td className="px-4 py-3 text-xs font-bold">
-                                <span className={row.paymentStatus === 'PAID' ? 'text-emerald-400 print-text-black' : row.paymentStatus === 'PARTIAL' ? 'text-amber-400 print-text-black' : 'text-rose-400 print-text-black'}>
-                                  {row.paymentStatus === 'PAID' ? 'مسدد' : row.paymentStatus === 'PARTIAL' ? 'جزئي' : 'قيد الانتظار'}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 font-mono font-bold text-white print-text-black text-left">{Number(row.netAmount).toLocaleString()}</td>
-                            </>
-                          )}
-                        </>
+                        {reportType === 'CONTRACTS' && (
+                          <>
+                            <td className="px-4 py-3.5 font-mono font-bold text-xs text-white print-text-black">{row.referenceNumber}</td>
+                            <td className="px-4 py-3.5 text-xs">
+                              <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${row.type === 'MAIN_CONTRACT' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                {row.type === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد مقاول باطن'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 font-bold text-xs">{row.project}</td>
+                            <td className="px-4 py-3.5 font-bold">{row.partyName}</td>
+                            <td className="px-4 py-3.5 font-mono text-center">{Number(row.totalValue).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-emerald-400 print-text-black font-semibold">{Number(row.totalInvoiced).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-blue-400 print-text-black">{Number(row.totalPaid).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-mono font-bold text-rose-400 print-text-black text-left">{Number(row.remaining).toLocaleString()}</td>
+                          </>
+                        )}
+
+                        {reportType === 'BOQ_PROGRESS' && (
+                          <>
+                            <td className="px-4 py-3.5">
+                               <div className="font-bold text-white print-text-black truncate max-w-[200px]" title={row.description}>{row.description}</div>
+                               <div className="text-[10px] text-slate-500 font-mono">{row.itemCode}</div>
+                            </td>
+                            <td className="px-4 py-3.5 font-bold text-xs">{row.project}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-xs">SAR {Number(row.unitPrice).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-mono text-center font-bold">{row.plannedQty}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-emerald-400 print-text-black font-bold">{row.executedQty}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-rose-400 print-text-black">{row.remainingQty}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-white print-text-black font-semibold">{Number(row.executedValue).toLocaleString(undefined, {minimumFractionDigits: 1})}</td>
+                            <td className="px-4 py-3.5 font-mono text-xs text-left">
+                               <div className="flex items-center gap-2 justify-end">
+                                 <div className="w-16 h-1 bg-slate-800 rounded-full overflow-hidden print-hide">
+                                   <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(Number(row.completionPercentage), 100)}%` }} />
+                                 </div>
+                                 <span className={Number(row.completionPercentage) >= 100 ? 'text-emerald-400 font-bold' : ''}>{row.completionPercentage}%</span>
+                               </div>
+                            </td>
+                          </>
+                        )}
+
+                        {reportType === 'ACHIEVEMENT_RECORDS' && (
+                          <>
+                            <td className="px-3 py-3.5 print-hide">
+                              <button 
+                                onClick={() => toggleInvoiceDetails(row.id)}
+                                className="p-1 rounded-md hover:bg-slate-800 text-slate-400 transition-colors"
+                              >
+                                {expandedInvoiceId === row.id ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3.5 font-mono font-bold text-white print-text-black text-xs">{row.invoiceNumber}</td>
+                            <td className="px-4 py-3.5 font-bold text-xs">{row.project}</td>
+                            <td className="px-4 py-3.5 text-xs">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.contractType === 'MAIN_CONTRACT' ? 'bg-blue-500/10 text-blue-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                                {row.contractType === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد مقاول باطن'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 font-mono text-xs">{row.approvedAt ? new Date(row.approvedAt).toLocaleDateString('ar-SA') : new Date(row.issueDate).toLocaleDateString('ar-SA')}</td>
+                            <td className="px-4 py-3.5 text-xs font-semibold">{row.approvedBy}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-slate-400">{Number(row.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 1})}</td>
+                            <td className="px-4 py-3.5 font-mono font-bold text-emerald-400 print-text-black text-left">{Number(row.netAmount).toLocaleString(undefined, {minimumFractionDigits: 1})}</td>
+                          </>
+                        )}
+
+                        {reportType === 'CONTACTS' && (
+                          <>
+                            <td className="px-4 py-3.5">
+                              <div className="font-bold text-white print-text-black">{row.name}</div>
+                              <div className="text-[10px] text-slate-500">{row.contactPerson !== '-' ? `مسؤول: ${row.contactPerson}` : ''}</div>
+                            </td>
+                            <td className="px-4 py-3.5 font-mono text-xs">{row.commercialName}</td>
+                            <td className="px-4 py-3.5 text-xs">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.type === 'CLIENT' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                                {row.type === 'CLIENT' ? 'عميل / مالك' : 'مورد / مقاول'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-center font-mono text-xs">
+                              <div>{row.phone}</div>
+                              <div className="text-[10px] text-slate-500">{row.email}</div>
+                            </td>
+                            <td className="px-4 py-3.5 font-mono text-center font-semibold">{row.projectsCount}</td>
+                            <td className="px-4 py-3.5 font-mono text-center text-slate-400">{row.contractsCount}</td>
+                            <td className="px-4 py-3.5 font-mono font-bold text-left text-white print-text-black">{Number(row.volume).toLocaleString()}</td>
+                          </>
+                        )}
+
+                        {reportType === 'PURCHASES' && (
+                          <>
+                            <td className="px-4 py-3.5 font-mono text-xs">{new Date(row.date).toLocaleDateString('ar-SA')}</td>
+                            <td className="px-4 py-3.5 font-mono text-xs font-bold text-white print-text-black">{row.poNumber}</td>
+                            <td className="px-4 py-3.5 font-bold text-xs">{row.project || 'عام'}</td>
+                            <td className="px-4 py-3.5">{row.supplier}</td>
+                            <td className="px-4 py-3.5 font-mono text-slate-400 text-center">{Number(row.taxAmount).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-mono font-bold text-rose-400 print-text-black text-left">{Number(row.total).toLocaleString()}</td>
+                          </>
+                        )}
+
+                      </tr>
+
+                      {/* Expandable details list for Certified Achievement Record */}
+                      {reportType === 'ACHIEVEMENT_RECORDS' && expandedInvoiceId === row.id && (
+                        <tr className="bg-slate-900/80 print:bg-slate-50">
+                          <td colSpan={8} className="p-4 border-t border-b border-indigo-500/20">
+                            <div className="space-y-3">
+                              <h4 className="text-xs font-bold text-indigo-400 print-text-black flex items-center gap-2">
+                                <Award size={14} /> تفاصيل البنود والكميات المنجزة في هذا المحضر:
+                              </h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-right text-xs bg-slate-950/50 print:bg-white rounded-lg overflow-hidden border border-white/5 print:border-black/20">
+                                  <thead>
+                                    <tr className="bg-slate-900/50 print:bg-slate-200 text-slate-400 print:text-black">
+                                      <th className="px-3 py-2">البند / التفاصيل</th>
+                                      <th className="px-3 py-2 text-center">الوحدة</th>
+                                      <th className="px-3 py-2 text-center">سعر الفئة</th>
+                                      <th className="px-3 py-2 text-center">كمية سابق</th>
+                                      <th className="px-3 py-2 text-center font-bold text-indigo-400 print-text-black">كمية حالي</th>
+                                      <th className="px-3 py-2 text-center">كمية إجمالي</th>
+                                      <th className="px-3 py-2 text-left">القيمة الحالية (SAR)</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-white/5 print:divide-black/10">
+                                    {row.details.map((detail: any, dIdx: number) => (
+                                      <tr key={dIdx} className="hover:bg-slate-900">
+                                        <td className="px-3 py-2">
+                                          <span className="font-bold text-white print-text-black">{detail.description}</span>
+                                          <span className="block text-[9px] text-slate-500 font-mono">{detail.itemCode}</span>
+                                        </td>
+                                        <td className="px-3 py-2 text-center text-slate-400">{detail.unit}</td>
+                                        <td className="px-3 py-2 text-center font-mono">SAR {Number(detail.unitPrice).toLocaleString()}</td>
+                                        <td className="px-3 py-2 text-center font-mono">{detail.previousQty}</td>
+                                        <td className="px-3 py-2 text-center font-mono font-bold text-indigo-400 print-text-black">{detail.currentQty}</td>
+                                        <td className="px-3 py-2 text-center font-mono">{detail.totalQty}</td>
+                                        <td className="px-3 py-2 text-left font-mono font-bold text-white print-text-black">SAR {Number(detail.currentValue).toLocaleString()}</td>
+                                      </tr>
+                                    ))}
+                                    {row.details.length === 0 && (
+                                      <tr>
+                                        <td colSpan={7} className="px-3 py-4 text-center text-slate-600">لا توجد تفاصيل بنود مسجلة لهذا المستخلص</td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       )}
-                    </tr>
+                    </>
                   )) : (
                     <tr>
-                      <td colSpan={5} className="px-4 py-12 text-center text-slate-500 print:text-black">لا توجد بيانات مطابقة لهذه الفلاتر</td>
+                      <td colSpan={10} className="px-4 py-12 text-center text-slate-500 print:text-black">لا توجد بيانات مطابقة لهذه الفلاتر</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
             
-            <div className="mt-12 pt-8 border-t border-dashed border-white/20 print:border-black/20 flex justify-between items-center print-text-black">
-              <p className="text-xs text-slate-500 print-text-black">تم إصدار هذا التقرير من نظام PMS الآلي</p>
-              <div className="flex gap-12 text-sm font-bold text-slate-400 print-text-black">
-                <span>توقيع المراجعة: _________________</span>
-                <span>الاعتماد: _________________</span>
+            {/* Signature & Certified blocks at the bottom of the printed report */}
+            <div className="mt-12 pt-8 border-t border-dashed border-white/20 print:border-black/20 flex flex-col sm:flex-row justify-between items-center gap-6 print-text-black">
+              <p className="text-xs text-slate-500 print-text-black">تم إصدار هذا التقرير آلياً من نظام إدارة المشاريع PMS contracting</p>
+              <div className="flex gap-12 text-xs md:text-sm font-bold text-slate-400 print-text-black">
+                <span>توقيع المراجعة المالي: _________________</span>
+                <span>اعتماد الإدارة والمشروع: _________________</span>
               </div>
             </div>
           </>
