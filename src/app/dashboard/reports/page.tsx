@@ -129,36 +129,56 @@ export default function ReportsPage() {
       {/* Interactive Filters Panel (Hidden in Print) */}
       <div className="print-hide grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Navigation Tabs */}
-        <div className="bg-slate-900/40 p-5 rounded-2xl border border-white/5 space-y-2">
-           <label className="text-slate-400 text-xs font-bold flex items-center gap-2 mb-3"><Filter size={14}/> تصفية حسب نوع التقرير</label>
-           <div className="flex flex-col gap-2">
-             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+        <div className="bg-slate-900/40 p-5 rounded-2xl border border-white/5 space-y-4 max-h-[80vh] overflow-y-auto">
+           <label className="text-slate-400 text-xs font-bold flex items-center gap-2 mb-1"><Filter size={14}/> تصفية حسب نوع التقرير</label>
+           
+           {/* Group 1: General Reports */}
+           <div className="space-y-1.5">
+             <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-2 mb-1">التقارير العامة</div>
+             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
                <span className="flex items-center gap-2"><DollarSign size={16}/> الأرباح والخسائر (P&L)</span>
                <TrendingUp size={14} className="opacity-60"/>
              </button>
-             
-             <button onClick={() => setReportType('CONTRACTS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CONTRACTS' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
-               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود الملاك ومقاولي الباطن</span>
-               <Award size={14} className="opacity-60"/>
-             </button>
-
-             <button onClick={() => setReportType('BOQ_PROGRESS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'BOQ_PROGRESS' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
-               <span className="flex items-center gap-2"><Layers size={16}/> كميات BOQ والمنفذ والمتبقي</span>
+             <button onClick={() => setReportType('BOQ_PROGRESS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'BOQ_PROGRESS' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Layers size={16}/> كميات BOQ والمنجز</span>
                <Activity size={14} className="opacity-60"/>
              </button>
+           </div>
 
-             <button onClick={() => setReportType('ACHIEVEMENT_RECORDS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
-               <span className="flex items-center gap-2"><FileText size={16}/> محاضر الإنجاز المعتمدة</span>
+           {/* Group 2: Client Reports */}
+           <div className="space-y-1.5 pt-2 border-t border-white/5">
+             <div className="text-[10px] uppercase tracking-wider text-blue-400 font-bold px-2 mb-1">تقارير العملاء</div>
+             <button onClick={() => setReportType('CLIENT_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CLIENT_CONTRACTS' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود الملاك (العملاء)</span>
+               <Award size={14} className="opacity-60"/>
+             </button>
+             <button onClick={() => setReportType('CLIENT_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><FileText size={16}/> محاضر إنجاز الملاك</span>
                <CheckCircle2 size={14} className="opacity-60"/>
              </button>
-
-             <button onClick={() => setReportType('CONTACTS')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
-               <span className="flex items-center gap-2"><Users size={16}/> حركة الموردين والعملاء المالي</span>
+             <button onClick={() => setReportType('CLIENT_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'CLIENT_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Users size={16}/> حركة العملاء المالية</span>
                <Users size={14} className="opacity-60"/>
              </button>
+           </div>
 
-             <button onClick={() => setReportType('PURCHASES')} className={`px-4 py-3 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'PURCHASES' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
-               <span className="flex items-center gap-2"><ShoppingCart size={16}/> المشتريات والتكاليف العامة</span>
+           {/* Group 3: Supplier Reports */}
+           <div className="space-y-1.5 pt-2 border-t border-white/5">
+             <div className="text-[10px] uppercase tracking-wider text-rose-400 font-bold px-2 mb-1">تقارير الموردين</div>
+             <button onClick={() => setReportType('SUBCONTRACTOR_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود مقاولي الباطن</span>
+               <Award size={14} className="opacity-60"/>
+             </button>
+             <button onClick={() => setReportType('SUBCONTRACTOR_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><FileText size={16}/> محاضر إنجاز المقاولين</span>
+               <CheckCircle2 size={14} className="opacity-60"/>
+             </button>
+             <button onClick={() => setReportType('SUPPLIER_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'SUPPLIER_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><Users size={16}/> حركة الموردين المالية</span>
+               <Users size={14} className="opacity-60"/>
+             </button>
+             <button onClick={() => setReportType('PURCHASES')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all ${reportType === 'PURCHASES' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-800/50 text-slate-400 border border-white/5 hover:bg-slate-800'}`}>
+               <span className="flex items-center gap-2"><ShoppingCart size={16}/> المشتريات والتكاليف</span>
                <ShoppingCart size={14} className="opacity-60"/>
              </button>
            </div>
@@ -217,9 +237,16 @@ export default function ReportsPage() {
                  <h2 className="text-2xl font-black text-white print-text-black uppercase">
                    {reportType === 'FINANCIAL_SUMMARY' ? 'تقرير الأرباح والخسائر للمشاريع (P&L)' : 
                     reportType === 'CONTRACTS' ? 'تقرير عقود المشاريع ومقاولي الباطن' :
+                    reportType === 'CLIENT_CONTRACTS' ? 'تقرير عقود الملاك (العملاء)' :
+                    reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'تقرير عقود مقاولي الباطن' :
                     reportType === 'BOQ_PROGRESS' ? 'تقرير حصر كميات وبنود تعاقد BOQ المنجزة' :
                     reportType === 'ACHIEVEMENT_RECORDS' ? 'سجل محاضر الإنجاز المعتمدة والمستخلصات' :
+                    reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? 'سجل محاضر إنجاز الملاك (العملاء)' :
+                    reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? 'سجل محاضر إنجاز مقاولي الباطن' :
                     reportType === 'CONTACTS' ? 'تقرير حركة جهات الاتصال (العملاء والموردين) المالي' :
+                    reportType === 'CLIENT_CONTACTS' ? 'تقرير حركة جهات الاتصال (العملاء) المالي' :
+                    reportType === 'SUPPLIER_CONTACTS' ? 'تقرير حركة جهات الاتصال (الموردين) المالي' :
+                    reportType === 'PURCHASES' ? 'تقرير المشتريات والتكاليف العامة' :
                     'تقرير المشتريات والتكاليف العامة'}
                  </h2>
                  <p className="text-slate-400 print:text-slate-600 mt-2 text-sm">
@@ -260,26 +287,46 @@ export default function ReportsPage() {
                  </>
                )}
 
-               {reportType === 'CONTRACTS' && (
+               {reportType === 'CLIENT_CONTRACTS' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عقود الملاك (العملاء)</p>
-                     <p className="text-xl font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalMainContractsValue || 0).toLocaleString()}</p>
-                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.mainContractsCount || 0}</span>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي قيمة عقود الملاك</p>
+                     <p className="text-xl font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalValue || 0).toLocaleString()}</p>
+                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.totalContracts || 0}</span>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عقود مقاولي الباطن (التكلفة)</p>
-                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSubcontractsValue || 0).toLocaleString()}</p>
-                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.subcontractsCount || 0}</span>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المستخلصات المعتمدة</p>
+                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalInvoiced || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">صافي حجم التعاقد الإجمالي</p>
-                     <p className="text-xl font-bold text-white print-text-black">SAR {Number(reportData.summary?.netContractingVolume || 0).toLocaleString()}</p>
-                     <span className="text-[10px] text-slate-500">الفرق بين المالك والباطن</span>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المحصل فعلياً</p>
+                     <p className="text-xl font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalPaid || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عدد العقود النشطة</p>
-                     <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContracts || 0} عقد</p>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المتبقي للتحصيل</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.remaining || 0).toLocaleString()}</p>
+                   </div>
+                 </>
+               )}
+
+               {reportType === 'SUBCONTRACTOR_CONTRACTS' && (
+                 <>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عقود مقاولي الباطن</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalValue || 0).toLocaleString()}</p>
+                     <span className="text-[10px] text-slate-500">العدد: {reportData.summary?.totalContracts || 0}</span>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المستخلصات المعتمدة للمقاولين</p>
+                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalInvoiced || 0).toLocaleString()}</p>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المسدد فعلياً للمقاولين</p>
+                     <p className="text-xl font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalPaid || 0).toLocaleString()}</p>
+                   </div>
+                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                     <p className="text-xs text-slate-400 print:text-black mb-1">المتبقي للدفع للمقاولين</p>
+                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.remaining || 0).toLocaleString()}</p>
                    </div>
                  </>
                )}
@@ -305,12 +352,14 @@ export default function ReportsPage() {
                  </>
                )}
 
-               {reportType === 'ACHIEVEMENT_RECORDS' && (
+               {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
                      <p className="text-xs text-slate-400 print:text-black mb-1">عدد محاضر الإنجاز المعتمدة</p>
                      <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalRecords || 0} محضر</p>
-                     <span className="text-[10px] text-slate-500">ملاك: {reportData.summary?.mainContractsRecordsCount || 0} | مقاولين: {reportData.summary?.subcontractsRecordsCount || 0}</span>
+                     {reportType === 'ACHIEVEMENT_RECORDS' && (
+                       <span className="text-[10px] text-slate-500">ملاك: {reportData.summary?.mainContractsRecordsCount || 0} | مقاولين: {reportData.summary?.subcontractsRecordsCount || 0}</span>
+                     )}
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
                      <p className="text-xs text-slate-400 print:text-black mb-1">القيمة المعتمدة قبل الخصميات</p>
@@ -323,113 +372,123 @@ export default function ReportsPage() {
                  </>
                )}
 
-               {reportType === 'CONTACTS' && (
+               {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
                      <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي عدد جهات الاتصال</p>
                      <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContacts || 0} جهة اتصال</p>
-                     <span className="text-[10px] text-slate-500">عملاء: {reportData.summary?.clientsCount || 0} | موردين: {reportData.summary?.suppliersCount || 0}</span>
+                     {reportType === 'CONTACTS' && (
+                       <span className="text-[10px] text-slate-500">عملاء: {reportData.summary?.clientsCount || 0} | موردين: {reportData.summary?.suppliersCount || 0}</span>
+                     )}
                    </div>
-                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات العملاء والمبيعات</p>
-                     <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalClientVolume || 0).toLocaleString()}</p>
-                   </div>
-                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات الموردين ومقاولي الباطن</p>
-                     <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSupplierVolume || 0).toLocaleString()}</p>
-                   </div>
+                   {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS') && (
+                     <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                       <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات العملاء والمبيعات</p>
+                       <p className="text-xl font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalClientVolume || 0).toLocaleString()}</p>
+                     </div>
+                   )}
+                   {(reportType === 'CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
+                     <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                       <p className="text-xs text-slate-400 print:text-black mb-1">حجم تعاملات الموردين ومقاولي الباطن</p>
+                       <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSupplierVolume || 0).toLocaleString()}</p>
+                     </div>
+                   )}
                  </>
                )}
 
                {reportType === 'PURCHASES' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي أوامر الشراء</p>
-                     <p className="text-xl font-bold text-blue-400 print-text-black">{reportData.summary?.totalOrders || 0} أمر شراء</p>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">عدد أوامر الشراء</p>
+                     <p className="text-xl font-bold text-indigo-400 print-text-black">{reportData.summary?.totalOrders || 0} أمر</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-xs text-slate-400 print:text-black mb-1">قيمة المشتريات والمصروفات</p>
+                     <p className="text-xs text-slate-400 print:text-black mb-1">إجمالي قيمة المشتريات</p>
                      <p className="text-xl font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSpent || 0).toLocaleString()}</p>
                    </div>
                  </>
                )}
             </div>
 
-            {/* Data Tables */}
-            <div className="overflow-x-auto print:overflow-visible">
+            {/* Report Details Table */}
+            <div className="overflow-x-auto bg-slate-900/30 rounded-2xl border border-white/5 p-4 print:p-0 print:border-none">
               <table className="w-full text-right text-sm">
                 <thead>
-                  <tr className="bg-slate-900/80 print:bg-slate-100 text-slate-400 print:text-black border-b border-white/10 print:border-black/20">
-                    
+                  <tr className="bg-slate-900/50 print:bg-slate-100 text-slate-400 print:text-black border-b border-white/10 print:border-black">
                     {reportType === 'FINANCIAL_SUMMARY' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold">التاريخ</th>
-                        <th className="px-4 py-3.5 font-bold">المشروع</th>
-                        <th className="px-4 py-3.5 font-bold">العملية المالية</th>
-                        <th className="px-4 py-3.5 font-bold text-left">المبلغ التدفق (SAR)</th>
-                      </>
+                       <>
+                         <th className="px-4 py-3.5 font-bold">التاريخ</th>
+                         <th className="px-4 py-3.5 font-bold">المشروع</th>
+                         <th className="px-4 py-3.5 font-bold">العملية المالية</th>
+                         <th className="px-4 py-3.5 font-bold text-left">المبلغ التدفق (SAR)</th>
+                       </>
                     )}
-
-                    {reportType === 'CONTRACTS' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold">رقم العقد/المرجع</th>
-                        <th className="px-4 py-3.5 font-bold">نوع العقد</th>
-                        <th className="px-4 py-3.5 font-bold">المشروع</th>
-                        <th className="px-4 py-3.5 font-bold">الطرف الآخر (عميل / مقاول)</th>
-                        <th className="px-4 py-3.5 font-bold text-center">قيمة العقد (SAR)</th>
-                        <th className="px-4 py-3.5 font-bold text-center">المصدر (المعتمد)</th>
-                        <th className="px-4 py-3.5 font-bold text-center">المسدد (المدفوع)</th>
-                        <th className="px-4 py-3.5 font-bold text-left">المتبقي (SAR)</th>
-                      </>
+ 
+                    {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
+                       <>
+                         <th className="px-4 py-3.5 font-bold">رقم العقد/المرجع</th>
+                         <th className="px-4 py-3.5 font-bold">نوع العقد</th>
+                         <th className="px-4 py-3.5 font-bold">المشروع</th>
+                         <th className="px-4 py-3.5 font-bold">
+                           {reportType === 'CLIENT_CONTRACTS' ? 'العميل (المالك)' : reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'المقاول الطرف الثاني' : 'الطرف الآخر'}
+                         </th>
+                         <th className="px-4 py-3.5 font-bold text-center">قيمة العقد (SAR)</th>
+                         <th className="px-4 py-3.5 font-bold text-center">المستخلصات المعتمدة</th>
+                         <th className="px-4 py-3.5 font-bold text-center">المسدد فعلياً</th>
+                         <th className="px-4 py-3.5 font-bold text-left">المتبقي</th>
+                       </>
                     )}
-
+ 
                     {reportType === 'BOQ_PROGRESS' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold">بند الأعمال / الكود</th>
-                        <th className="px-4 py-3.5 font-bold">المشروع</th>
-                        <th className="px-4 py-3.5 font-bold text-center">سعر الوحدة</th>
-                        <th className="px-4 py-3.5 font-bold text-center">الكمية المقدرة</th>
-                        <th className="px-4 py-3.5 font-bold text-center">المنفذ الفعلي</th>
-                        <th className="px-4 py-3.5 font-bold text-center">الكمية المتبقية</th>
-                        <th className="px-4 py-3.5 font-bold text-center">قيمة الإنجاز المالي</th>
-                        <th className="px-4 py-3.5 font-bold text-left">نسبة التقدم</th>
-                      </>
+                       <>
+                         <th className="px-4 py-3.5 font-bold">بند الأعمال / الكود</th>
+                         <th className="px-4 py-3.5 font-bold">المشروع</th>
+                         <th className="px-4 py-3.5 font-bold text-center">سعر الوحدة</th>
+                         <th className="px-4 py-3.5 font-bold text-center">الكمية المقدرة</th>
+                         <th className="px-4 py-3.5 font-bold text-center">المنفذ الفعلي</th>
+                         <th className="px-4 py-3.5 font-bold text-center">الكمية المتبقية</th>
+                         <th className="px-4 py-3.5 font-bold text-center">قيمة الإنجاز المالي</th>
+                         <th className="px-4 py-3.5 font-bold text-left">نسبة التقدم</th>
+                       </>
                     )}
-
-                    {reportType === 'ACHIEVEMENT_RECORDS' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold print-hide"></th>
-                        <th className="px-4 py-3.5 font-bold">رقم المحضر</th>
-                        <th className="px-4 py-3.5 font-bold">المشروع</th>
-                        <th className="px-4 py-3.5 font-bold">العقد</th>
-                        <th className="px-4 py-3.5 font-bold">تاريخ الاعتماد</th>
-                        <th className="px-4 py-3.5 font-bold">المعتمد</th>
-                        <th className="px-4 py-3.5 font-bold text-center">القيمة الإجمالية</th>
-                        <th className="px-4 py-3.5 font-bold text-left">صافي المستحق</th>
-                      </>
+ 
+                    {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && (
+                       <>
+                         <th className="px-3 py-3.5 font-bold print-hide"></th>
+                         <th className="px-4 py-3.5 font-bold">رقم المحضر</th>
+                         <th className="px-4 py-3.5 font-bold">المشروع</th>
+                         <th className="px-4 py-3.5 font-bold">نوع العقد</th>
+                         <th className="px-4 py-3.5 font-bold">الطرف الثاني</th>
+                         <th className="px-4 py-3.5 font-bold">تاريخ الاعتماد</th>
+                         <th className="px-4 py-3.5 font-bold">المعتمد</th>
+                         <th className="px-4 py-3.5 font-bold text-center">القيمة الإجمالية</th>
+                         <th className="px-4 py-3.5 font-bold text-left">صافي المستحق</th>
+                       </>
                     )}
-
-                    {reportType === 'CONTACTS' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold">الاسم</th>
-                        <th className="px-4 py-3.5 font-bold">السجل التجاري</th>
-                        <th className="px-4 py-3.5 font-bold">نوع جهة الاتصال</th>
-                        <th className="px-4 py-3.5 font-bold text-center">الهاتف والبريد</th>
-                        <th className="px-4 py-3.5 font-bold text-center">عدد المشاريع</th>
-                        <th className="px-4 py-3.5 font-bold text-center">عدد العقود والـ PO</th>
-                        <th className="px-4 py-3.5 font-bold text-left">إجمالي حجم التعامل المالي (SAR)</th>
-                      </>
+ 
+                    {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
+                       <>
+                         <th className="px-4 py-3.5 font-bold">الاسم</th>
+                         <th className="px-4 py-3.5 font-bold">السجل التجاري</th>
+                         {reportType === 'CONTACTS' && <th className="px-4 py-3.5 font-bold">نوع جهة الاتصال</th>}
+                         <th className="px-4 py-3.5 font-bold text-center">الهاتف والبريد</th>
+                         <th className="px-4 py-3.5 font-bold text-center">عدد المشاريع</th>
+                         <th className="px-4 py-3.5 font-bold text-center">
+                           {reportType === 'CLIENT_CONTACTS' ? 'عدد العقود' : 'العقود وأوامر الشراء'}
+                         </th>
+                         <th className="px-4 py-3.5 font-bold text-left">إجمالي حجم التعامل المالي (SAR)</th>
+                       </>
                     )}
 
                     {reportType === 'PURCHASES' && (
-                      <>
-                        <th className="px-4 py-3.5 font-bold">التاريخ</th>
-                        <th className="px-4 py-3.5 font-bold">رقم الـ PO</th>
-                        <th className="px-4 py-3.5 font-bold">المشروع</th>
-                        <th className="px-4 py-3.5 font-bold">المورد</th>
-                        <th className="px-4 py-3.5 font-bold">قيمة الضريبة</th>
-                        <th className="px-4 py-3.5 font-bold text-left">التكلفة الإجمالية (SAR)</th>
-                      </>
+                       <>
+                         <th className="px-4 py-3.5 font-bold">التاريخ</th>
+                         <th className="px-4 py-3.5 font-bold">رقم الـ PO</th>
+                         <th className="px-4 py-3.5 font-bold">المشروع</th>
+                         <th className="px-4 py-3.5 font-bold">المورد</th>
+                         <th className="px-4 py-3.5 font-bold">قيمة الضريبة</th>
+                         <th className="px-4 py-3.5 font-bold text-left">التكلفة الإجمالية (SAR)</th>
+                       </>
                     )}
 
                   </tr>
@@ -450,7 +509,7 @@ export default function ReportsPage() {
                           </>
                         )}
 
-                        {reportType === 'CONTRACTS' && (
+                        {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
                           <>
                             <td className="px-4 py-3.5 font-mono font-bold text-xs text-white print-text-black">{row.referenceNumber}</td>
                             <td className="px-4 py-3.5 text-xs">
@@ -490,7 +549,7 @@ export default function ReportsPage() {
                           </>
                         )}
 
-                        {reportType === 'ACHIEVEMENT_RECORDS' && (
+                        {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && (
                           <>
                             <td className="px-3 py-3.5 print-hide">
                               <button 
@@ -507,6 +566,7 @@ export default function ReportsPage() {
                                 {row.contractType === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد مقاول باطن'}
                               </span>
                             </td>
+                            <td className="px-4 py-3.5 font-bold">{row.partyName}</td>
                             <td className="px-4 py-3.5 font-mono text-xs">{row.approvedAt ? new Date(row.approvedAt).toLocaleDateString('ar-SA') : new Date(row.issueDate).toLocaleDateString('ar-SA')}</td>
                             <td className="px-4 py-3.5 text-xs font-semibold">{row.approvedBy}</td>
                             <td className="px-4 py-3.5 font-mono text-center text-slate-400">{Number(row.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 1})}</td>
@@ -514,18 +574,20 @@ export default function ReportsPage() {
                           </>
                         )}
 
-                        {reportType === 'CONTACTS' && (
+                        {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                           <>
                             <td className="px-4 py-3.5">
                               <div className="font-bold text-white print-text-black">{row.name}</div>
                               <div className="text-[10px] text-slate-500">{row.contactPerson !== '-' ? `مسؤول: ${row.contactPerson}` : ''}</div>
                             </td>
                             <td className="px-4 py-3.5 font-mono text-xs">{row.commercialName}</td>
-                            <td className="px-4 py-3.5 text-xs">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.type === 'CLIENT' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
-                                {row.type === 'CLIENT' ? 'عميل / مالك' : 'مورد / مقاول'}
-                              </span>
-                            </td>
+                            {reportType === 'CONTACTS' && (
+                              <td className="px-4 py-3.5 text-xs">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.type === 'CLIENT' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                                  {row.type === 'CLIENT' ? 'عميل / مالك' : 'مورد / مقاول'}
+                                </span>
+                              </td>
+                            )}
                             <td className="px-4 py-3.5 text-center font-mono text-xs">
                               <div>{row.phone}</div>
                               <div className="text-[10px] text-slate-500">{row.email}</div>
@@ -550,9 +612,9 @@ export default function ReportsPage() {
                       </tr>
 
                       {/* Expandable details list for Certified Achievement Record */}
-                      {reportType === 'ACHIEVEMENT_RECORDS' && expandedInvoiceId === row.id && (
+                      {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && expandedInvoiceId === row.id && (
                         <tr className="bg-slate-900/80 print:bg-slate-50">
-                          <td colSpan={8} className="p-4 border-t border-b border-indigo-500/20">
+                          <td colSpan={9} className="p-4 border-t border-b border-indigo-500/20">
                             <div className="space-y-3">
                               <h4 className="text-xs font-bold text-indigo-400 print-text-black flex items-center gap-2">
                                 <Award size={14} /> تفاصيل البنود والكميات المنجزة في هذا المحضر:
