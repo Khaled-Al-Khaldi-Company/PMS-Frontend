@@ -20,7 +20,8 @@ import {
   Eye,
   Printer,
   Edit3,
-  Trash2
+  Trash2,
+  RotateCcw
 } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
@@ -118,6 +119,21 @@ export default function InvoicesPage() {
       if (selectedContractId) fetchInvoices(selectedContractId);
     } catch (err: any) {
       alert(err.response?.data?.message || "حدث خطأ أثناء الحذف.");
+    }
+  };
+
+  const handleRevertToDraft = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm("هل أنت متأكد من إرجاع هذا المستخلص إلى حالة المسودة؟ سيتم إلغاء اعتماده ويمكن تعديله أو حذفه.")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API_BASE_URL}/v1/invoices/${id}/revert-to-draft`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (selectedContractId) fetchInvoices(selectedContractId);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "حدث خطأ أثناء الإرجاع للمسودة.");
     }
   };
 
@@ -458,6 +474,15 @@ export default function InvoicesPage() {
                               <Trash2 size={16} />
                             </button>
                           </>
+                        )}
+                        {inv.status === 'CERTIFIED' && (
+                          <button
+                            onClick={(e) => handleRevertToDraft(e, inv.id)}
+                            title="إرجاع للمسودة (إلغاء الاعتماد)"
+                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all border border-orange-500/20"
+                          >
+                            <RotateCcw size={16} />
+                          </button>
                         )}
                       </div>
                     </td>
