@@ -19,13 +19,13 @@ import {
   Wallet,
   Trash2
 } from "lucide-react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-import { API_BASE_URL } from "@/lib/api";
+import { api } from "@/lib/api";
+import type { Project } from "@/lib/types";
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -36,10 +36,7 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get<Project[]>('/v1/projects');
       setProjects(res.data);
     } catch (err) {
       console.error("Failed to fetch projects");
@@ -48,22 +45,20 @@ export default function ProjectsPage() {
     }
   };
 
-  const deleteProject = async (e: any, id: string) => {
+  const deleteProject = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm("هل أنت متأكد من رغبتك في حذف هذا المشروع نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.")) return;
     
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_BASE_URL}/v1/projects/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/v1/projects/${id}`);
       fetchProjects();
-    } catch (err: any) {
-      alert(err.response?.data?.message || "فشل حذف المشروع");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "فشل حذف المشروع";
+      alert(message);
     }
   };
 
-  const statusMap: Record<string, { label: string, color: string, border: string, bg: string, glow: string, icon: any }> = {
+  const statusMap: Record<string, { label: string, color: string, border: string, bg: string, glow: string, icon: React.ComponentType<{ size?: number; className?: string }> }> = {
     PLANNING: { label: "قيد التخطيط", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", glow: "from-amber-500/20 to-transparent", icon: Clock },
     ACTIVE: { label: "نشط (قيد التنفيذ)", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", glow: "from-blue-500/20 to-transparent", icon: HardHat },
     COMPLETED: { label: "مكتمل", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", glow: "from-emerald-500/20 to-transparent", icon: CheckCircle2 },

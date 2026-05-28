@@ -23,22 +23,22 @@ import {
   Trash2,
   RotateCcw
 } from "lucide-react";
-import axios from "axios";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/api";
+import { api } from "@/lib/api";
+import type { Project, Contract, Invoice } from "@/lib/types";
 
 export default function InvoicesPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   
-  const [contracts, setContracts] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [selectedContractId, setSelectedContractId] = useState<string>("");
   const [selectedRevenueContractId, setSelectedRevenueContractId] = useState<string>("");
   const [selectedCostContractId, setSelectedCostContractId] = useState<string>("");
-  const [selectedContract, setSelectedContract] = useState<any>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -62,7 +62,7 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     if (selectedContractId) {
-      const contract = contracts.find(c => c.id === selectedContractId);
+      const contract = contracts.find(c => c.id === selectedContractId) ?? null;
       setSelectedContract(contract);
       fetchInvoices(selectedContractId);
     } else {
@@ -73,37 +73,23 @@ export default function InvoicesPage() {
 
   const fetchProjects = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get<Project[]>('/v1/projects');
       setProjects(res.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/");
-      }
     }
   };
 
   const fetchContracts = async (projectId: string) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/contracts/project/${projectId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get<Contract[]>(`/v1/contracts/project/${projectId}`);
       setContracts(res.data);
       setSelectedContractId("");
       setSelectedRevenueContractId("");
       setSelectedCostContractId("");
       setSelectedContract(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/");
-      }
     }
   };
 
@@ -112,13 +98,10 @@ export default function InvoicesPage() {
     if (!confirm("هل أنت متأكد من حذف المستخلص؟ ستتم استعادة جميع الكميات التي تم احتسابها في هذا المستخلص.")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_BASE_URL}/v1/invoices/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/v1/invoices/${id}`);
       if (selectedContractId) fetchInvoices(selectedContractId);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الحذف.");
+    } catch (err) {
+      alert("حدث خطأ أثناء الحذف.");
     }
   };
 
@@ -127,30 +110,20 @@ export default function InvoicesPage() {
     if (!confirm("هل أنت متأكد من إرجاع هذا المستخلص إلى حالة المسودة؟ سيتم إلغاء اعتماده ويمكن تعديله أو حذفه.")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.patch(`${API_BASE_URL}/v1/invoices/${id}/revert-to-draft`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.patch(`/v1/invoices/${id}/revert-to-draft`, {});
       if (selectedContractId) fetchInvoices(selectedContractId);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "حدث خطأ أثناء الإرجاع للمسودة.");
+    } catch (err) {
+      alert("حدث خطأ أثناء الإرجاع للمسودة.");
     }
   };
 
   const fetchInvoices = async (contractId: string) => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/invoices/contract/${contractId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get<Invoice[]>(`/v1/invoices/contract/${contractId}`);
       setInvoices(res.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/");
-      }
     }
     setIsLoading(false);
   };
