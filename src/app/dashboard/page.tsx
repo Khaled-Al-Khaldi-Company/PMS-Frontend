@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "@/lib/api";
+import { api } from "@/lib/api";
+import type { DashboardStats } from "@/lib/types";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -16,40 +16,30 @@ import {
   ArrowUpRight,
   ArrowRight
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 export default function DashboardPage() {
-  const router = useRouter();
-  const [data, setData] = useState({
+  const [data, setData] = useState<DashboardStats>({
     totalProjects: 0,
     certifiedValue: 0,
+    totalCosts: 0,
+    profitMargin: 0,
     outstandingRetention: 0,
     totalSubcontractors: 0,
-    chartData: [] as { month: string; value: number }[],
-    recentActivities: [] as { id: string; title: string; subtitle: string; status: string }[]
+    chartData: [],
+    recentActivities: []
   });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/v1/dashboard/stats`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get<DashboardStats>('/v1/dashboard/stats');
         setData({
           ...res.data,
           chartData: res.data.chartData || [],
           recentActivities: res.data.recentActivities || []
         });
-      } catch (e: any) {
-        // Handle 401 specifically without causing Next.js red screen
-        if (e.response?.status === 401) {
-          localStorage.removeItem("token");
-          router.push("/login");
-        } else {
-          console.warn("Could not load stats. Server might be down or not returning data.", e.message);
-        }
+      } catch (e) {
+        console.warn("Could not load stats.");
       } finally {
         setIsLoading(false);
       }
