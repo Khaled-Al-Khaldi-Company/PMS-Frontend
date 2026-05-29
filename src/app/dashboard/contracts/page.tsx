@@ -62,7 +62,10 @@ export default function ContractsPage() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/contracts?type=${type}`, {
+      const params: any = { type };
+      if (selectedProjectId) params.projectId = selectedProjectId;
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts`, {
+        params,
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(res.data);
@@ -240,23 +243,21 @@ export default function ContractsPage() {
           />
         </div>
         
-        {filterType === "all" && (
-          <div className="flex items-center gap-3">
-            <label className="text-slate-400 text-sm font-medium">فرز حسب المشروع:</label>
-            <div className="flex items-center border border-white/10 bg-slate-900/80 rounded-xl px-2">
-              <select 
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="bg-transparent text-white text-sm font-medium outline-none px-3 py-2 cursor-pointer w-48 appearance-none"
-              >
-                <option value="" disabled className="bg-slate-900">-- اختر مشروعاً --</option>
-                {projects.map(p => (
-                  <option key={p.id} value={p.id} className="bg-slate-900">{p.name} ({p.code})</option>
-                ))}
-              </select>
-            </div>
+        <div className="flex items-center gap-3">
+          <label className="text-slate-400 text-sm font-medium">فرز حسب المشروع:</label>
+          <div className="flex items-center border border-white/10 bg-slate-900/80 rounded-xl px-2">
+            <select 
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="bg-transparent text-white text-sm font-medium outline-none px-3 py-2 cursor-pointer w-48 appearance-none"
+            >
+              <option value="" className="bg-slate-900">-- كل المشاريع --</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id} className="bg-slate-900">{p.name} ({p.code})</option>
+              ))}
+            </select>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
