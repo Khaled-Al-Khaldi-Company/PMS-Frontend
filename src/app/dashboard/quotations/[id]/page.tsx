@@ -26,7 +26,6 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
@@ -633,9 +632,6 @@ export default function EditQuotationPage() {
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
-
-        {/* ===== رأس الورقة باسم الشركة ===== */}
-        <PrintHeader />
 
         {/* ===== البيانات فوق الورقة ===== */}
         <div className="mb-8">

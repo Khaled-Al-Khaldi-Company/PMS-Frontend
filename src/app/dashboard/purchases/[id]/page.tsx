@@ -7,7 +7,6 @@ import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw,
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
@@ -201,9 +200,6 @@ export default function ViewPurchaseOrderPage() {
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
-
-        {/* ===== رأس الورقة باسم الشركة ===== */}
-        <PrintHeader />
 
         {/* ===== البيانات فوق الورقة ===== */}
         <div className="mb-8">

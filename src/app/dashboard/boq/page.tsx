@@ -23,7 +23,6 @@ import axios from "axios";
 import { formatNumber, inferBillingModeFromUnit, resolveBillingMode } from "@/lib/billingMode";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "@/app/dashboard/components/PrintHeader";
 import PrintFooter from "@/app/dashboard/components/PrintFooter";
 import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
 
@@ -576,7 +575,6 @@ export default function BoqPage() {
       {/* Print View */}
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <PrintHeader />
         <div className="mb-6">
           <h1 className="text-2xl font-black text-slate-900">جداول الكميات (BOQ)</h1>
           <p className="text-sm text-slate-500 font-bold">

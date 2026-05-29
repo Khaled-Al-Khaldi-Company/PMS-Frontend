@@ -19,7 +19,6 @@ import {
   Printer
 } from "lucide-react";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "@/app/dashboard/components/PrintHeader";
 import PrintFooter from "@/app/dashboard/components/PrintFooter";
 
 export default function CreateDPRPage() {
@@ -274,7 +273,6 @@ export default function CreateDPRPage() {
 
       {/* Print View */}
       <div ref={pdfRef} className="hidden print:block print:!bg-white print:!text-black font-sans p-8" dir="rtl">
-        <PrintHeader />
         <div className="text-center mb-6 border-b-2 border-slate-900 pb-4">
           <h1 className="text-2xl font-black text-slate-900">تقرير الموقع اليومي</h1>
           <h2 className="text-sm text-slate-500 font-bold">Daily Progress Report (DPR)</h2>

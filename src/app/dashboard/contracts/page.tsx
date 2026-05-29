@@ -28,7 +28,6 @@ import {
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "../components/PrintHeader";
 import PrintFooter from "../components/PrintFooter";
 import PrintLetterhead from "../components/PrintLetterhead";
 
@@ -431,9 +430,8 @@ export default function ContractsPage() {
       {/* Print Template */}
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <PrintHeader />
 
-        <div className="px-8 py-4">
+        <div className="px-8 pt-20 pb-4">
           <h2 className="text-2xl font-bold text-center mb-1">كشف العقود</h2>
           <p className="text-center text-sm text-gray-500 mb-6">
             {filterLabels[filterType]}

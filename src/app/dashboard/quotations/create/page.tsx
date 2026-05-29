@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
-import PrintHeader from "../../components/PrintHeader";
 
 export default function CreateQuotationPage() {
   const router = useRouter();
@@ -628,8 +627,6 @@ export default function CreateQuotationPage() {
                <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
              </div>
            </div>
-           
-           <PrintHeader />
         </div>
 
         {/* Client & Project Info */}

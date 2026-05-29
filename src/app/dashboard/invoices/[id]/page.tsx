@@ -48,7 +48,6 @@ function formatDetailProgress(
   }
   return qty;
 }
-import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
@@ -483,9 +482,6 @@ export default function InvoiceViewPage() {
     <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
       {/* ===== الورقة الرسمية كخلفية ===== */}
       <PrintLetterhead />
-
-      {/* ===== رأس الورقة باسم الشركة ===== */}
-      <PrintHeader />
 
       {/* ===== البيانات فوق الورقة ===== */}
          <div className="mb-8">

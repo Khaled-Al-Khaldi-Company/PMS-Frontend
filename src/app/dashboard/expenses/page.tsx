@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintHeader from "../components/PrintHeader";
 import { useCompany } from "@/context/CompanyContext";
 
 export default function ExpensesPage() {
@@ -296,7 +295,6 @@ export default function ExpensesPage() {
            </div>
          </div>
          
-          <PrintHeader />
       </div>
 
       <table className="w-full text-right border-collapse mb-8 print:w-full">
