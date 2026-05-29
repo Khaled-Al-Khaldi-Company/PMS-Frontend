@@ -28,7 +28,6 @@ import {
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "../components/PrintFooter";
 import PrintLetterhead from "../components/PrintLetterhead";
 
 export default function ContractsPage() {
@@ -509,9 +508,7 @@ export default function ContractsPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </>
   );

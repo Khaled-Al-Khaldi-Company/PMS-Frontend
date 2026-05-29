@@ -48,7 +48,6 @@ function formatDetailProgress(
   }
   return qty;
 }
-import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function InvoiceViewPage() {
@@ -603,10 +602,7 @@ export default function InvoiceViewPage() {
         </div>
       </div>
 
-      {/* Print Footer — الورقة الرسمية */}
-      <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-        <PrintFooter />
-      </div>
+
 
     </div>
     </>

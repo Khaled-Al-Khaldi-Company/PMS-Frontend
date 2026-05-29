@@ -23,7 +23,6 @@ import axios from "axios";
 import { formatNumber, inferBillingModeFromUnit, resolveBillingMode } from "@/lib/billingMode";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "@/app/dashboard/components/PrintFooter";
 import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
 
 export default function BoqPage() {
@@ -638,9 +637,7 @@ export default function BoqPage() {
             </tr>
           </tfoot>
         </table>
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </div>
   );

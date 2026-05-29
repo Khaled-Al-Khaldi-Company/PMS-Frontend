@@ -7,7 +7,6 @@ import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw,
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function ViewPurchaseOrderPage() {
@@ -305,10 +304,7 @@ export default function ViewPurchaseOrderPage() {
           </div>
         </div>
         
-        {/* Print Footer — الورقة الرسمية */}
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </>
   );

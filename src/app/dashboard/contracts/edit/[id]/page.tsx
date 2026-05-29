@@ -11,7 +11,6 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "@/app/dashboard/components/PrintFooter";
 import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
 
 export default function EditContractPage() {
@@ -639,9 +638,7 @@ export default function EditContractPage() {
             <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{formData.scope}</p>
           </div>
         )}
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </>
   );

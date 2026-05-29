@@ -26,7 +26,6 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function EditQuotationPage() {
@@ -748,10 +747,7 @@ export default function EditQuotationPage() {
           </div>
         </div>
 
-        {/* Print Footer — الورقة الرسمية */}
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </>
   );

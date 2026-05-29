@@ -19,7 +19,6 @@ import {
   Printer
 } from "lucide-react";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
-import PrintFooter from "@/app/dashboard/components/PrintFooter";
 
 export default function CreateDPRPage() {
   const params = useParams();
@@ -333,9 +332,7 @@ export default function CreateDPRPage() {
             </table>
           </div>
         )}
-        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
-          <PrintFooter />
-        </div>
+
       </div>
     </div>
   );
