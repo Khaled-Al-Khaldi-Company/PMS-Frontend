@@ -31,6 +31,8 @@ import {
   FileDown,
   BarChart3
 } from "lucide-react";
+import { useCompany } from "@/context/CompanyContext";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 
 // ==========================================
 // 1. Custom SVG Charts Components (Arabic Support)
@@ -75,16 +77,16 @@ const FinancialBarChart = ({ data }: { data: any[] }) => {
                   </div>
                 </motion.div>
               </div>
-              <span className="text-[10px] text-slate-400 mt-2 truncate w-full text-center block" title={item.name}>{item.name}</span>
+              <span className="text-[10px] text-slate-400 print:text-slate-800 mt-2 truncate w-full text-center block font-bold" title={item.name}>{item.name}</span>
             </div>
           );
         })}
       </div>
-      <div className="flex justify-center gap-6 mt-4 border-t border-white/5 pt-3">
-        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+      <div className="flex justify-center gap-6 mt-4 border-t border-white/5 print:border-slate-200 pt-3">
+        <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
           <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> الإيرادات
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+        <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
           <div className="w-2.5 h-2.5 bg-rose-500 rounded" /> التكاليف
         </div>
       </div>
@@ -98,7 +100,6 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
     return <div className="text-slate-500 text-xs text-center py-12">لا توجد نفقات للتحليل</div>;
   }
   
-  let accumulatedPercent = 0;
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   
@@ -110,8 +111,7 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
           {data.map((item, index) => {
             const strokeDashoffset = circumference - (item.percentage / 100) * circumference;
             const strokeDasharray = `${circumference} ${circumference}`;
-            const rotation = (accumulatedPercent / 100) * 360;
-            accumulatedPercent += item.percentage;
+            const rotation = data.slice(0, index).reduce((sum, d) => sum + d.percentage, 0) * 3.6;
             
             return (
               <motion.circle
@@ -134,11 +134,11 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[9px] text-slate-500 uppercase">إجمالي التكلفة</span>
-          <span className="text-xs font-black text-white font-mono">
+          <span className="text-[9px] text-slate-500 print:text-slate-700 uppercase">إجمالي التكلفة</span>
+          <span className="text-xs font-black text-white print:text-black font-mono">
             {Number(data.reduce((sum, d) => sum + d.value, 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
-          <span className="text-[8px] text-slate-400">SAR</span>
+          <span className="text-[8px] text-slate-400 print:text-slate-600">SAR</span>
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -146,9 +146,9 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
           <div key={index} className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
             <div className="text-[11px] leading-none">
-              <span className="text-slate-300 font-bold ml-1">{item.name}:</span>
-              <span className="text-slate-400 font-mono ml-1">{item.percentage.toFixed(1)}%</span>
-              <span className="text-[9px] text-slate-500 font-mono">({Number(item.value).toLocaleString()} SAR)</span>
+              <span className="text-slate-300 print:text-slate-800 font-bold ml-1">{item.name}:</span>
+              <span className="text-slate-400 print:text-slate-700 font-mono ml-1">{item.percentage.toFixed(1)}%</span>
+              <span className="text-[9px] text-slate-500 print:text-slate-600 font-mono">({Number(item.value).toLocaleString()} SAR)</span>
             </div>
           </div>
         ))}
@@ -165,9 +165,9 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
   const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 print:hidden bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
-      <div className="flex flex-col items-center justify-center border-l border-white/5 py-2">
-        <h4 className="text-xs font-bold text-slate-400 mb-4">معدل الإنجاز الكلي للمشروع</h4>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl backdrop-blur-md">
+      <div className="flex flex-col items-center justify-center border-l border-white/5 print:border-slate-200 py-2">
+        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">معدل الإنجاز الكلي للمشروع</h4>
         <div className="relative w-36 h-36">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 140 140">
             <circle cx="70" cy="70" r={radius} fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="10" />
@@ -186,21 +186,21 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-black text-white font-mono">{progress}%</span>
-            <span className="text-[9px] text-slate-400 mt-0.5">منجز تعاقدياً</span>
+            <span className="text-2xl font-black text-white print:text-black font-mono">{progress}%</span>
+            <span className="text-[9px] text-slate-400 print:text-slate-600 mt-0.5">منجز تعاقدياً</span>
           </div>
         </div>
       </div>
       <div className="md:col-span-2 flex flex-col justify-between py-2">
-        <h4 className="text-xs font-bold text-slate-400 mb-3">أعلى بنود جدول الكميات تنفيذاً من حيث القيمة (Top 4)</h4>
+        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-3">أعلى بنود جدول الكميات تنفيذاً من حيث القيمة (Top 4)</h4>
         <div className="space-y-3.5">
           {items.slice(0, 4).map((item, idx) => (
             <div key={idx} className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-slate-300 font-bold truncate max-w-[280px]">{item.description}</span>
-                <span className="text-indigo-400 font-mono font-semibold">{Number(item.executedValue).toLocaleString()} SAR ({item.completionPercentage}%)</span>
+                <span className="text-slate-300 print:text-slate-800 font-bold truncate max-w-[280px]">{item.description}</span>
+                <span className="text-indigo-400 print:text-indigo-700 font-mono font-semibold">{Number(item.executedValue).toLocaleString()} SAR ({item.completionPercentage}%)</span>
               </div>
-              <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+              <div className="w-full h-2 bg-slate-950 print:bg-slate-200 rounded-full overflow-hidden border border-white/5 print:border-slate-300">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(Number(item.completionPercentage), 100)}%` }}
@@ -230,9 +230,9 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
   const remainingPercent = ((total - invoiced) / total) * 100;
   
   return (
-    <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-xl mb-8 backdrop-blur-md print:hidden">
-      <h4 className="text-xs font-bold text-slate-400 mb-4">التحليل التراكمي المالي للعقود الحالية</h4>
-      <div className="w-full h-6 bg-slate-950 rounded-xl overflow-hidden flex border border-white/5 p-0.5">
+    <div className="bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl mb-8 backdrop-blur-md">
+      <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">التحليل التراكمي المالي للعقود الحالية</h4>
+      <div className="w-full h-6 bg-slate-950 print:bg-slate-200 rounded-xl overflow-hidden flex border border-white/5 print:border-slate-300 p-0.5">
         {paid > 0 && (
           <motion.div 
             initial={{ width: 0 }}
@@ -262,7 +262,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
             initial={{ width: 0 }}
             animate={{ width: `${remainingPercent}%` }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-            className="h-full bg-slate-800 rounded-r-lg relative group cursor-pointer"
+            className="h-full bg-slate-800 print:bg-slate-300 rounded-r-lg relative group cursor-pointer"
           >
             <div className="absolute top-8 left-0 bg-slate-950 text-slate-400 text-[10px] px-2 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
               متبقي قيمة العقد غير المنجز: {(total - invoiced).toLocaleString()} SAR ({remainingPercent.toFixed(1)}%)
@@ -271,20 +271,20 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
         )}
       </div>
       
-      <div className="flex flex-wrap justify-between items-center gap-4 mt-6 border-t border-white/5 pt-4">
+      <div className="flex flex-wrap justify-between items-center gap-4 mt-6 border-t border-white/5 print:border-slate-200 pt-4">
         <div className="flex flex-wrap gap-4">
-          <div className="flex items-center gap-2 text-[10px] text-slate-400">
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
             <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> المحصل فعلياً ({paidPercent.toFixed(1)}%)
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-400">
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
             <div className="w-2.5 h-2.5 bg-blue-500 rounded" /> مستخلصات معتمدة غير مسددة ({unpaidInvoicedPercent.toFixed(1)}%)
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-400">
-            <div className="w-2.5 h-2.5 bg-slate-800 rounded" /> أعمال متبقية غير مستخلصة ({remainingPercent.toFixed(1)}%)
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
+            <div className="w-2.5 h-2.5 bg-slate-800 print:bg-slate-300 rounded" /> أعمال متبقية غير مستخلصة ({remainingPercent.toFixed(1)}%)
           </div>
         </div>
-        <div className="text-[11px] text-slate-400">
-          نسبة التحصيل المالي: <span className="font-bold text-emerald-400 font-mono">{invoiced > 0 ? ((paid / invoiced) * 100).toFixed(1) : 0}%</span> من إجمالي المستخلصات المعتمدة
+        <div className="text-[11px] text-slate-400 print:text-slate-800 font-bold">
+          نسبة التحصيل المالي: <span className="font-bold text-emerald-400 print:text-emerald-600 font-mono">{invoiced > 0 ? ((paid / invoiced) * 100).toFixed(1) : 0}%</span> من إجمالي المستخلصات المعتمدة
         </div>
       </div>
     </div>
@@ -298,9 +298,9 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
   const maxVolume = Math.max(...sorted.map(d => d.volume), 1);
   
   return (
-    <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-xl mb-8 backdrop-blur-md print:hidden">
-      <h4 className="text-xs font-bold text-slate-400 mb-4 flex items-center gap-2">
-        <Users size={14} className="text-indigo-400" /> تحليل أكبر 5 جهات تعامل مالي في المشاريع (SAR)
+    <div className="bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl mb-8 backdrop-blur-md">
+      <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4 flex items-center gap-2">
+        <Users size={14} className="text-indigo-400 print:text-indigo-700" /> تحليل أكبر 5 جهات تعامل مالي في المشاريع (SAR)
       </h4>
       <div className="space-y-4">
         {sorted.map((item, idx) => {
@@ -308,12 +308,12 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
           return (
             <div key={idx} className="space-y-1 group">
               <div className="flex justify-between text-xs">
-                <span className="text-slate-300 font-bold">
-                  {item.name} <span className="text-[10px] text-slate-500 font-normal">({item.type === 'CLIENT' ? 'عميل' : 'مورد / مقاول'})</span>
+                <span className="text-slate-300 print:text-slate-800 font-bold">
+                  {item.name} <span className="text-[10px] text-slate-500 print:text-slate-600 font-normal">({item.type === 'CLIENT' ? 'عميل' : 'مورد / مقاول'})</span>
                 </span>
-                <span className="text-emerald-400 font-mono font-bold">{Number(item.volume).toLocaleString()} SAR</span>
+                <span className="text-emerald-400 print:text-emerald-600 font-mono font-bold">{Number(item.volume).toLocaleString()} SAR</span>
               </div>
-              <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-white/5 flex">
+              <div className="w-full h-3 bg-slate-950 print:bg-slate-200 rounded-full overflow-hidden border border-white/5 print:border-slate-300 flex">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width }}
@@ -334,6 +334,8 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
 // ==========================================
 
 export default function ReportsPage() {
+  const { company } = useCompany();
+  const { pdfRef, downloadPdf } = useDownloadPdf();
   const [reportType, setReportType] = useState('FINANCIAL_SUMMARY');
   const [projectId, setProjectId] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -348,15 +350,6 @@ export default function ReportsPage() {
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showCharts, setShowCharts] = useState(true);
-
-  useEffect(() => {
-    fetchProjects();
-    fetchReport();
-  }, []);
-
-  useEffect(() => {
-    fetchReport();
-  }, [reportType, projectId, dateRange]);
 
   const fetchProjects = async () => {
     try {
@@ -391,6 +384,15 @@ export default function ReportsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProjects();
+    fetchReport();
+  }, []);
+
+  useEffect(() => {
+    fetchReport();
+  }, [reportType, projectId, dateRange]);
 
   const handlePrint = () => {
     window.print();
@@ -686,10 +688,16 @@ export default function ReportsPage() {
           )}
 
           <button 
+            onClick={() => downloadPdf(`Report_${reportType}_${new Date().toISOString().split('T')[0]}.pdf`)}
+            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all text-xs cursor-pointer"
+          >
+            <Printer size={16} /> PDF
+          </button>
+          <button 
             onClick={handlePrint}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all text-xs cursor-pointer"
           >
-            <Printer size={16} /> طباعة التقرير / PDF
+            <Printer size={16} /> طباعة التقرير
           </button>
         </div>
       </div>
@@ -832,7 +840,7 @@ export default function ReportsPage() {
       )}
 
       {/* PRINTABLE AREA */}
-      <div id="printable-report" className="bg-[#0f1015]/60 backdrop-blur-xl print:bg-white rounded-3xl border border-white/5 print:border-none p-8 min-h-[500px] shadow-2xl relative">
+      <div ref={pdfRef} id="printable-report" className="bg-[#0f1015]/60 backdrop-blur-xl print:bg-white rounded-3xl border border-white/5 print:border-none p-8 min-h-[500px] shadow-2xl relative">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64 opacity-50">
             <Loader2 className="animate-spin text-blue-500 mb-4" size={40} />
@@ -1018,6 +1026,46 @@ export default function ReportsPage() {
                  </>
                )}
             </div>
+
+            {/* Print-friendly Charts (Visible only in Print/PDF) */}
+            {showCharts && (
+              <div className="hidden print:block mb-8">
+                {reportType === 'FINANCIAL_SUMMARY' && (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                      <h4 className="text-[11px] font-black text-slate-800 mb-4 flex items-center gap-2">
+                        تحليل الإيرادات والتكاليف (SAR)
+                      </h4>
+                      <FinancialBarChart data={getFinancialChartData()} />
+                    </div>
+                    <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                      <h4 className="text-[11px] font-black text-slate-800 mb-4 flex items-center gap-2">
+                        تحليل توزيع النفقات (%)
+                      </h4>
+                      <ExpensesDonutChart data={getCostBreakdown()} />
+                    </div>
+                  </div>
+                )}
+
+                {reportType === 'BOQ_PROGRESS' && (
+                  <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                    <BoqProgressChart summary={reportData.summary} items={reportData.data || []} />
+                  </div>
+                )}
+
+                {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
+                  <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                    <ContractsStackedBar summary={reportData.summary} />
+                  </div>
+                )}
+
+                {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
+                  <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                    <TopContactsChart data={reportData.data || []} />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Client-side Search and Rows Metainfo (Hidden in Print) */}
             <div className="print-hide flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-slate-950/30 p-4 rounded-2xl border border-white/5">
@@ -1301,7 +1349,7 @@ export default function ReportsPage() {
             
             {/* Signature & Certified blocks at the bottom of the printed report */}
             <div className="mt-12 pt-8 border-t border-dashed border-white/20 print:border-black/20 flex flex-col sm:flex-row justify-between items-center gap-6 print-text-black">
-              <p className="text-[10px] text-slate-500 print-text-black">تم إصدار هذا التقرير آلياً من نظام إدارة المشاريع والتعاقدات PMS Contracting</p>
+              <p className="text-[10px] text-slate-500 print-text-black">تم إصدار هذا التقرير آلياً من نظام إدارة المشاريع والتعاقدات {company?.nameAr || 'PMS Contracting'}</p>
               <div className="flex gap-12 text-xs font-bold text-slate-400 print-text-black">
                 <span>إعداد القسم المالي: _________________</span>
                 <span>اعتماد مدير المشروع والمؤسسة: _________________</span>

@@ -16,9 +16,16 @@ import {
   Activity,
   Box,
   Edit,
-  Trash2
+  Trash2,
+  Printer
 } from "lucide-react";
 import axios from "axios";
+import { formatNumber, inferBillingModeFromUnit, resolveBillingMode } from "@/lib/billingMode";
+import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import PrintHeader from "@/app/dashboard/components/PrintHeader";
+import PrintFooter from "@/app/dashboard/components/PrintFooter";
+import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
 
 export default function BoqPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -28,11 +35,24 @@ export default function BoqPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importText, setImportText] = useState("");
-  const [newItem, setNewItem] = useState({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
+  const [newItem, setNewItem] = useState({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0, billingMode: "QUANTITY" as "QUANTITY" | "LUMP_SUM_PROGRESS" });
   const [isEditing, setIsEditing] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string>("");
+  const [hydrated, setHydrated] = useState(false);
+  const [editNotice, setEditNotice] = useState<string | null>(null);
+  const [lockQtyPrice, setLockQtyPrice] = useState(false);
+  const [userRole, setUserRole] = useState("");
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   useEffect(() => {
+    setHydrated(true);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     fetchProjects();
   }, []);
 
@@ -88,7 +108,7 @@ export default function BoqPage() {
       closeModal();
       fetchBoqItems(selectedProjectId); // Refresh list
     } catch (err) {
-      alert("حدث خطأ أثناء حفظ البند. تأكد من صحة البيانات.");
+      alert(getApiErrorMessage(err, "حدث خطأ أثناء حفظ البند. تأكد من صحة البيانات."));
     }
   };
 
@@ -100,9 +120,38 @@ export default function BoqPage() {
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       executionType: item.executionType || "SELF",
-      subcontractorPrice: item.subcontractorPrice || 0
+      subcontractorPrice: item.subcontractorPrice || 0,
+      billingMode: item.billingMode || resolveBillingMode(item),
     });
     setEditingItemId(item.id);
+
+    const invoiceNums = [
+      ...new Set(
+        (item.invoiceDetails || [])
+          .map((d: any) => d.invoice?.invoiceNumber)
+          .filter(Boolean),
+      ),
+    ] as string[];
+
+    if (invoiceNums.length > 0) {
+      setEditNotice(
+        `لا يمكن تعديل الكمية أو السعر — البند مرتبط بمستخلصات: ${invoiceNums.join("، ")}. يمكنك تعديل الوصف، الوحدة، أو طريقة الاحتساب.`,
+      );
+      setLockQtyPrice(true);
+    } else if ((item.contractItems || []).length > 0) {
+      const refs = (item.contractItems || [])
+        .map((ci: any) => ci.contract?.referenceNumber)
+        .filter(Boolean)
+        .join("، ");
+      setEditNotice(
+        `البند مرتبط بعقد (${refs}) — التعديل مسموح لأنه لا توجد مستخلصات على هذا البند.`,
+      );
+      setLockQtyPrice(false);
+    } else {
+      setEditNotice(null);
+      setLockQtyPrice(false);
+    }
+
     setIsEditing(true);
     setIsAdding(true);
   };
@@ -116,7 +165,7 @@ export default function BoqPage() {
       });
       fetchBoqItems(selectedProjectId);
     } catch (err) {
-      alert("خطأ أثناء حذف البند");
+      alert(getApiErrorMessage(err, "خطأ أثناء حذف البند"));
     }
   };
 
@@ -124,7 +173,9 @@ export default function BoqPage() {
     setIsAdding(false);
     setIsEditing(false);
     setEditingItemId("");
-    setNewItem({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0 });
+    setNewItem({ itemCode: "", description: "", unit: "م٢", quantity: 0, unitPrice: 0, executionType: "SELF", subcontractorPrice: 0, billingMode: "QUANTITY" });
+    setEditNotice(null);
+    setLockQtyPrice(false);
   };
 
   const handleBatchImport = async (e: React.FormEvent) => {
@@ -179,23 +230,30 @@ export default function BoqPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setIsImporting(true)}
-            disabled={!selectedProjectId}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2.5 px-4 rounded-xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <UploadCloud size={18} className="text-indigo-400 group-hover:-translate-y-1 transition-transform" />
-            <span>استيراد ذكي (Excel)</span>
+          <button type="button" onClick={() => downloadPdf(`BOQ_${selectedProjectId}.pdf`)} disabled={!selectedProjectId} className="flex items-center gap-2 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl px-4 py-2.5 font-medium transition-all border border-rose-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <Printer size={18} /> PDF
           </button>
-          
-          <button 
-            onClick={() => setIsAdding(true)}
-            disabled={!selectedProjectId}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.4)] group disabled:opacity-50"
-          >
-            <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-            <span>إضافة بند جديد</span>
-          </button>
+          {userRole !== "Viewer" && (
+            <>
+            <button 
+              onClick={() => setIsImporting(true)}
+              disabled={!selectedProjectId}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2.5 px-4 rounded-xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UploadCloud size={18} className="text-indigo-400 group-hover:-translate-y-1 transition-transform" />
+              <span>استيراد ذكي (Excel)</span>
+            </button>
+            
+            <button 
+              onClick={() => setIsAdding(true)}
+              disabled={!selectedProjectId}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.4)] group disabled:opacity-50"
+            >
+              <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+              <span>إضافة بند جديد</span>
+            </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -204,10 +262,12 @@ export default function BoqPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <p className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
+             <div className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
                <Wallet size={16} /> إجمالي قيمة المقايسة (العقد الأساسي)
+             </div>
+             <p className="text-3xl font-black text-white font-mono" suppressHydrationWarning>
+               {formatNumber(totalValue)} <span className="text-sm text-slate-500">SAR</span>
              </p>
-             <h2 className="text-3xl font-black text-white font-mono">{totalValue.toLocaleString()} <span className="text-sm text-slate-500">SAR</span></h2>
            </div>
            <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30 shadow-inner">
              <FileSpreadsheet size={28} />
@@ -217,13 +277,17 @@ export default function BoqPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900/40 to-slate-900 border border-emerald-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div className="w-full">
-             <p className="text-emerald-400 font-bold mb-1 flex items-center justify-between gap-2 w-full">
+             <div className="text-emerald-400 font-bold mb-1 flex items-center justify-between gap-2 w-full">
                <span className="flex items-center gap-2"><Activity size={16} /> الإنجاز المالي والمنفذ</span>
-               <span className="font-mono text-xl">{completionPercentage.toFixed(1)}%</span>
+               <span className="font-mono text-xl" suppressHydrationWarning>
+                 {formatNumber(completionPercentage, 1)}%
+               </span>
+             </div>
+             <p className="text-2xl font-black text-white font-mono mt-1" suppressHydrationWarning>
+               {formatNumber(totalExecutedValue)} <span className="text-sm text-slate-500">SAR</span>
              </p>
-             <h2 className="text-2xl font-black text-white font-mono mt-1">{totalExecutedValue.toLocaleString()} <span className="text-sm text-slate-500">SAR</span></h2>
              <div className="w-full bg-slate-950 rounded-full h-2.5 mt-4 border border-white/5 overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${completionPercentage}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-2.5 rounded-full relative">
+                <motion.div initial={false} animate={{ width: hydrated ? `${completionPercentage}%` : '0%' }} transition={{ duration: 1.5, ease: "easeOut" }} className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-2.5 rounded-full relative">
                    <div className="absolute inset-0 bg-white/20 animate-pulse mix-blend-overlay" />
                 </motion.div>
              </div>
@@ -233,10 +297,12 @@ export default function BoqPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900/40 to-slate-900 border border-amber-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <p className="text-amber-400 font-bold mb-1 flex items-center gap-2">
+             <div className="text-amber-400 font-bold mb-1 flex items-center gap-2">
                <TrendingUp size={16} /> المتبقي لتسليم المشروع
+             </div>
+             <p className="text-3xl font-black text-white font-mono" suppressHydrationWarning>
+               {formatNumber(totalValue - totalExecutedValue)} <span className="text-sm text-slate-500">SAR</span>
              </p>
-             <h2 className="text-3xl font-black text-white font-mono">{(totalValue - totalExecutedValue).toLocaleString()} <span className="text-sm text-slate-500">SAR</span></h2>
            </div>
            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 border border-amber-500/30 shadow-inner">
              <Box size={28} />
@@ -284,7 +350,7 @@ export default function BoqPage() {
                 <th className="px-6 py-4">استراتيجية التنفيذ</th>
                 <th className="px-6 py-4 text-emerald-400">الكمية المنفذة</th>
                 <th className="px-6 py-4 text-amber-400">الإجمالي للمالك</th>
-                <th className="px-6 py-4">إجراءات</th>
+                {userRole !== "Viewer" && <th className="px-6 py-4">إجراءات</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -299,17 +365,22 @@ export default function BoqPage() {
               ) : (
                 boqItems.map((item, i) => (
                   <motion.tr 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={false}
+                    animate={hydrated ? { opacity: 1, x: 0 } : false}
                     transition={{ delay: i * 0.05 }}
                     key={item.id} 
                     className="hover:bg-indigo-500/[0.04] transition-colors group cursor-pointer border-b border-white/5"
                   >
                     <td className="px-6 py-5 font-mono text-slate-300 font-semibold">{item.itemCode}</td>
                     <td className="px-6 py-5 font-bold text-white">{item.description}</td>
-                    <td className="px-6 py-5 text-slate-400 font-medium">{item.unit}</td>
-                    <td className="px-6 py-5 font-mono text-slate-300">{Number(item.quantity).toLocaleString()}</td>
-                    <td className="px-6 py-5 font-mono text-slate-300">{Number(item.unitPrice).toLocaleString()}</td>
+                    <td className="px-6 py-5 text-slate-400 font-medium">
+                      {item.unit}
+                      {resolveBillingMode(item) === 'LUMP_SUM_PROGRESS' && (
+                        <span className="mr-2 text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">مقطوعية</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-5 font-mono text-slate-300">{formatNumber(Number(item.quantity))}</td>
+                    <td className="px-6 py-5 font-mono text-slate-300">{formatNumber(Number(item.unitPrice))}</td>
                     <td className="px-6 py-5">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-inner ${item.executionType === 'SUBCONTRACT' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
                         {item.executionType === 'SUBCONTRACT' ? 'مقاول باطن' : 'تنفيذ ذاتي'}
@@ -318,7 +389,7 @@ export default function BoqPage() {
                     <td className="px-6 py-4 font-mono font-bold text-white bg-slate-900/40">
                       <div className="flex flex-col gap-2 w-32">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-emerald-400 font-black">{Number(item.executedQty || 0).toLocaleString()}</span>
+                          <span className="text-emerald-400 font-black">{formatNumber(Number(item.executedQty || 0))}</span>
                           <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">متبقي: {Number(item.quantity) - Number(item.executedQty || 0)}</span>
                         </div>
                         <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-white/5">
@@ -330,26 +401,28 @@ export default function BoqPage() {
                       </div>
                     </td>
                     <td className="px-6 py-5 font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 drop-shadow-sm text-lg border-r border-white/5">
-                      {(Number(item.quantity) * Number(item.unitPrice)).toLocaleString()}
+                      {formatNumber(Number(item.quantity) * Number(item.unitPrice))}
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleEditClick(item)}
-                          className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
-                          title="تعديل"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                          title="حذف"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {userRole !== "Viewer" && (
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleEditClick(item)}
+                            className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
+                            title="تعديل"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                            title="حذف"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </motion.tr>
                 ))
               )}
@@ -377,6 +450,11 @@ export default function BoqPage() {
               </div>
 
               <form onSubmit={handleAddItem} className="space-y-4">
+                {editNotice && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs rounded-xl p-3 leading-relaxed">
+                    {editNotice}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-400">كود البند</label>
@@ -384,7 +462,14 @@ export default function BoqPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-400">الوحدة القياسية</label>
-                    <input type="text" required value={newItem.unit} onChange={e=>setNewItem({...newItem, unit: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder="م٢ / م٣ / مقطوعية" />
+                    <input type="text" required value={newItem.unit} onChange={e=>{
+                      const unit = e.target.value;
+                      setNewItem({
+                        ...newItem,
+                        unit,
+                        billingMode: inferBillingModeFromUnit(unit),
+                      });
+                    }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder="م٢ / م٣ / مقطوعية" />
                   </div>
                   <div className="space-y-2 col-span-2">
                     <label className="text-xs font-medium text-slate-400">بيان الأعمال / المواصفات</label>
@@ -392,11 +477,22 @@ export default function BoqPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-400">الكمية المقدرة</label>
-                    <input type="number" required min="1" step="any" value={newItem.quantity} onChange={e=>setNewItem({...newItem, quantity: parseFloat(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" />
+                    <input type="number" required min="1" step="any" disabled={lockQtyPrice} value={newItem.quantity || ''} onChange={e=>setNewItem({...newItem, quantity: parseFloat(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none disabled:opacity-50" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-400">سعر الوحدة للمالك (بيع)</label>
-                    <input type="number" required min="0" step="any" value={newItem.unitPrice} onChange={e=>setNewItem({...newItem, unitPrice: parseFloat(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" />
+                    <input type="number" required min="0" step="any" disabled={lockQtyPrice} value={newItem.unitPrice || ''} onChange={e=>setNewItem({...newItem, unitPrice: parseFloat(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none disabled:opacity-50" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-400">طريقة احتساب المستخلص</label>
+                    <select
+                      value={newItem.billingMode}
+                      onChange={e=>setNewItem({...newItem, billingMode: e.target.value as "QUANTITY" | "LUMP_SUM_PROGRESS"})}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none cursor-pointer"
+                    >
+                      <option value="QUANTITY">كميات منفذة (افتراضي)</option>
+                      <option value="LUMP_SUM_PROGRESS">مقطوعية (نسبة / قيمة)</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-slate-400">طريقة التنفيذ</label>
@@ -476,6 +572,78 @@ export default function BoqPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Print View */}
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+        <PrintLetterhead />
+        <PrintHeader />
+        <div className="mb-6">
+          <h1 className="text-2xl font-black text-slate-900">جداول الكميات (BOQ)</h1>
+          <p className="text-sm text-slate-500 font-bold">
+            المشروع: {projects.find(p => p.id === selectedProjectId)?.name || '-'} ({projects.find(p => p.id === selectedProjectId)?.code || '-'})
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">القيمة المخططة: </span>
+            <span className="font-mono font-black">{totalValue.toLocaleString()} SAR</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">المنفذ: </span>
+            <span className="font-mono font-black">{totalExecutedValue.toLocaleString()} SAR</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">نسبة الإنجاز: </span>
+            <span className="font-mono font-black">{completionPercentage.toFixed(1)}%</span>
+          </div>
+        </div>
+        <table className="w-full text-right text-sm border-collapse">
+          <thead>
+            <tr className="bg-slate-900 text-white">
+              <th className="p-2 border border-slate-900">الكود</th>
+              <th className="p-2 border border-slate-900">البيان</th>
+              <th className="p-2 border border-slate-900 text-center w-16">الوحدة</th>
+              <th className="p-2 border border-slate-900 text-center w-20">الكمية</th>
+              <th className="p-2 border border-slate-900 text-center w-24">سعر الوحدة</th>
+              <th className="p-2 border border-slate-900 text-center w-20">المنفذ</th>
+              <th className="p-2 border border-slate-900 text-center w-24">الإجمالي</th>
+              <th className="p-2 border border-slate-900 text-center w-16">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {boqItems.map((item: any) => {
+              const lineTotal = Number(item.quantity) * Number(item.unitPrice);
+              const lineExecuted = Number(item.executedQty || 0) * Number(item.unitPrice);
+              const pct = Number(item.quantity) > 0 ? (Number(item.executedQty || 0) / Number(item.quantity)) * 100 : 0;
+              return (
+                <tr key={item.id} className="border-b border-slate-300">
+                  <td className="p-2 border-x border-slate-300 font-mono text-xs">{item.itemCode}</td>
+                  <td className="p-2 border-x border-slate-300 font-bold">{item.description}</td>
+                  <td className="p-2 border-x border-slate-300 text-center">{item.unit}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{item.quantity}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{Number(item.unitPrice).toLocaleString()}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{item.executedQty || 0}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono font-black">{lineTotal.toLocaleString()}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{pct.toFixed(0)}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-slate-900 text-white font-bold">
+              <td colSpan={3} className="p-2 border border-slate-900 text-left">الإجمالي</td>
+              <td className="p-2 border border-slate-900 text-center">{boqItems.reduce((s, i) => s + Number(i.quantity), 0)}</td>
+              <td className="p-2 border border-slate-900"></td>
+              <td className="p-2 border border-slate-900 text-center">{boqItems.reduce((s, i) => s + Number(i.executedQty || 0), 0)}</td>
+              <td className="p-2 border border-slate-900 text-center font-mono">{totalValue.toLocaleString()}</td>
+              <td className="p-2 border border-slate-900 text-center">{completionPercentage.toFixed(0)}%</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
+        </div>
+      </div>
     </div>
   );
 }

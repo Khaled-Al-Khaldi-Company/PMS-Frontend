@@ -5,10 +5,15 @@ import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   FileSignature, Save, ArrowRight, Loader2, PlusCircle,
-  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus
+  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus, Printer
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/apiErrors";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import PrintHeader from "@/app/dashboard/components/PrintHeader";
+import PrintFooter from "@/app/dashboard/components/PrintFooter";
+import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
 
 export default function EditContractPage() {
   const router = useRouter();
@@ -19,6 +24,7 @@ export default function EditContractPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [contract, setContract] = useState<any>(null);
 
+  const { pdfRef, downloadPdf } = useDownloadPdf();
   const [projectBoq, setProjectBoq] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [showBoqSelector, setShowBoqSelector] = useState(false);
@@ -122,14 +128,24 @@ export default function EditContractPage() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem("token");
+      const payload: Record<string, unknown> = {
+        referenceNumber: formData.referenceNumber,
+        retentionPercent: formData.retentionPercent,
+        advancePayment: formData.advancePayment,
+        totalValue: calculatedTotal,
+      };
+      if (!hasInvoices) {
+        payload.items = selectedItems;
+      }
+
       await axios.patch(
         `${API_BASE_URL}/v1/contracts/${contractId}`,
-        { ...formData, items: selectedItems, totalValue: calculatedTotal },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       router.push("/dashboard/contracts");
-    } catch (err: any) {
-      alert(`خطأ أثناء حفظ التعديلات: ${err.response?.data?.message || err.message}`);
+    } catch (err: unknown) {
+      alert(getApiErrorMessage(err, "خطأ أثناء حفظ التعديلات على العقد."));
     } finally {
       setIsSaving(false);
     }
@@ -143,12 +159,14 @@ export default function EditContractPage() {
     );
   }
 
+  const hasInvoices = (contract?.invoices?.length || 0) > 0;
   const isMain = contract?.type === "MAIN_CONTRACT";
   const partyName = isMain
     ? (contract?.project?.client?.name || "الجهة المالكة (قيد التجهيز)")
     : (contract?.subcontractor?.name || "—");
 
   return (
+    <>
     <div className="max-w-3xl mx-auto space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 pb-12">
       {/* Header */}
       <div className="flex items-center gap-4">
@@ -167,6 +185,9 @@ export default function EditContractPage() {
             تعديل البيانات المالية والمرجعية للعقد
           </p>
         </div>
+        <button type="button" onClick={() => downloadPdf(`Contract_${contract?.referenceNumber || 'draft'}.pdf`)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl transition-colors border border-rose-700 shadow-lg font-medium mr-auto">
+          <Printer size={18} /> PDF
+        </button>
       </div>
 
       {/* Contract Info Banner */}
@@ -200,13 +221,15 @@ export default function EditContractPage() {
       </div>
 
       {/* Warning if has invoices */}
-      {contract?.invoices?.length > 0 && (
+      {hasInvoices && (
         <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-amber-300 font-bold text-sm">تنبيه: هذا العقد يحتوي على {contract.invoices.length} مستخلص مسجل</p>
+            <p className="text-amber-300 font-bold text-sm">
+              هذا العقد مرتبط بـ {contract.invoices.length} مستخلص — تعديل البنود غير مسموح
+            </p>
             <p className="text-slate-400 text-xs mt-1">
-              تعديل القيمة الإجمالية أو نسب الاحتجاز قد يؤثر على حسابات المستخلصات المستقبلية فقط، ولن يُعدل المستخلصات المعتمدة مسبقاً.
+              يمكنك تعديل الرقم المرجعي، نسبة الضمان، والدفعة المقدمة فقط. لحفظ بنود العقد يجب عدم وجود أي مستخلص.
             </p>
           </div>
         </div>
@@ -291,8 +314,9 @@ export default function EditContractPage() {
               </label>
               <button 
                 type="button"
+                disabled={hasInvoices}
                 onClick={() => setShowBoqSelector(true)}
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg flex items-center gap-2"
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="text-lg">+</span> إضافة بند من المشروع
               </button>
@@ -324,24 +348,26 @@ export default function EditContractPage() {
                         <td className="py-4 text-center">
                           <input 
                             type="number" 
+                            disabled={hasInvoices}
                             value={it.assignedQty} 
                             onChange={e => updateItemValue(it.boqItemId, 'assignedQty', e.target.value)}
-                            className="w-20 bg-slate-900 border border-slate-700 rounded-lg text-center py-1.5 font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50 transition-all"
+                            className="w-20 bg-slate-900 border border-slate-700 rounded-lg text-center py-1.5 font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50 transition-all disabled:opacity-50"
                           />
                         </td>
                         <td className="py-4 text-center">
                           <input 
                             type="number" 
+                            disabled={hasInvoices}
                             value={it.unitPrice} 
                             onChange={e => updateItemValue(it.boqItemId, 'unitPrice', e.target.value)}
-                            className="w-24 bg-slate-900 border border-slate-700 rounded-lg text-center py-1.5 font-mono text-blue-400 focus:outline-none focus:border-blue-500/50 transition-all"
+                            className="w-24 bg-slate-900 border border-slate-700 rounded-lg text-center py-1.5 font-mono text-blue-400 focus:outline-none focus:border-blue-500/50 transition-all disabled:opacity-50"
                           />
                         </td>
                         <td className="py-4 text-left font-mono font-bold text-white text-[13px]">
                           {(Number(it.assignedQty) * Number(it.unitPrice)).toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </td>
                         <td className="py-4 text-center">
-                          <button type="button" onClick={() => removeItem(it.boqItemId)} className="p-1.5 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all">
+                          <button type="button" disabled={hasInvoices} onClick={() => removeItem(it.boqItemId)} className="p-1.5 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                             ✕
                           </button>
                         </td>
@@ -538,5 +564,87 @@ export default function EditContractPage() {
         </div>
       </motion.div>
     </div>
+
+      {/* Print View */}
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+        <PrintLetterhead />
+        <PrintHeader />
+        <div className="mb-6">
+          <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <p className="text-sm font-bold text-slate-800">رقم العقد (Ref): <span className="font-mono text-indigo-700">{contract?.referenceNumber}</span></p>
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 mt-3">
+            {isMain ? 'عقد رئيسي - Main Contract' : 'عقد مقاول باطن - Subcontract'}
+          </h1>
+        </div>
+        <div className="grid grid-cols-2 gap-6 mb-6 text-sm">
+          <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+            <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2">الطرف الثاني (Party):</p>
+            <p className="font-black text-lg text-slate-900">{partyName}</p>
+          </div>
+          <div className="bg-white p-4 border-2 border-slate-200 rounded-lg shadow-sm">
+            <p className="text-slate-500 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-2">المشروع (Project):</p>
+            <p className="font-bold text-lg text-slate-900">{contract?.project?.name}</p>
+            <p className="font-mono text-sm text-slate-500">{contract?.project?.code}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">قيمة العقد: </span>
+            <span className="font-mono font-black">{calculatedTotal.toLocaleString()} SAR</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">نسبة الضمان: </span>
+            <span className="font-mono font-black">{formData.retentionPercent}%</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">الدفعة المقدمة: </span>
+            <span className="font-mono font-black">{formData.advancePayment}%</span>
+          </div>
+        </div>
+        {selectedItems.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">بنود العقد (Contract Items):</h3>
+            <table className="w-full text-right text-sm border-collapse">
+              <thead>
+                <tr className="bg-slate-900 text-white">
+                  <th className="p-2 border border-slate-900">البيان</th>
+                  <th className="p-2 border border-slate-900 text-center w-16">الوحدة</th>
+                  <th className="p-2 border border-slate-900 text-center w-20">الكمية</th>
+                  <th className="p-2 border border-slate-900 text-center w-24">سعر الوحدة</th>
+                  <th className="p-2 border border-slate-900 text-center w-28">الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedItems.map((item, i) => (
+                  <tr key={i} className="border-b border-slate-300">
+                    <td className="p-2 border-x border-slate-300 font-bold">{item.description}</td>
+                    <td className="p-2 border-x border-slate-300 text-center">{item.unit}</td>
+                    <td className="p-2 border-x border-slate-300 text-center font-mono">{item.assignedQty}</td>
+                    <td className="p-2 border-x border-slate-300 text-center font-mono">{Number(item.unitPrice).toLocaleString()}</td>
+                    <td className="p-2 border-x border-slate-300 text-center font-mono font-black">{(Number(item.assignedQty) * Number(item.unitPrice)).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-slate-900 text-white font-bold">
+                  <td colSpan={4} className="p-2 border border-slate-900 text-left">الإجمالي الكلي</td>
+                  <td className="p-2 border border-slate-900 text-center font-mono">{calculatedTotal.toLocaleString()}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+        {formData.scope && (
+          <div className="mb-6">
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">نطاق العمل (Scope):</h3>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{formData.scope}</p>
+          </div>
+        )}
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
+        </div>
+      </div>
+    </>
   );
 }

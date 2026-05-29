@@ -25,6 +25,7 @@ import {
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
@@ -59,6 +60,7 @@ export default function EditQuotationPage() {
 
   const [templates, setTemplates] = useState<any[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -325,12 +327,20 @@ export default function EditQuotationPage() {
               <button type="button" onClick={handleExportExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-lg text-sm">
                 <FileSpreadsheet size={18} /> Excel
               </button>
+              <button type="button" onClick={() => downloadPdf(`Quotation_${printMeta.ref || 'draft'}.pdf`)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
+                <Printer size={18} /> PDF
+              </button>
               <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold transition-all shadow-lg text-sm">
-                <Printer size={18} /> معاينة وطباعة PDF
+                <Printer size={18} /> معاينة وطباعة
               </button>
               {isEditable && hasPermission('QUOTATION_CREATE') && (
                 <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
                   {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحديث البيانات
+                </button>
+              )}
+              {formData.status !== 'APPROVED' && hasPermission('QUOTATION_CREATE') && (
+                <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
+                  <Trash2 size={18} /> حذف العرض
                 </button>
               )}
               {formData.status === 'APPROVED' && hasPermission('QUOTATION_FORCE_DELETE') && (
@@ -592,9 +602,12 @@ export default function EditQuotationPage() {
         </motion.div>
       </div>
 
-      <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
+
+        {/* ===== رأس الورقة باسم الشركة ===== */}
+        <PrintHeader />
 
         {/* ===== البيانات فوق الورقة ===== */}
         <div className="mb-8">

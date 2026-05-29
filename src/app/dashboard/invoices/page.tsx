@@ -44,33 +44,6 @@ export default function InvoicesPage() {
 
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    if (selectedProjectId) {
-      fetchContracts(selectedProjectId);
-    } else { 
-      setContracts([]); 
-      setSelectedContractId(""); 
-      setSelectedRevenueContractId("");
-      setSelectedCostContractId("");
-      setSelectedContract(null); 
-    }
-  }, [selectedProjectId]);
-
-  useEffect(() => {
-    if (selectedContractId) {
-      const contract = contracts.find(c => c.id === selectedContractId);
-      setSelectedContract(contract);
-      fetchInvoices(selectedContractId);
-    } else {
-      setInvoices([]);
-      setSelectedContract(null);
-    }
-  }, [selectedContractId]);
-
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -107,6 +80,24 @@ export default function InvoicesPage() {
     }
   };
 
+  const fetchInvoices = async (contractId: string) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/invoices/contract/${contractId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInvoices(res.data);
+    } catch (err: any) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        router.push("/");
+      }
+    }
+    setIsLoading(false);
+  };
+
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm("هل أنت متأكد من حذف المستخلص؟ ستتم استعادة جميع الكميات التي تم احتسابها في هذا المستخلص.")) return;
@@ -137,23 +128,32 @@ export default function InvoicesPage() {
     }
   };
 
-  const fetchInvoices = async (contractId: string) => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/invoices/contract/${contractId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setInvoices(res.data);
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        router.push("/");
-      }
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      fetchContracts(selectedProjectId);
+    } else { 
+      setContracts([]); 
+      setSelectedContractId(""); 
+      setSelectedRevenueContractId("");
+      setSelectedCostContractId("");
+      setSelectedContract(null); 
     }
-    setIsLoading(false);
-  };
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (selectedContractId) {
+      const contract = contracts.find(c => c.id === selectedContractId);
+      setSelectedContract(contract);
+      fetchInvoices(selectedContractId);
+    } else {
+      setInvoices([]);
+      setSelectedContract(null);
+    }
+  }, [selectedContractId]);
 
   const statusMap: Record<string, { label: string, color: string, bg: string, icon: any }> = {
     DRAFT: { label: "مسودة غير معتمدة", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: Clock },

@@ -16,9 +16,13 @@ import {
   FileSpreadsheet
 } from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintHeader from "../components/PrintHeader";
+import { useCompany } from "@/context/CompanyContext";
 
 export default function ExpensesPage() {
+  const { company } = useCompany();
+  const { pdfRef, downloadPdf } = useDownloadPdf();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -148,6 +152,12 @@ export default function ExpensesPage() {
             <FileSpreadsheet size={20} /> تصدير Excel
           </button>
           <button 
+            onClick={() => downloadPdf(`Expenses_PettyCash_${new Date().toISOString().split('T')[0]}.pdf`)}
+            className="flex items-center gap-2 bg-rose-800 hover:bg-rose-700 text-rose-300 px-5 py-3 rounded-xl font-bold transition-all border border-rose-700 shadow-lg"
+          >
+            <Printer size={20} /> PDF
+          </button>
+          <button 
             onClick={() => window.print()}
             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl font-bold transition-all border border-white/10 shadow-lg"
           >
@@ -272,7 +282,7 @@ export default function ExpensesPage() {
     </div>
 
     {/* Print View (Professional Document) */}
-    <div className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
+    <div ref={pdfRef} className="hidden print:block print:!bg-white print:!text-black min-h-screen pt-8 pb-10 px-8 font-sans" dir="rtl">
       {/* Professional Header */}
       <div className="flex justify-between items-start border-b-4 border-slate-900 pb-6 mb-8 relative">
          <div className="absolute top-0 right-0 w-full h-1 bg-emerald-600 rounded-t"></div>
@@ -353,7 +363,7 @@ export default function ExpensesPage() {
       {/* Print Footer */}
       <div className="fixed bottom-0 left-0 w-full text-center text-[10px] text-slate-400 font-medium py-4 border-t border-slate-200 bg-white">
         <p>This is a computer generated document. No signature is required if sent electronically.</p>
-        <p className="mt-1">© {new Date().getFullYear()} PMS Contracting. All rights reserved.</p>
+        <p className="mt-1">© {new Date().getFullYear()} {company?.nameAr || 'PMS Contracting'}. All rights reserved.</p>
       </div>
     </div>
     </>

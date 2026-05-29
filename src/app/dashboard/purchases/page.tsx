@@ -33,6 +33,18 @@ export default function PurchasesPage() {
   const [userPerms, setUserPerms] = useState<string[]>([]);
   const [userRole, setUserRole] = useState("");
 
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/purchases`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOrders(res.data);
+    } catch (err) {}
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -48,18 +60,6 @@ export default function PurchasesPage() {
   const hasPermission = (perm: string) => {
     if (userRole === "Admin" || userRole === "System Admin") return true;
     return userPerms.includes(perm);
-  };
-
-  const fetchOrders = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/purchases`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setOrders(res.data);
-    } catch (err) {}
-    setIsLoading(false);
   };
 
   const statusMap: Record<string, { label: string, color: string, icon: any }> = {

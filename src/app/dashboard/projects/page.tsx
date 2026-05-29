@@ -29,8 +29,16 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRole(u.role || "");
+      } catch (e) {}
+    }
     fetchProjects();
   }, []);
 
@@ -105,13 +113,15 @@ export default function ProjectsPage() {
           </div>
         </div>
         
-        <Link
-          href="/dashboard/projects/create" 
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] group hover:-translate-y-1"
-        >
-          <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-          <span>إضافة مشروع جديد</span>
-        </Link>
+        {userRole !== "Viewer" && (
+          <Link
+            href="/dashboard/projects/create" 
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] group hover:-translate-y-1"
+          >
+            <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+            <span>إضافة مشروع جديد</span>
+          </Link>
+        )}
       </div>
 
       {/* Filters and Search Toolbar */}
@@ -196,22 +206,24 @@ export default function ProjectsPage() {
                           <StatusIcon size={14} />
                           {stat.label}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button 
-                            className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10" 
-                            onClick={(e) => { e.stopPropagation(); /* specific action */ }}
-                            title="خيارات إضافية"
-                          >
-                            <MoreVertical size={16} />
-                          </button>
-                          <button 
-                            className="text-rose-500/70 hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-500/10" 
-                            onClick={(e) => deleteProject(e, project.id)}
-                            title="حذف المشروع"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                        {userRole !== "Viewer" && (
+                          <div className="flex items-center gap-1">
+                            <button 
+                              className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10" 
+                              onClick={(e) => { e.stopPropagation(); /* specific action */ }}
+                              title="خيارات إضافية"
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                            <button 
+                              className="text-rose-500/70 hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-500/10" 
+                              onClick={(e) => deleteProject(e, project.id)}
+                              title="حذف المشروع"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="mb-6">

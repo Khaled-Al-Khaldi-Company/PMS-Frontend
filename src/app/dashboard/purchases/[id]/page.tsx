@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw, FileSpreadsheet } from "lucide-react";
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
@@ -18,6 +19,7 @@ export default function ViewPurchaseOrderPage() {
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   useEffect(() => {
     if (orderId) fetchOrder();
@@ -118,6 +120,9 @@ export default function ViewPurchaseOrderPage() {
             <button onClick={handleExportExcel} className="flex items-center gap-2 px-5 py-3 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl font-bold border border-emerald-500/30 transition shadow-lg text-sm">
                <FileSpreadsheet size={18} /> Excel
             </button>
+            <button onClick={() => downloadPdf(`PO_${order?.poNumber || 'draft'}.pdf`)} className="flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold shadow-lg transition hover:-translate-y-1">
+              <Printer size={18} /> PDF
+            </button>
             <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition hover:-translate-y-1">
               <Printer size={18} /> معاينة وطباعة رسمية
             </button>
@@ -135,9 +140,12 @@ export default function ViewPurchaseOrderPage() {
       </div>
 
       {/* PRINT VIEW */}
-      <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
+
+        {/* ===== رأس الورقة باسم الشركة ===== */}
+        <PrintHeader />
 
         {/* ===== البيانات فوق الورقة ===== */}
         <div className="mb-8">

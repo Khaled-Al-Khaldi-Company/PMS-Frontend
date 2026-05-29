@@ -25,11 +25,6 @@ export default function UsersManagementPage() {
     isActive: true
   });
 
-  useEffect(() => {
-    fetchUsers();
-    fetchRoles();
-  }, []);
-
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -50,6 +45,11 @@ export default function UsersManagementPage() {
       setRoles(res.data);
     } catch {}
   };
+
+  useEffect(() => {
+    fetchUsers();
+    fetchRoles();
+  }, []);
 
   const openAddUser = () => {
     setEditingUserId(null);

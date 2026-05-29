@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { CompanyProvider } from "@/context/CompanyContext";
 import { 
   Building2, 
   FileSpreadsheet, 
@@ -47,6 +48,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const hasAccess = (reqPerms: string[]) => {
     if (userRole === "Admin") return true; 
+    if (userRole === "Viewer") {
+      // Allow Viewer to see everything except pages that require MANAGE_USERS (settings, users, roles)
+      return !reqPerms.includes("MANAGE_USERS");
+    }
     if (!reqPerms || reqPerms.length === 0) return true; // public to all logged in
     return reqPerms.some(p => permissions.includes(p));
   };
@@ -108,18 +113,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav className="flex-1 min-h-0 px-4 py-4 space-y-2 overflow-y-auto">
-          {visibleMenuItems.map((item, i) => (
-            <motion.button
-              key={i}
-              whileHover={{ x: -5, backgroundColor: "rgba(59,130,246,0.1)" }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => router.push(item.path)}
-              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-300 hover:text-white transition-colors"
-            >
-              <item.icon size={20} className={i === 0 ? "text-blue-500" : ""} />
-              <span className="font-medium">{item.label}</span>
-            </motion.button>
-          ))}
+          {visibleMenuItems.map((item, i) => {
+            const isActive = (() => {
+              if (item.path === "/dashboard") {
+                return pathname === "/dashboard";
+              }
+              if (item.path === "/dashboard/settings") {
+                const specificSettingsPaths = [
+                  "/dashboard/settings/users",
+                  "/dashboard/settings/roles",
+                  "/dashboard/settings/company"
+                ];
+                return pathname.startsWith("/dashboard/settings") && !specificSettingsPaths.some(p => pathname.startsWith(p));
+              }
+              return pathname.startsWith(item.path);
+            })();
+
+            return (
+              <motion.button
+                key={i}
+                whileHover={{ x: -5 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(item.path)}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all relative border border-transparent ${
+                  isActive 
+                    ? "text-blue-400 font-bold" 
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavIndicator"
+                    className="absolute inset-0 bg-blue-600/10 border border-blue-500/20 rounded-2xl -z-10 pointer-events-none"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <item.icon size={20} className={isActive ? "text-blue-400" : "text-slate-400"} />
+                <span className="font-medium">{item.label}</span>
+              </motion.button>
+            );
+          })}
         </nav>
 
         <div className="p-4 mt-auto border-t border-white/5">
@@ -181,7 +214,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                 );
               }
-              return children;
+              return <CompanyProvider>{children}</CompanyProvider>;
             })()}
           </div>
         </main>

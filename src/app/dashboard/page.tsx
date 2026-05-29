@@ -23,10 +23,12 @@ export default function DashboardPage() {
   const [data, setData] = useState({
     totalProjects: 0,
     certifiedValue: 0,
+    totalCosts: 0,
+    profitMargin: 0,
     outstandingRetention: 0,
     totalSubcontractors: 0,
-    chartData: [] as { month: string; value: number }[],
-    recentActivities: [] as { id: string; title: string; subtitle: string; status: string }[]
+    chartData: [] as { month: string; revenue: number; cost: number }[],
+    recentActivities: [] as { id: string; title: string; subtitle: string; status: string; type: string }[]
   });
   const [isLoading, setIsLoading] = useState(true);
 

@@ -9,6 +9,12 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import {
+  lineContractTotal,
+  progressPercentToQty,
+  qtyToProgressPercent,
+  resolveBillingMode,
+} from "@/lib/billingMode";
 
 function InvoiceCreateContent() {
   const router = useRouter();
@@ -19,7 +25,9 @@ function InvoiceCreateContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [boqItems, setBoqItems] = useState<any[]>([]);
-  const [executionData, setExecutionData] = useState<Record<string, number>>({});
+  const [qtyInputs, setQtyInputs] = useState<Record<string, number>>({});
+  const [percentInputs, setPercentInputs] = useState<Record<string, number>>({});
+  const [valueInputs, setValueInputs] = useState<Record<string, number>>({});
   const [contractDetails, setContractDetails] = useState<any>(null);
 
   // Financial Options
@@ -59,6 +67,7 @@ function InvoiceCreateContent() {
           itemCode: ci.boqItem?.itemCode,
           description: ci.boqItem?.description,
           unit: ci.boqItem?.unit,
+          billingMode: ci.boqItem?.billingMode,
           quantity: ci.assignedQty,
           unitPrice: ci.unitPrice,
           executedQty: executedQtyMap[ci.boqItemId] || 0
@@ -85,17 +94,72 @@ function InvoiceCreateContent() {
   const handleQtyChange = (itemId: string, val: string) => {
     let parsed = parseFloat(val);
     if (isNaN(parsed)) parsed = 0;
-    setExecutionData(prev => ({ ...prev, [itemId]: parsed }));
+    setQtyInputs(prev => ({ ...prev, [itemId]: parsed }));
+  };
+
+  const handlePercentChange = (item: any, val: string) => {
+    let parsed = parseFloat(val);
+    if (isNaN(parsed)) parsed = 0;
+    const lineTotal = lineContractTotal(item.quantity, item.unitPrice);
+    setPercentInputs(prev => ({ ...prev, [item.id]: parsed }));
+    setValueInputs(prev => ({
+      ...prev,
+      [item.id]: lineTotal > 0 ? (parsed / 100) * lineTotal : 0,
+    }));
+  };
+
+  const handleValueChange = (item: any, val: string) => {
+    let parsed = parseFloat(val);
+    if (isNaN(parsed)) parsed = 0;
+    const lineTotal = lineContractTotal(item.quantity, item.unitPrice);
+    setValueInputs(prev => ({ ...prev, [item.id]: parsed }));
+    setPercentInputs(prev => ({
+      ...prev,
+      [item.id]: lineTotal > 0 ? (parsed / lineTotal) * 100 : 0,
+    }));
+  };
+
+  const buildExecutionPayload = () => {
+    const rows: any[] = [];
+    for (const item of boqItems) {
+      const mode = resolveBillingMode(item);
+      if (mode === 'LUMP_SUM_PROGRESS') {
+        const pct = percentInputs[item.id] || 0;
+        const val = valueInputs[item.id] || 0;
+        if (pct > 0) {
+          rows.push({ boqItemId: item.id, currentPercent: pct, entryMode: 'PERCENT' });
+        } else if (val > 0) {
+          rows.push({ boqItemId: item.id, currentValue: val, entryMode: 'VALUE' });
+        }
+      } else {
+        const q = qtyInputs[item.id] || 0;
+        if (q > 0) {
+          rows.push({ boqItemId: item.id, currentQty: q, entryMode: 'QTY' });
+        }
+      }
+    }
+    return rows;
+  };
+
+  const getCurrentLineValue = (item: any) => {
+    const mode = resolveBillingMode(item);
+    const lineTotal = lineContractTotal(item.quantity, item.unitPrice);
+    if (mode === 'LUMP_SUM_PROGRESS') {
+      const pct = percentInputs[item.id] || 0;
+      const val = valueInputs[item.id] || 0;
+      if (pct > 0) return (pct / 100) * lineTotal;
+      if (val > 0) return val;
+      return 0;
+    }
+    return (qtyInputs[item.id] || 0) * item.unitPrice;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payloadData = Object.keys(executionData)
-      .filter(id => executionData[id] > 0)
-      .map(id => ({ boqItemId: id, currentQty: executionData[id] }));
+    const payloadData = buildExecutionPayload();
 
     if (payloadData.length === 0) {
-      alert("الرجاء إدخال كمية منفذة واحدة على الأقل لإنشاء المستخلص.");
+      alert("الرجاء إدخال إنجاز واحد على الأقل (كمية أو نسبة أو قيمة) لإنشاء المستخلص.");
       return;
     }
 
@@ -134,7 +198,7 @@ function InvoiceCreateContent() {
     );
   }
 
-  const currentGross = boqItems.reduce((acc, item) => acc + ((executionData[item.id] || 0) * item.unitPrice), 0);
+  const currentGross = boqItems.reduce((acc, item) => acc + getCurrentLineValue(item), 0);
   const retentionPercent = contractDetails?.retentionPercent || 0;
   const retentionAmount = currentGross * (retentionPercent / 100);
   
@@ -208,19 +272,26 @@ function InvoiceCreateContent() {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-300 font-medium tracking-tight">
                   {boqItems.map((item, i) => {
+                    const billingMode = resolveBillingMode(item);
+                    const isLumpSum = billingMode === 'LUMP_SUM_PROGRESS';
+                    const contractTotal = lineContractTotal(item.quantity, item.unitPrice);
+
                     const previousQty = item.executedQty;
                     const previousValue = previousQty * item.unitPrice;
+                    const previousPercent = qtyToProgressPercent(previousQty, item.quantity);
 
-                    const currentQty = executionData[item.id] || 0;
-                    const currentValue = currentQty * item.unitPrice;
+                    const currentQty = isLumpSum
+                      ? progressPercentToQty(percentInputs[item.id] || 0, item.quantity)
+                      : (qtyInputs[item.id] || 0);
+                    const currentValue = getCurrentLineValue(item);
 
                     const totalQty = previousQty + currentQty;
-                    const totalValue = totalQty * item.unitPrice;
-
-                    const contractTotal = item.quantity * item.unitPrice;
+                    const totalValue = previousQty * item.unitPrice + currentValue;
+                    const totalPercent = qtyToProgressPercent(totalQty, item.quantity);
+                    const remainingPercent = Math.max(0, 100 - previousPercent);
                     
-                    const isCompleted = previousQty >= item.quantity;
-                    const isActive = currentQty > 0;
+                    const isCompleted = previousQty >= item.quantity - 1e-9;
+                    const isActive = currentValue > 0;
 
                     return (
                       <tr 
@@ -243,34 +314,72 @@ function InvoiceCreateContent() {
                             <span className="text-[10px] text-slate-500 font-mono tracking-wider">{item.itemCode || 'BOQ-ITEM'}</span>
                           </div>
                         </td>
-                        <td className="px-2 py-4 text-center text-slate-400">{item.unit}</td>
+                        <td className="px-2 py-4 text-center text-slate-400">
+                          {item.unit}
+                          {isLumpSum && (
+                            <span className="block text-[9px] text-amber-400/80 mt-0.5">مقطوعية</span>
+                          )}
+                        </td>
                         <td className="px-3 py-4 text-center font-mono text-slate-300">{item.quantity}</td>
                         <td className="px-3 py-4 text-center font-mono text-slate-400">{Number(item.unitPrice).toLocaleString()}</td>
                         <td className="px-3 py-4 text-center font-mono text-slate-500">{contractTotal.toLocaleString()}</td>
 
-                        <td className="px-3 py-4 text-center font-mono text-slate-400 border-r border-white/5 bg-slate-900/30">{previousQty}</td>
+                        <td className="px-3 py-4 text-center font-mono text-slate-400 border-r border-white/5 bg-slate-900/30">
+                          {isLumpSum ? `${previousPercent.toFixed(1)}%` : previousQty}
+                        </td>
                         <td className="px-3 py-4 text-center font-mono text-slate-500 bg-slate-900/30">{previousValue.toLocaleString()}</td>
 
-                        {/* EDITABLE CELL - PROFESSIONAL STYLE */}
+                        {/* EDITABLE CELL */}
                         <td className={`px-2 py-3 text-center border-r border-emerald-500/20 ${isCompleted ? 'bg-black/20' : isActive ? 'bg-emerald-500/10' : 'bg-slate-900/50 group-hover:bg-slate-800/80'} transition-colors relative`}>
                           <div className="flex justify-center">
-                            <input 
-                              type="number" min="0" max={item.quantity - previousQty} step="any"
-                              value={executionData[item.id] === undefined ? '' : executionData[item.id]}
-                              onChange={(e) => handleQtyChange(item.id, e.target.value)}
-                              disabled={isCompleted}
-                              className={`w-16 h-8 bg-black/40 border border-slate-700/50 rounded-md text-center font-mono text-sm focus:outline-none transition-all font-bold placeholder-slate-700 ${
-                                isCompleted ? 'cursor-not-allowed text-slate-600 opacity-20' : 'text-emerald-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 hover:border-emerald-500/30'
-                              }`}
-                              placeholder={isCompleted ? "DONE" : "0"}
-                            />
+                            {isLumpSum ? (
+                              <div className="flex flex-col gap-1 items-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={remainingPercent}
+                                  step="any"
+                                  value={percentInputs[item.id] === undefined ? '' : percentInputs[item.id]}
+                                  onChange={(e) => handlePercentChange(item, e.target.value)}
+                                  disabled={isCompleted}
+                                  className="w-14 h-7 bg-black/40 border border-slate-700/50 rounded-md text-center font-mono text-xs text-emerald-400 focus:border-emerald-500 focus:outline-none"
+                                  placeholder="%"
+                                  title="نسبة الإنجاز الحالية"
+                                />
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={contractTotal - previousValue}
+                                  step="any"
+                                  value={valueInputs[item.id] === undefined ? '' : valueInputs[item.id]}
+                                  onChange={(e) => handleValueChange(item, e.target.value)}
+                                  disabled={isCompleted}
+                                  className="w-20 h-7 bg-black/40 border border-slate-700/50 rounded-md text-center font-mono text-[10px] text-teal-300 focus:border-teal-500 focus:outline-none"
+                                  placeholder="قيمة"
+                                  title="قيمة المستخلص الحالية"
+                                />
+                              </div>
+                            ) : (
+                              <input 
+                                type="number" min="0" max={item.quantity - previousQty} step="any"
+                                value={qtyInputs[item.id] === undefined ? '' : qtyInputs[item.id]}
+                                onChange={(e) => handleQtyChange(item.id, e.target.value)}
+                                disabled={isCompleted}
+                                className={`w-16 h-8 bg-black/40 border border-slate-700/50 rounded-md text-center font-mono text-sm focus:outline-none transition-all font-bold placeholder-slate-700 ${
+                                  isCompleted ? 'cursor-not-allowed text-slate-600 opacity-20' : 'text-emerald-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 hover:border-emerald-500/30'
+                                }`}
+                                placeholder={isCompleted ? "DONE" : "0"}
+                              />
+                            )}
                           </div>
                         </td>
                         <td className={`px-3 py-4 text-center font-mono font-bold ${isCompleted ? 'text-slate-700' : isActive ? 'text-emerald-400 bg-emerald-500/5' : 'text-slate-600 bg-slate-900/50'}`}>
                           {currentValue > 0 ? currentValue.toLocaleString() : '-'}
                         </td>
 
-                        <td className="px-3 py-4 text-center font-mono text-indigo-300 border-r border-white/5 bg-indigo-900/10">{totalQty}</td>
+                        <td className="px-3 py-4 text-center font-mono text-indigo-300 border-r border-white/5 bg-indigo-900/10">
+                          {isLumpSum ? `${totalPercent.toFixed(1)}%` : totalQty}
+                        </td>
                         <td className="px-3 py-4 text-center font-mono text-indigo-200 font-semibold bg-indigo-900/10">{totalValue.toLocaleString()}</td>
                       </tr>
                     );

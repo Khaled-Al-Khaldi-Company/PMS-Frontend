@@ -24,6 +24,30 @@ import {
 import axios from "axios";
 import { motion } from "framer-motion";
 import { exportToCsv } from "@/lib/exportUtils";
+import { resolveBillingMode, qtyToProgressPercent } from "@/lib/billingMode";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+
+function getLineContractQty(detail: any, invoice: any) {
+  const ci = invoice?.contract?.items?.find((x: any) => x.boqItemId === detail.boqItemId);
+  return Number(ci?.assignedQty ?? detail.boqItem?.quantity ?? 1);
+}
+
+function formatDetailProgress(
+  detail: any,
+  field: "previousQty" | "currentQty" | "totalQty",
+  invoice?: any,
+) {
+  const mode = resolveBillingMode(detail.boqItem || {});
+  const qty = Number(detail[field] ?? 0);
+  const contractQty = getLineContractQty(detail, invoice);
+  if (mode === "LUMP_SUM_PROGRESS") {
+    if (field === "currentQty" && detail.currentProgressPercent != null) {
+      return `${Number(detail.currentProgressPercent).toFixed(1)}%`;
+    }
+    return `${qtyToProgressPercent(qty, contractQty).toFixed(1)}%`;
+  }
+  return qty;
+}
 import PrintHeader from "../../components/PrintHeader";
 import PrintFooter from "../../components/PrintFooter";
 import PrintLetterhead from "../../components/PrintLetterhead";
@@ -38,6 +62,7 @@ export default function InvoiceViewPage() {
   const [isPosting, setIsPosting] = useState(false);
   const [userPerms, setUserPerms] = useState<string[]>([]);
   const [userRole, setUserRole] = useState("");
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -166,9 +191,9 @@ export default function InvoiceViewPage() {
     const exportData = invoice.details.map((detail: any, index: number) => ({
       "م": index + 1,
       "البند": detail.boqItem?.description,
-      "الكمية السابقة": detail.previousQty,
-      "الكمية الحالية": detail.currentQty,
-      "إجمالي الكمية": detail.totalQty,
+      "السابق": formatDetailProgress(detail, "previousQty", invoice),
+      "الحالي": formatDetailProgress(detail, "currentQty", invoice),
+      "الإجمالي": formatDetailProgress(detail, "totalQty", invoice),
       "سعر الوحدة": detail.unitPrice,
       "القيمة الحالية": detail.currentValue
     }));
@@ -250,6 +275,9 @@ export default function InvoiceViewPage() {
           <button onClick={handleExportExcel} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white rounded-xl transition-all border border-indigo-500/20 shadow-lg font-medium group">
              <FileSpreadsheet size={18} className="group-hover:scale-110 transition-transform" /> Excel
           </button>
+          <button onClick={() => downloadPdf(`Invoice_${invoice?.invoiceNumber || 'draft'}.pdf`)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl transition-colors border border-rose-700 shadow-lg font-medium">
+            <Printer size={18} /> PDF
+          </button>
           <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors border border-slate-700 shadow-lg font-medium">
             <Printer size={18} /> طباعة رسمية
           </button>
@@ -311,9 +339,9 @@ export default function InvoiceViewPage() {
                         <p className="font-semibold text-white mb-1 truncate" title={detail.boqItem?.description}>{detail.boqItem?.description}</p>
                         <p className="text-xs text-slate-500 font-mono">{detail.boqItem?.itemCode}</p>
                       </td>
-                      <td className="px-4 py-4 text-center font-mono text-slate-400">{detail.previousQty}</td>
-                      <td className="px-4 py-4 text-center font-mono font-bold text-emerald-400 bg-emerald-500/5">{detail.currentQty}</td>
-                      <td className="px-4 py-4 text-center font-mono text-blue-400">{detail.totalQty}</td>
+                      <td className="px-4 py-4 text-center font-mono text-slate-400">{formatDetailProgress(detail, "previousQty", invoice)}</td>
+                      <td className="px-4 py-4 text-center font-mono font-bold text-emerald-400 bg-emerald-500/5">{formatDetailProgress(detail, "currentQty", invoice)}</td>
+                      <td className="px-4 py-4 text-center font-mono text-blue-400">{formatDetailProgress(detail, "totalQty", invoice)}</td>
                       <td className="px-4 py-4 text-center font-mono">{Number(detail.unitPrice).toLocaleString()}</td>
                       <td className="px-4 py-4 text-center font-mono font-bold text-white">{Number(detail.currentValue).toLocaleString()}</td>
                     </tr>
@@ -451,10 +479,13 @@ export default function InvoiceViewPage() {
       </div>
     </div>
 
-    {/* Print View (Professional Certificate) */}
-    <div className="hidden print:block print-on-letterhead print:!text-black font-sans" dir="rtl">
+      {/* Print View (Professional Certificate) */}
+    <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
       {/* ===== الورقة الرسمية كخلفية ===== */}
       <PrintLetterhead />
+
+      {/* ===== رأس الورقة باسم الشركة ===== */}
+      <PrintHeader />
 
       {/* ===== البيانات فوق الورقة ===== */}
          <div className="mb-8">
@@ -495,9 +526,9 @@ export default function InvoiceViewPage() {
           {invoice.details?.map((detail: any) => (
             <tr key={detail.id} className="border-2 border-slate-800 text-sm break-inside-avoid">
               <td className="p-2 border-2 border-slate-800 font-bold">{detail.boqItem?.description}</td>
-              <td className="p-2 border-2 border-slate-800 text-center font-mono">{detail.previousQty}</td>
-              <td className="p-2 border-2 border-slate-800 text-center font-mono font-black">{detail.currentQty}</td>
-              <td className="p-2 border-2 border-slate-800 text-center font-mono">{detail.totalQty}</td>
+              <td className="p-2 border-2 border-slate-800 text-center font-mono">{formatDetailProgress(detail, "previousQty", invoice)}</td>
+              <td className="p-2 border-2 border-slate-800 text-center font-mono font-black">{formatDetailProgress(detail, "currentQty", invoice)}</td>
+              <td className="p-2 border-2 border-slate-800 text-center font-mono">{formatDetailProgress(detail, "totalQty", invoice)}</td>
               <td className="p-2 border-2 border-slate-800 text-center font-mono">{Number(detail.unitPrice).toLocaleString()}</td>
               <td className="p-2 border-2 border-slate-800 text-left font-black font-mono">{Number(detail.currentValue).toLocaleString()}</td>
             </tr>

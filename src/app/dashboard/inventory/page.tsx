@@ -39,20 +39,6 @@ export default function InventoryDashboard() {
   const [grnForm, setGrnForm] = useState({ warehouseId: "", poId: "", materialId: "", quantity: "", remarks: "" });
   const [misForm, setMisForm] = useState({ warehouseId: "", projectId: "", materialId: "", quantity: "", remarks: "" });
 
-  useEffect(() => {
-    fetchWarehouses();
-    fetchTransactions();
-    fetchDropdowns();
-  }, []);
-
-  useEffect(() => {
-    if (selectedWarehouse) {
-      fetchStock(selectedWarehouse);
-    } else {
-      setStocks([]);
-    }
-  }, [selectedWarehouse]);
-
   const fetchWarehouses = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -111,6 +97,20 @@ export default function InventoryDashboard() {
       setProjects(projsData);
     } catch (e) {}
   };
+
+  useEffect(() => {
+    fetchWarehouses();
+    fetchTransactions();
+    fetchDropdowns();
+  }, []);
+
+  useEffect(() => {
+    if (selectedWarehouse) {
+      fetchStock(selectedWarehouse);
+    } else {
+      setStocks([]);
+    }
+  }, [selectedWarehouse]);
 
   const handleGrnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

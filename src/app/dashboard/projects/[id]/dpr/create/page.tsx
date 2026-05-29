@@ -15,8 +15,12 @@ import {
   Sun,
   Cloud,
   ThermometerSun,
-  Loader2
+  Loader2,
+  Printer
 } from "lucide-react";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import PrintHeader from "@/app/dashboard/components/PrintHeader";
+import PrintFooter from "@/app/dashboard/components/PrintFooter";
 
 export default function CreateDPRPage() {
   const params = useParams();
@@ -24,6 +28,7 @@ export default function CreateDPRPage() {
   const projectId = params.id as string;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   const [reportDate, setReportDate] = useState(new Date().toISOString().substring(0, 10));
   const [weather, setWeather] = useState("مشمس");
@@ -103,6 +108,9 @@ export default function CreateDPRPage() {
             </h1>
             <p className="text-slate-400 text-sm mt-1.5 font-medium">سجل الإنجاز والموارد ليوم عمل جديد</p>
           </div>
+          <button type="button" onClick={() => downloadPdf(`DPR_${reportDate}.pdf`)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl transition-colors border border-rose-700 shadow-lg font-medium">
+            <Printer size={18} /> PDF
+          </button>
         </div>
       </div>
 
@@ -263,6 +271,74 @@ export default function CreateDPRPage() {
         </button>
 
       </form>
+
+      {/* Print View */}
+      <div ref={pdfRef} className="hidden print:block print:!bg-white print:!text-black font-sans p-8" dir="rtl">
+        <PrintHeader />
+        <div className="text-center mb-6 border-b-2 border-slate-900 pb-4">
+          <h1 className="text-2xl font-black text-slate-900">تقرير الموقع اليومي</h1>
+          <h2 className="text-sm text-slate-500 font-bold">Daily Progress Report (DPR)</h2>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">التاريخ: </span>
+            <span className="font-mono font-bold">{reportDate}</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">الطقس: </span>
+            <span className="font-bold">{weather}</span>
+          </div>
+          <div className="bg-slate-50 p-3 rounded border border-slate-200">
+            <span className="font-bold text-slate-500">درجة الحرارة: </span>
+            <span className="font-mono font-bold">{temperature}°C</span>
+          </div>
+        </div>
+        <div className="mb-6">
+          <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">الأعمال المنجزة (Work Performed):</h3>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{workPerformed}</p>
+        </div>
+        {safetyNotes && (
+          <div className="mb-6">
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">ملاحظات الأمن والسلامة (Safety Notes):</h3>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{safetyNotes}</p>
+          </div>
+        )}
+        {labors.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">العمالة (Labors):</h3>
+            <table className="w-full text-right text-sm border-collapse">
+              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">المهنة</th><th className="p-2 border border-slate-900 text-center w-20">العدد</th><th className="p-2 border border-slate-900 text-center w-20">الساعات</th><th className="p-2 border border-slate-900">ملاحظات</th></tr></thead>
+              <tbody>{labors.map((l, i) => (
+                <tr key={i} className="border-b border-slate-300">
+                  <td className="p-2 border-x border-slate-300 font-bold">{l.trade}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{l.count}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{l.hours}</td>
+                  <td className="p-2 border-x border-slate-300">{l.notes}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+        {equipments.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">المعدات (Equipments):</h3>
+            <table className="w-full text-right text-sm border-collapse">
+              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">نوع المعدة</th><th className="p-2 border border-slate-900 text-center w-20">العدد</th><th className="p-2 border border-slate-900 text-center w-20">الساعات</th><th className="p-2 border border-slate-900">ملاحظات</th></tr></thead>
+              <tbody>{equipments.map((e, i) => (
+                <tr key={i} className="border-b border-slate-300">
+                  <td className="p-2 border-x border-slate-300 font-bold">{e.equipmentType}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{e.count}</td>
+                  <td className="p-2 border-x border-slate-300 text-center font-mono">{e.hours}</td>
+                  <td className="p-2 border-x border-slate-300">{e.notes}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
+        </div>
+      </div>
     </div>
   );
 }

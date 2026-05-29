@@ -1,17 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/apiErrors";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@system.com");
+  // Safe default: pre-fill viewer/guest account
+  const [email, setEmail] = useState("viewer@system.com");
   const [password, setPassword] = useState("123456");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("admin") === "true") {
+        setEmail("admin@system.com");
+        setPassword("123456");
+      } else if (params.get("demo") === "true" || params.get("guest") === "true" || params.get("viewer") === "true") {
+        setEmail("viewer@system.com");
+        setPassword("123456");
+      }
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +43,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "فشل تسجيل الدخول");
 
-      // Save token (usually in cookies or context, using localStorage for demo)
+      // Save token
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message);
+      setError(getApiErrorMessage(err, "فشل تسجيل الدخول"));
     } finally {
       setIsLoading(false);
     }
@@ -105,6 +120,41 @@ export default function LoginPage() {
             <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
           </button>
         </form>
+
+        {/* Quick Demo Login Section */}
+        <div className="mt-8 pt-6 border-t border-white/5 text-center">
+          <p className="text-slate-500 text-xs font-semibold mb-3">تسجيل دخول سريع للتجربة والتقييم</p>
+          <div className="flex justify-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("viewer@system.com");
+                setPassword("123456");
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all duration-300 ${
+                email === "viewer@system.com"
+                  ? "bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-[0_0_12px_rgba(59,130,246,0.2)]"
+                  : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:text-slate-300 hover:bg-slate-800/50"
+              }`}
+            >
+              حساب زائر (عرض فقط)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("admin@system.com");
+                setPassword("123456");
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all duration-300 ${
+                email === "admin@system.com"
+                  ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.2)]"
+                  : "bg-slate-900/60 text-slate-400 border-slate-800/80 hover:text-slate-300 hover:bg-slate-800/50"
+              }`}
+            >
+              مدير النظام (كامل الصلاحيات)
+            </button>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

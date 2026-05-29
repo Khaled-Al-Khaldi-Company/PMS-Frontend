@@ -12,10 +12,6 @@ export default function RolesMatrixPage() {
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
   const [savedRoleId, setSavedRoleId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -28,6 +24,10 @@ export default function RolesMatrixPage() {
     } catch {}
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const togglePermission = (roleId: string, permName: string) => {
     setRoles(roles.map(r => {

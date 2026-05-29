@@ -112,6 +112,64 @@
    PRINT — الطباعة على الورقة الرسمية كخلفية
    الورقة تظهر عبر background-image على حاوية المحتوى
    ================================================================ */
+.print-on-letterhead {
+  /* الورقة كخلفية */
+  background-image: url('/letterhead.png') !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+
+  /* البادينج لتجنب الترويسة والذيل */
+  padding-top: 130px !important;
+  padding-bottom: 90px !important;
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+
+  /* صفحة A4 كاملة */
+  min-height: 100vh !important;
+}
+
+/* Overrides to make all tables inside print-on-letterhead look professional and ink-friendly */
+.print-on-letterhead table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  color: #000000 !important;
+}
+.print-on-letterhead th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1.5px solid #94a3b8 !important;
+  padding: 8px 12px !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+}
+.print-on-letterhead td {
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  background-color: transparent !important;
+}
+.print-on-letterhead tr:nth-child(even) td {
+  background-color: #f8fafc !important;
+}
+.print-on-letterhead .bg-slate-900 {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+.print-on-letterhead .text-white {
+  color: #ffffff !important;
+}
+.print-on-letterhead .text-slate-400 {
+  color: #475569 !important;
+}
+.print-on-letterhead .bg-slate-50, 
+.print-on-letterhead .bg-slate-100 {
+  background-color: #f8fafc !important;
+}
+
 @media print {
   @page {
     size: A4 portrait;
@@ -131,28 +189,8 @@
     overflow: visible !important;
   }
 
-  /*
-   * الورقة الرسمية كخلفية — تستخدم background-attachment: fixed
-   * لتتكرر على كل صفحة مطبوعة
-   *
-   * ⚠️ تأكد من وجود ملف الورقة في: /public/letterhead.png
-   * استبدل الاسم إذا كان مختلفاً
-   */
   .print-on-letterhead {
-    /* الورقة كخلفية */
-    background-image: url('/letterhead.png') !important;
-    background-size: 100% 100% !important;
-    background-repeat: no-repeat !important;
     background-attachment: fixed !important;
-
-    /* البادينج لتجنب الترويسة والذيل */
-    padding-top: 130px !important;
-    padding-bottom: 90px !important;
-    padding-left: 40px !important;
-    padding-right: 40px !important;
-
-    /* صفحة A4 كاملة */
-    min-height: 100vh !important;
   }
 
   table { page-break-inside: auto !important; }

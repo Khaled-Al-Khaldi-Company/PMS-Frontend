@@ -34,15 +34,6 @@ export default function ContractsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    if (selectedProjectId) fetchContracts(selectedProjectId);
-    else setContracts([]);
-  }, [selectedProjectId]);
-
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -65,6 +56,15 @@ export default function ContractsPage() {
     } catch (err) {}
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProjectId) fetchContracts(selectedProjectId);
+    else setContracts([]);
+  }, [selectedProjectId]);
 
   const deleteContract = async (id: string) => {
     if (!confirm("هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;

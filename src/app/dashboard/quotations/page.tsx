@@ -27,6 +27,18 @@ export default function QuotationsPage() {
   const [userPerms, setUserPerms] = useState<string[]>([]);
   const [userRole, setUserRole] = useState("");
 
+  const fetchQuotations = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/quotations`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setQuotations(res.data);
+    } catch (err) {}
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -42,18 +54,6 @@ export default function QuotationsPage() {
   const hasPermission = (perm: string) => {
     if (userRole === "Admin" || userRole === "System Admin") return true;
     return userPerms.includes(perm);
-  };
-
-  const fetchQuotations = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/v1/quotations`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setQuotations(res.data);
-    } catch (err) {}
-    setIsLoading(false);
   };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
