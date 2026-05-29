@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -22,10 +22,15 @@ import {
   HardHat,
   Edit3,
   Crown,
-  Trash2
+  Trash2,
+  Printer
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import PrintHeader from "../components/PrintHeader";
+import PrintFooter from "../components/PrintFooter";
+import PrintLetterhead from "../components/PrintLetterhead";
 
 export default function ContractsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -34,6 +39,8 @@ export default function ContractsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "MAIN_CONTRACT" | "SUBCONTRACT">("all");
+
+  const { pdfRef, downloadPdf } = useDownloadPdf();
 
   const fetchProjects = async () => {
     try {
@@ -119,8 +126,16 @@ export default function ContractsPage() {
     return sum + retTotal;
   }, 0);
 
+  const filterLabels: Record<string, string> = {
+    all: 'جميع العقود',
+    MAIN_CONTRACT: 'عقود الإيراد',
+    SUBCONTRACT: 'عقود المقاولين',
+  };
+
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
   return (
-    <div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 relative">
+    <><div className="space-y-6 w-full animate-in fade-in zoom-in-95 duration-500 relative">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
@@ -131,6 +146,14 @@ export default function ContractsPage() {
         </div>
         
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => downloadPdf(`عقود_${new Date().toISOString().split('T')[0]}.pdf`)}
+            disabled={contracts.length === 0}
+            className="relative flex items-center gap-2 font-black py-3 px-5 rounded-xl transition-all bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Printer size={18} />
+            <span className="text-sm">PDF</span>
+          </button>
           <Link href="/dashboard/contracts/create" className="relative flex items-center gap-2 font-black py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] group bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white overflow-hidden hover:-translate-y-1">
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <Plus size={20} className="group-hover:rotate-90 transition-transform relative z-10" />
@@ -404,5 +427,94 @@ export default function ContractsPage() {
         )}
       </div>
     </div>
+
+      {/* Print Template */}
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+        <PrintLetterhead />
+        <PrintHeader />
+
+        <div className="px-8 py-4">
+          <h2 className="text-2xl font-bold text-center mb-1">كشف العقود</h2>
+          <p className="text-center text-sm text-gray-500 mb-6">
+            {filterLabels[filterType]}
+            {selectedProject ? ` — ${selectedProject.name} (${selectedProject.code})` : ''}
+            {' | '}إجمالي {filteredContracts.length} عقد
+          </p>
+
+          {/* Summary */}
+          <div className="grid grid-cols-4 gap-4 mb-6 text-sm">
+            <div className="border border-gray-300 rounded-xl p-3 text-center">
+              <p className="text-gray-500 text-xs">قيمة عقود الإيراد</p>
+              <p className="font-bold text-lg">{mainContractsValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border border-gray-300 rounded-xl p-3 text-center">
+              <p className="text-gray-500 text-xs">قيمة عقود المقاولين</p>
+              <p className="font-bold text-lg">{subContractsValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border border-gray-300 rounded-xl p-3 text-center">
+              <p className="text-gray-500 text-xs">إجمالي المنجز</p>
+              <p className="font-bold text-lg">{(mainInvoicedValue + subInvoicedValue).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div className="border border-gray-300 rounded-xl p-3 text-center">
+              <p className="text-gray-500 text-xs">المحتجزات النقدية</p>
+              <p className="font-bold text-lg">{totalRetention.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+
+          {/* Contracts Table */}
+          <table className="w-full text-right text-sm border-collapse mb-8">
+            <thead>
+              <tr className="border-b-2 border-gray-800 bg-gray-100">
+                <th className="py-2.5 px-3 font-bold">#</th>
+                <th className="py-2.5 px-3 font-bold">رقم العقد</th>
+                <th className="py-2.5 px-3 font-bold">النوع</th>
+                <th className="py-2.5 px-3 font-bold">الطرف</th>
+                <th className="py-2.5 px-3 font-bold text-left">قيمة العقد</th>
+                <th className="py-2.5 px-3 font-bold text-left">المنجز</th>
+                <th className="py-2.5 px-3 font-bold text-center">% الإنجاز</th>
+                <th className="py-2.5 px-3 font-bold text-center">المحتجز %</th>
+                <th className="py-2.5 px-3 font-bold text-center">مقدمة %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredContracts.map((c, i) => {
+                const isMain = c.type === 'MAIN_CONTRACT';
+                const invoiced = c.invoices?.reduce((s: number, inv: any) => s + Number(inv.grossAmount), 0) || 0;
+                const progress = c.totalValue > 0 ? Math.min((invoiced / c.totalValue) * 100, 100) : 0;
+                return (
+                  <tr key={c.id} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="py-2.5 px-3 text-gray-400">{i + 1}</td>
+                    <td className="py-2.5 px-3 font-mono font-medium">{c.referenceNumber}</td>
+                    <td className="py-2.5 px-3">
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${isMain ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {isMain ? 'إيراد' : 'مقاول باطن'}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      {isMain
+                        ? (c.project?.client?.name || '-')
+                        : (c.subcontractor?.name || '-')}
+                    </td>
+                    <td className="py-2.5 px-3 text-left font-mono">{Number(c.totalValue).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2.5 px-3 text-left font-mono">{invoiced.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2.5 px-3 text-center font-mono">{progress.toFixed(1)}%</td>
+                    <td className="py-2.5 px-3 text-center font-mono">%{c.retentionPercent}</td>
+                    <td className="py-2.5 px-3 text-center font-mono">%{c.advancePayment}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="text-xs text-gray-400 mt-8 border-t border-gray-200 pt-4">
+            تم التوليد في: {new Date().toLocaleDateString('ar-SA')}
+          </div>
+        </div>
+
+        <div className="fixed bottom-0 left-0 w-full bg-white px-8 pb-2">
+          <PrintFooter />
+        </div>
+      </div>
+    </>
   );
 }
