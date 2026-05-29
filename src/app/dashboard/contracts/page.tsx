@@ -33,6 +33,7 @@ export default function ContractsPage() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "MAIN_CONTRACT" | "SUBCONTRACT">("all");
 
   const fetchProjects = async () => {
     try {
@@ -57,14 +58,33 @@ export default function ContractsPage() {
     setIsLoading(false);
   };
 
+  const fetchAllContractsByType = async (type: "MAIN_CONTRACT" | "SUBCONTRACT") => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/contracts?type=${type}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setContracts(res.data);
+    } catch (err: any) {
+      console.warn("فشل جلب العقود حسب النوع:", err?.response?.data || err.message);
+      setContracts([]);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     fetchProjects();
   }, []);
 
   useEffect(() => {
-    if (selectedProjectId) fetchContracts(selectedProjectId);
-    else setContracts([]);
-  }, [selectedProjectId]);
+    if (filterType === "all") {
+      if (selectedProjectId) fetchContracts(selectedProjectId);
+      else setContracts([]);
+    } else {
+      fetchAllContractsByType(filterType);
+    }
+  }, [filterType, selectedProjectId]);
 
   const deleteContract = async (id: string) => {
     if (!confirm("هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذه الخطوة.")) return;
@@ -114,6 +134,43 @@ export default function ContractsPage() {
             <span className="relative z-10 text-sm">تأسيس عقد جديد</span>
           </Link>
         </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-md border border-white/10 p-1.5 rounded-2xl shadow-lg w-max">
+        <button
+          onClick={() => setFilterType("all")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            filterType === "all"
+              ? "bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <FileBox size={16} className="inline ml-1.5" />
+          الكل (حسب المشروع)
+        </button>
+        <button
+          onClick={() => setFilterType("MAIN_CONTRACT")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            filterType === "MAIN_CONTRACT"
+              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <Crown size={16} className="inline ml-1.5" />
+          عقود الإيراد
+        </button>
+        <button
+          onClick={() => setFilterType("SUBCONTRACT")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            filterType === "SUBCONTRACT"
+              ? "bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <HardHat size={16} className="inline ml-1.5" />
+          عقود المقاولين
+        </button>
       </div>
 
       {/* Top Value Cards */}
@@ -183,21 +240,23 @@ export default function ContractsPage() {
           />
         </div>
         
-        <div className="flex items-center gap-3">
-          <label className="text-slate-400 text-sm font-medium">فرز حسب المشروع:</label>
-          <div className="flex items-center border border-white/10 bg-slate-900/80 rounded-xl px-2">
-            <select 
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="bg-transparent text-white text-sm font-medium outline-none px-3 py-2 cursor-pointer w-48 appearance-none"
-            >
-              <option value="" disabled className="bg-slate-900">-- اختر مشروعاً --</option>
-              {projects.map(p => (
-                <option key={p.id} value={p.id} className="bg-slate-900">{p.name} ({p.code})</option>
-              ))}
-            </select>
+        {filterType === "all" && (
+          <div className="flex items-center gap-3">
+            <label className="text-slate-400 text-sm font-medium">فرز حسب المشروع:</label>
+            <div className="flex items-center border border-white/10 bg-slate-900/80 rounded-xl px-2">
+              <select 
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                className="bg-transparent text-white text-sm font-medium outline-none px-3 py-2 cursor-pointer w-48 appearance-none"
+              >
+                <option value="" disabled className="bg-slate-900">-- اختر مشروعاً --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id} className="bg-slate-900">{p.name} ({p.code})</option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
