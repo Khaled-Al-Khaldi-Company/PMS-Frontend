@@ -58,6 +58,7 @@ export default function EditQuotationPage() {
     items: [{ itemCode: "01", description: "", unit: "م٢", quantity: 1, unitPrice: 0 }]
   });
 
+  const [isReverting, setIsReverting] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const { pdfRef, downloadPdf } = useDownloadPdf();
@@ -177,14 +178,18 @@ export default function EditQuotationPage() {
 
     try {
       const token = localStorage.getItem("token");
+      // Only send editable fields
+      const { projectId, createdBy, approvedBy, approvedAt, createdAt, updatedAt, ...payload } = formData;
       await axios.patch(
         `${API_BASE_URL}/v1/quotations/${quotationId}`,
-        formData,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("تم تحديث عرض السعر بنجاح!");
+      fetchQuotation();
     } catch (err: any) {
-      alert("حدث خطأ أثناء الرفع والتعديل.");
+      const msg = err.response?.data?.message || err.response?.data || err.message || "خطأ غير معروف";
+      alert(typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2));
     } finally {
       setIsLoading(false);
     }
@@ -221,6 +226,24 @@ export default function EditQuotationPage() {
       alert("فشل فك الارتباط. تأكد من تحديث النظام.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRevertToDraft = async () => {
+    if (!confirm("هل أنت متأكد من إرجاع عرض السعر إلى مسودة؟")) return;
+    setIsReverting(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(`${API_BASE_URL}/v1/quotations/${quotationId}/revert-to-draft`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("تم إرجاع عرض السعر إلى مسودة.");
+      fetchQuotation();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || "فشل الإرجاع";
+      alert(msg);
+    } finally {
+      setIsReverting(false);
     }
   };
 
@@ -322,6 +345,11 @@ export default function EditQuotationPage() {
               {formData.status === 'APPROVED' && !formData.projectId && hasPermission('QUOTATION_APPROVE') && (
                 <button type="button" onClick={handleConvertToProject} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-all animate-pulse text-sm">
                   <Wand2 size={18} /> تحويل لمشروع تنفيذي
+                </button>
+              )}
+              {formData.status === 'APPROVED' && !formData.projectId && hasPermission('QUOTATION_CREATE') && (
+                <button type="button" onClick={handleRevertToDraft} disabled={isReverting} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-500/30 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 font-bold transition-all shadow-lg text-sm">
+                  <ArrowRight size={18} /> {isReverting ? 'جاري الإرجاع...' : 'إرجاع للمسودة'}
                 </button>
               )}
               <button type="button" onClick={handleExportExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-lg text-sm">

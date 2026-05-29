@@ -44,7 +44,7 @@ export default function EditPurchasePage() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const [pos, mats, projs, orderRes] = await Promise.all([
+      const [pos, projs, ordRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/v1/integration/daftra/pms-suppliers`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/v1/projects`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/v1/purchases/${orderId}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -53,9 +53,14 @@ export default function EditPurchasePage() {
       setSuppliers(pos.data);
       setProjects(projs.data.items || projs.data);
       
-      const ord = orderRes.data;
-      if (ord.status !== 'PENDING') {
-        alert("لا يمكن تعديل طلب شراء معتمد أو ملغي.");
+      const ord = ordRes.data;
+      if (ord.status === 'DELIVERED') {
+        alert("لا يمكن تعديل طلب شراء تم استلامه.");
+        router.back();
+        return;
+      }
+      if (ord.status === 'APPROVED' && ord.daftraId) {
+        alert("لا يمكن تعديل طلب شراء تم ترحيله إلى دفترة.");
         router.back();
         return;
       }

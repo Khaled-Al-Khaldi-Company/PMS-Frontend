@@ -18,7 +18,9 @@ import {
   TrendingUp,
   Receipt,
   Trash2,
-  Edit
+  Edit,
+  Upload,
+  BadgeCheck
 } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
@@ -62,10 +64,20 @@ export default function PurchasesPage() {
     return userPerms.includes(perm);
   };
 
-  const statusMap: Record<string, { label: string, color: string, icon: any }> = {
-    PENDING: { label: "قيد المراجعة", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock },
-    APPROVED: { label: "معتمد (Approved)", color: "text-blue-500 bg-blue-500/10 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]", icon: CheckCircle2 },
-    DELIVERED: { label: "تم استلام الموقع", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]", icon: Package },
+  const statusBadge = (ord: any) => {
+    if (ord.status === 'PENDING') {
+      return { label: "قيد المراجعة", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock };
+    }
+    if (ord.status === 'APPROVED' && !ord.daftraId) {
+      return { label: "معتمد (لم يُرحل)", color: "text-blue-500 bg-blue-500/10 border-blue-500/20", icon: BadgeCheck };
+    }
+    if (ord.status === 'APPROVED' && ord.daftraId) {
+      return { label: "مرحّل إلى دفترة", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: Upload };
+    }
+    if (ord.status === 'DELIVERED') {
+      return { label: "تم الاستلام", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]", icon: Package };
+    }
+    return { label: ord.status, color: "text-slate-500 bg-slate-500/10 border-slate-500/20", icon: Clock };
   };
 
   const totalSpend = orders.filter(o => o.status !== 'REJECTED').reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
@@ -198,12 +210,12 @@ export default function PurchasesPage() {
                     <td className="px-6 py-5 text-slate-400 font-medium font-mono text-xs">{new Date(ord.issueDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year:'numeric' })}</td>
                     <td className="px-6 py-5">
                       <div className="flex justify-center">
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border ${statusMap[ord.status]?.color || statusMap['PENDING'].color}`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border ${statusBadge(ord).color}`}>
                           {(() => {
-                            const IconComp = statusMap[ord.status]?.icon || Clock;
+                            const IconComp = statusBadge(ord).icon;
                             return <IconComp size={14} />;
                           })()}
-                          {statusMap[ord.status]?.label || ord.status}
+                          {statusBadge(ord).label}
                         </div>
                       </div>
                     </td>
@@ -214,7 +226,7 @@ export default function PurchasesPage() {
                             <button 
                               onClick={async (e) => {
                                 e.stopPropagation();
-                                if(!confirm("هل أنت متأكد من اعتماد طلب الشراء؟ (سيتم ترحيله إلى دفترة)")) return;
+                                if(!confirm("هل أنت متأكد من اعتماد طلب الشراء؟")) return;
                                 try {
                                   await axios.patch(`${API_BASE_URL}/v1/purchases/${ord.id}/approve`, {}, {
                                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -225,7 +237,7 @@ export default function PurchasesPage() {
                                   alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
                                 }
                               }}
-                              title="اعتماد وترحيل الشراء"
+                              title="اعتماد طلب الشراء"
                               className="p-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
                             >
                               <CheckCircle2 size={18} />
@@ -264,6 +276,42 @@ export default function PurchasesPage() {
                                 <Trash2 size={18} />
                               </button>
                             </>
+                          )}
+                        </div>
+                      ) : ord.status === 'APPROVED' && !ord.daftraId ? (
+                        <div className="flex items-center justify-center gap-2">
+                          {hasPermission('PO_APPROVE') && (
+                            <button 
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if(!confirm("هل أنت متأكد من ترحيل طلب الشراء إلى دفترة؟")) return;
+                                try {
+                                  await axios.post(`${API_BASE_URL}/v1/purchases/${ord.id}/post`, {}, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                  });
+                                  fetchOrders();
+                                } catch(err: any) {
+                                  const errData = err.response?.data || err.message;
+                                  alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
+                                }
+                              }}
+                              title="ترحيل إلى دفترة"
+                              className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
+                            >
+                              <Upload size={18} />
+                            </button>
+                          )}
+                          {hasPermission('PO_CREATE') && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/dashboard/purchases/edit/${ord.id}`);
+                              }}
+                              title="تعديل طلب الشراء"
+                              className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
+                            >
+                              <Edit size={18} />
+                            </button>
                           )}
                         </div>
                       ) : (

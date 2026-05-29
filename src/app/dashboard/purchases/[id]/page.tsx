@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
-import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw, FileSpreadsheet } from "lucide-react";
+import { Loader2, ArrowRight, Printer, CheckCircle2, Clock, Package, RefreshCcw, FileSpreadsheet, Upload, BadgeCheck } from "lucide-react";
 import axios from "axios";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
@@ -19,6 +19,8 @@ export default function ViewPurchaseOrderPage() {
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
   const { pdfRef, downloadPdf } = useDownloadPdf();
 
   useEffect(() => {
@@ -60,6 +62,42 @@ export default function ViewPurchaseOrderPage() {
       await fetchOrder();
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!confirm("هل أنت متأكد من اعتماد طلب الشراء؟")) return;
+    setIsApproving(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_BASE_URL}/v1/purchases/${orderId}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('تم اعتماد طلب الشراء بنجاح.');
+      await fetchOrder();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'خطأ مجهول';
+      alert(msg);
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handlePostToDaftra = async () => {
+    if (!confirm("هل أنت متأكد من ترحيل طلب الشراء إلى دفترة؟")) return;
+    setIsPosting(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/v1/purchases/${orderId}/post`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('تم ترحيل طلب الشراء إلى دفترة بنجاح.');
+      await fetchOrder();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'خطأ مجهول';
+      alert(msg);
+    } finally {
+      setIsPosting(false);
     }
   };
 
@@ -107,6 +145,26 @@ export default function ViewPurchaseOrderPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {order.status === 'PENDING' && (
+              <button
+                onClick={handleApprove}
+                disabled={isApproving}
+                className="flex items-center gap-2 px-5 py-3 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl font-bold border border-emerald-500/30 transition disabled:opacity-50"
+              >
+                <BadgeCheck size={18} className={isApproving ? 'animate-spin' : ''} />
+                {isApproving ? 'جاري الاعتماد...' : 'اعتماد طلب الشراء'}
+              </button>
+            )}
+            {order.status === 'APPROVED' && !order.daftraId && (
+              <button
+                onClick={handlePostToDaftra}
+                disabled={isPosting}
+                className="flex items-center gap-2 px-5 py-3 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-xl font-bold border border-blue-500/30 transition disabled:opacity-50"
+              >
+                <Upload size={18} className={isPosting ? 'animate-pulse' : ''} />
+                {isPosting ? 'جاري الترحيل...' : 'ترحيل إلى دفترة'}
+              </button>
+            )}
             {order.status === 'APPROVED' && order.daftraId && (
               <button
                 onClick={handleSyncFromDaftra}
