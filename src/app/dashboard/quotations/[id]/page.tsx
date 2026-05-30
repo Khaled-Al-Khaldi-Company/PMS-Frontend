@@ -93,13 +93,27 @@ export default function EditQuotationPage() {
       const imgHeight2 = (img2.height * imgWidth) / img2.width;
 
       const pdf = new jsPDF("p", "mm", "a4");
+      const THRESHOLD = 10;
+
+      const addImageWithSlicing = (dataUrl: string, imgHeight: number) => {
+        let heightLeft = imgHeight;
+        let pos = 0;
+        pdf.addImage(dataUrl, "PNG", 0, pos, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while (heightLeft > THRESHOLD) {
+          pos = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(dataUrl, "PNG", 0, pos, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+      };
 
       // Page 1 — financial table
-      pdf.addImage(dataUrl1, "PNG", 0, 0, imgWidth, imgHeight1);
+      addImageWithSlicing(dataUrl1, imgHeight1);
 
       // Page 2 — scope, terms, signatures
       pdf.addPage();
-      pdf.addImage(dataUrl2, "PNG", 0, 0, imgWidth, imgHeight2);
+      addImageWithSlicing(dataUrl2, imgHeight2);
 
       pdf.save(`Quotation_${printMeta.ref || 'draft'}.pdf`);
     } catch (err) {
