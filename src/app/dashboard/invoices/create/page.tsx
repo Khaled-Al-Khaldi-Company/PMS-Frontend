@@ -29,6 +29,8 @@ function InvoiceCreateContent() {
   const [percentInputs, setPercentInputs] = useState<Record<string, number>>({});
   const [valueInputs, setValueInputs] = useState<Record<string, number>>({});
   const [contractDetails, setContractDetails] = useState<any>(null);
+  const [coItems, setCoItems] = useState<any[]>([]);
+  const [coQtyInputs, setCoQtyInputs] = useState<Record<string, number>>({});
 
   // Financial Options
   const [advanceDeduction, setAdvanceDeduction] = useState<number>(0);
@@ -83,6 +85,27 @@ function InvoiceCreateContent() {
         }));
         setBoqItems(mappedItems);
       }
+
+      // Extract approved change order items not linked to BOQ items
+      const changeOrders = resContract.data?.changeOrders || [];
+      const standaloneCoItems: any[] = [];
+      for (const co of changeOrders) {
+        if (co.status === 'APPROVED') {
+          for (const item of co.items || []) {
+            if (!item.boqItemId) {
+              standaloneCoItems.push({
+                id: item.id,
+                description: item.description,
+                unitPrice: item.unitPrice,
+                quantity: item.quantityChange,
+                coTitle: co.title,
+                coOrderNumber: co.orderNumber,
+              });
+            }
+          }
+        }
+      }
+      setCoItems(standaloneCoItems);
     } catch (err) {
       console.error(err);
       alert("حدث خطأ أثناء تحميل البيانات.");
@@ -141,6 +164,17 @@ function InvoiceCreateContent() {
     return rows;
   };
 
+  const buildCoExecutionPayload = () => {
+    const rows: any[] = [];
+    for (const item of coItems) {
+      const q = coQtyInputs[item.id] || 0;
+      if (q > 0) {
+        rows.push({ changeOrderItemId: item.id, currentQty: q });
+      }
+    }
+    return rows;
+  };
+
   const getCurrentLineValue = (item: any) => {
     const mode = resolveBillingMode(item);
     const lineTotal = lineContractTotal(item.quantity, item.unitPrice);
@@ -166,10 +200,12 @@ function InvoiceCreateContent() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
+      const coPayload = buildCoExecutionPayload();
       const res = await axios.post(
         `${API_BASE_URL}/v1/invoices/${contractId}/generate`,
         { 
           executionData: payloadData,
+          changeOrderExecutions: coPayload,
           taxPercent,
           advanceDeduction,
           delayPenalty,
@@ -198,7 +234,8 @@ function InvoiceCreateContent() {
     );
   }
 
-  const currentGross = boqItems.reduce((acc, item) => acc + getCurrentLineValue(item), 0);
+  const currentGross = boqItems.reduce((acc, item) => acc + getCurrentLineValue(item), 0)
+    + coItems.reduce((acc, item) => acc + ((coQtyInputs[item.id] || 0) * item.unitPrice), 0);
   const retentionPercent = contractDetails?.retentionPercent || 0;
   const retentionAmount = currentGross * (retentionPercent / 100);
   
@@ -381,6 +418,58 @@ function InvoiceCreateContent() {
                           {isLumpSum ? `${totalPercent.toFixed(1)}%` : totalQty}
                         </td>
                         <td className="px-3 py-4 text-center font-mono text-indigo-200 font-semibold bg-indigo-900/10">{totalValue.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {coItems.length > 0 && (
+                    <tr className="bg-amber-500/5 border-t-2 border-amber-500/30">
+                      <td colSpan={12} className="px-4 py-3 text-amber-400 font-bold text-sm flex items-center gap-2">
+                        <span className="inline-block w-2 h-2 bg-amber-400 rounded-full" />
+                        أعمال الأوامر التغييرية (Change Orders) المعتمدة
+                      </td>
+                    </tr>
+                  )}
+                  {coItems.map((item, i) => {
+                    const coQty = coQtyInputs[item.id] || 0;
+                    const coValue = coQty * item.unitPrice;
+                    const isActive = coQty > 0;
+
+                    return (
+                      <tr key={item.id} className={`transition-all duration-300 group ${isActive ? 'bg-amber-500/[0.03]' : 'hover:bg-white/[0.02]'}`}>
+                        <td className="px-3 py-4 text-center text-amber-600 font-mono text-xs">CO{i+1}</td>
+                        <td className="px-4 py-4 w-[260px]">
+                          <div className="flex flex-col gap-1">
+                            <span className="truncate block leading-tight text-amber-100 font-semibold" title={item.description}>
+                              {item.description}
+                            </span>
+                            <span className="text-[10px] text-amber-500/60 font-mono tracking-wider">{item.coOrderNumber} - {item.coTitle}</span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-4 text-center text-slate-400">---</td>
+                        <td className="px-3 py-4 text-center font-mono text-amber-300">{item.quantity}</td>
+                        <td className="px-3 py-4 text-center font-mono text-amber-400">{Number(item.unitPrice).toLocaleString()}</td>
+                        <td className="px-3 py-4 text-center font-mono text-amber-500">{(item.quantity * item.unitPrice).toLocaleString()}</td>
+                        <td className="px-3 py-4 text-center font-mono text-slate-500 border-r border-white/5 bg-slate-900/30">0</td>
+                        <td className="px-3 py-4 text-center font-mono text-slate-500 bg-slate-900/30">0</td>
+                        <td className="px-2 py-3 text-center border-r border-amber-500/20 bg-amber-500/5">
+                          <div className="flex justify-center">
+                            <input
+                              type="number" min="0" max={item.quantity} step="any"
+                              value={coQtyInputs[item.id] === undefined ? '' : coQtyInputs[item.id]}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setCoQtyInputs(prev => ({ ...prev, [item.id]: val }));
+                              }}
+                              className="w-16 h-8 bg-black/40 border border-amber-500/30 rounded-md text-center font-mono text-sm text-amber-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                              placeholder="0"
+                            />
+                          </div>
+                        </td>
+                        <td className={`px-3 py-4 text-center font-mono font-bold ${isActive ? 'text-amber-400 bg-amber-500/5' : 'text-slate-600 bg-slate-900/50'}`}>
+                          {coValue > 0 ? coValue.toLocaleString() : '-'}
+                        </td>
+                        <td className="px-3 py-4 text-center font-mono text-amber-300 border-r border-white/5 bg-amber-900/10">{coQty}</td>
+                        <td className="px-3 py-4 text-center font-mono text-amber-200 font-semibold bg-amber-900/10">{coValue.toLocaleString()}</td>
                       </tr>
                     );
                   })}
