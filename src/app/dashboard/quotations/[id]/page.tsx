@@ -94,17 +94,8 @@ export default function EditQuotationPage() {
 
       const pdf = new jsPDF("p", "mm", "a4");
 
-      // Page 1 — financial table (with multi-page slicing if needed)
-      let heightLeft = imgHeight1;
-      let position = 0;
-      pdf.addImage(dataUrl1, "PNG", 0, position, imgWidth, imgHeight1);
-      heightLeft -= pageHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight1;
-        pdf.addPage();
-        pdf.addImage(dataUrl1, "PNG", 0, position, imgWidth, imgHeight1);
-        heightLeft -= pageHeight;
-      }
+      // Page 1 — financial table
+      pdf.addImage(dataUrl1, "PNG", 0, 0, imgWidth, imgHeight1);
 
       // Page 2 — scope, terms, signatures
       pdf.addPage();
