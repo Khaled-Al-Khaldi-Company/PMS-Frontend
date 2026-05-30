@@ -792,12 +792,12 @@ export default function EditQuotationPage() {
         </motion.div>
       </div>
 
-      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl" style={{ height: '100vh', overflow: 'hidden', boxSizing: 'border-box' }}>
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
 
         {/* ===== Page 1 content wrapper ===== */}
-        <div className="px-8 flex flex-col min-h-[calc(100vh-220px)] justify-between">
+        <div className="px-8 flex flex-col justify-between" style={{ height: 'calc(100vh - 130px - 90px)' }}>
 
           <div>
 
@@ -896,9 +896,9 @@ export default function EditQuotationPage() {
       </div>
 
       {/* Print Template — Page 2 (Scope + Terms) */}
-      <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+      <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl" style={{ height: '100vh', overflow: 'hidden', boxSizing: 'border-box' }}>
         <PrintLetterhead />
-        <div className="px-8 flex flex-col min-h-[calc(100vh-220px)] justify-between">
+        <div className="px-8 flex flex-col justify-between" style={{ height: 'calc(100vh - 130px - 90px)' }}>
 
           <div>
 
