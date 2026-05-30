@@ -201,7 +201,7 @@ export default function ViewPurchaseOrderPage() {
         <PrintLetterhead />
 
         {/* ===== البيانات فوق الورقة ===== */}
-        <div className="mb-8">
+        <div className="pt-20 mb-8">
           <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200 text-right">
             <p className="text-sm font-bold text-slate-800">رقم الأمر (PO No): <span className="font-mono text-rose-700">#{order.poNumber}</span></p>
             <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(order.issueDate).toLocaleDateString('en-GB')}</span></p>

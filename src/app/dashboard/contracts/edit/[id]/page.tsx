@@ -566,7 +566,7 @@ export default function EditContractPage() {
       {/* Print View */}
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <div className="mb-6">
+        <div className="pt-20 mb-6">
           <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
             <p className="text-sm font-bold text-slate-800">رقم العقد (Ref): <span className="font-mono text-indigo-700">{contract?.referenceNumber}</span></p>
           </div>

@@ -574,7 +574,7 @@ export default function BoqPage() {
       {/* Print View */}
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <div className="mb-6">
+        <div className="pt-20 mb-6">
           <h1 className="text-2xl font-black text-slate-900">جداول الكميات (BOQ)</h1>
           <p className="text-sm text-slate-500 font-bold">
             المشروع: {projects.find(p => p.id === selectedProjectId)?.name || '-'} ({projects.find(p => p.id === selectedProjectId)?.code || '-'})

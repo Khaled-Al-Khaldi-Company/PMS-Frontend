@@ -633,7 +633,7 @@ export default function EditQuotationPage() {
         <PrintLetterhead />
 
         {/* ===== البيانات فوق الورقة ===== */}
-        <div className="mb-8">
+        <div className="pt-20 mb-8">
           <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
             <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
             <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
