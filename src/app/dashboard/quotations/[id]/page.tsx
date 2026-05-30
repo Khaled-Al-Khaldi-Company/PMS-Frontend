@@ -692,8 +692,11 @@ export default function EditQuotationPage() {
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
 
-        {/* ===== البيانات فوق الورقة ===== */}
-        <div className="pt-20 mb-8 flex justify-between items-start">
+        {/* ===== Page 1 content wrapper ===== */}
+        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
+          <div className="flex-1">
+
+        <div className="mb-8 flex justify-between items-start">
           <h1 className="text-3xl font-black text-slate-900">عرض سعر — Quotation</h1>
           <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
             <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
@@ -760,6 +763,28 @@ export default function EditQuotationPage() {
           </div>
         </div>
 
+        </div>
+        {/* Page 1 Signatures */}
+        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 mt-auto">
+          <div className="flex flex-col items-center">
+            <p className="mb-4 text-slate-800 font-black">المدير العام (General Manager)</p>
+            {formData.status === 'APPROVED' ? (
+               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
+                 <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
+                 <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير العام'}</p>
+                 <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
+               </div>
+            ) : (
+               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
+            )}
+          </div>
+          <div className="flex flex-col items-center">
+            <p className="mb-12">موافقة العميل (Client Approval)</p>
+            <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">Signature / Stamp</p>
+          </div>
+        </div>
+        </div>
       </div>
 
       {/* Print Template — Page 2 (Scope + Terms) */}
