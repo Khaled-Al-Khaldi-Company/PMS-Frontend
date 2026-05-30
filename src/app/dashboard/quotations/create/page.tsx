@@ -196,7 +196,7 @@ export default function CreateQuotationPage() {
       );
       router.push("/dashboard/quotations");
     } catch (err: any) {
-      alert("حدث خطأ أثناء حفظ عرض السعر.");
+      alert("حدث خطأ أثناء حفظ عرض السعر.\n" + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
