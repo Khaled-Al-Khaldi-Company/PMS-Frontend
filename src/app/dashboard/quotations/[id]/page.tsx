@@ -20,7 +20,9 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   LayoutTemplate,
-  Link2Off
+  Link2Off,
+  Edit3,
+  AlertCircle
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
@@ -29,8 +31,10 @@ import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import PrintLetterhead from "../../components/PrintLetterhead";
+import { useCompany } from "@/context/CompanyContext";
 
 export default function EditQuotationPage() {
+  const { company } = useCompany();
   const router = useRouter();
   const params = useParams();
   const quotationId = params.id as string;
@@ -61,6 +65,13 @@ export default function EditQuotationPage() {
   const [isReverting, setIsReverting] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [templateFormData, setTemplateFormData] = useState({ name: "", technicalOffer: "", termsConditions: "" });
+  const [isTemplateFormOpen, setIsTemplateFormOpen] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [templateMessage, setTemplateMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
   const { pdfRef, downloadPdf } = useDownloadPdf();
   const pdfRef2 = useRef<HTMLDivElement>(null);
 
@@ -150,6 +161,72 @@ export default function EditQuotationPage() {
       });
       setTemplates(res.data || []);
     } catch {}
+  };
+
+  const openCreateTemplate = () => {
+    setTemplateFormData({
+      name: "",
+      technicalOffer: formData.technicalOffer || "",
+      termsConditions: formData.termsConditions || ""
+    });
+    setEditingTemplateId(null);
+    setTemplateMessage(null);
+    setIsTemplateFormOpen(true);
+  };
+
+  const openEditTemplate = (t: any) => {
+    setTemplateFormData({
+      name: t.name || "",
+      technicalOffer: t.technicalOffer || "",
+      termsConditions: t.termsConditions || ""
+    });
+    setEditingTemplateId(t.id);
+    setTemplateMessage(null);
+    setIsTemplateFormOpen(true);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateFormData.name.trim()) {
+      setTemplateMessage({ type: 'error', text: 'الرجاء إدخال اسم القالب' });
+      return;
+    }
+    try {
+      setIsSavingTemplate(true);
+      setTemplateMessage(null);
+      const token = localStorage.getItem("token");
+      if (editingTemplateId) {
+        await axios.patch(`${API_BASE_URL}/v1/quotation-templates/${editingTemplateId}`, templateFormData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post(`${API_BASE_URL}/v1/quotation-templates`, templateFormData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      setTemplateMessage({ type: 'success', text: editingTemplateId ? 'تم تحديث القالب بنجاح' : 'تم إنشاء القالب بنجاح' });
+      fetchTemplates();
+      setTimeout(() => { setIsTemplateFormOpen(false); setTemplateMessage(null); }, 1000);
+    } catch (err: any) {
+      setTemplateMessage({ type: 'error', text: err.response?.data?.message || 'حدث خطأ أثناء حفظ القالب' });
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      setIsDeletingTemplate(true);
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/v1/quotation-templates/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTemplateToDelete(null);
+      fetchTemplates();
+    } catch {
+      setTemplateMessage({ type: 'error', text: 'حدث خطأ أثناء حذف القالب' });
+    } finally {
+      setIsDeletingTemplate(false);
+    }
   };
 
   const hasPermission = (perm: string) => {
@@ -502,61 +579,83 @@ export default function EditQuotationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/40 p-6 rounded-2xl border border-white/5 shadow-inner relative">
                {/* Template Selector Float */}
                <div className="md:col-span-2 flex justify-end mb-2">
-                 <div className="relative">
-                    <button 
-                      type="button"
-                      disabled={!isEditable}
-                      onClick={() => setShowTemplates(!showTemplates)}
-                      className={`flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg ${!isEditable ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <LayoutTemplate size={14} />
-                      {showTemplates ? 'إغلاق القوالب' : 'إدراج من قالب جاهز'}
-                    </button>
+                  <div className="relative">
+                     <button 
+                       type="button"
+                       disabled={!isEditable}
+                       onClick={() => setShowTemplates(!showTemplates)}
+                       className={`flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg ${!isEditable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                     >
+                       <LayoutTemplate size={14} />
+                       {showTemplates ? 'إغلاق القوالب' : 'قوالب جاهزة'}
+                     </button>
 
-                    <AnimatePresence>
-                      {showTemplates && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
-                        >
-                           <div className="p-3 border-b border-white/5 mb-1">
-                              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
-                           </div>
-                           <div className="max-h-64 overflow-y-auto custom-scrollbar">
-                              {templates.length === 0 ? (
-                                <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
-                              ) : (
-                                templates.map(t => (
-                                  <button
-                                    key={t.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData({
-                                        ...formData,
-                                        technicalOffer: t.technicalOffer || "",
-                                        termsConditions: t.termsConditions || ""
-                                      });
-                                      setShowTemplates(false);
-                                    }}
-                                    className="w-full text-right p-3 hover:bg-white/5 rounded-xl transition-colors group"
-                                  >
-                                    <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-400">{t.name}</p>
-                                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{t.technicalOffer?.substring(0, 40)}...</p>
-                                  </button>
-                                ))
-                              )}
-                           </div>
-                           <div className="p-2 border-t border-white/5 mt-1">
-                              <a href="/dashboard/settings/templates" target="_blank" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
-                                إدارة القوالب ⚙️
-                              </a>
-                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                 </div>
+                     <AnimatePresence>
+                       {showTemplates && (
+                         <motion.div 
+                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                           animate={{ opacity: 1, y: 0, scale: 1 }}
+                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                           className="absolute left-0 top-full mt-2 w-80 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
+                         >
+                            <div className="p-3 border-b border-white/5 mb-1 flex items-center justify-between">
+                               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
+                               <button
+                                 type="button"
+                                 onClick={openCreateTemplate}
+                                 className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 text-[10px] font-bold transition-all"
+                               >
+                                 <Plus size={12} /> حفظ كقالب
+                               </button>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                               {templates.length === 0 ? (
+                                 <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
+                               ) : (
+                                 templates.map(t => (
+                                   <div
+                                     key={t.id}
+                                     className="flex items-center gap-1 p-1 hover:bg-white/5 rounded-xl transition-colors group"
+                                   >
+                                     <button
+                                       type="button"
+                                       onClick={() => {
+                                         setFormData({
+                                           ...formData,
+                                           technicalOffer: t.technicalOffer || "",
+                                           termsConditions: t.termsConditions || ""
+                                         });
+                                         setShowTemplates(false);
+                                       }}
+                                       className="flex-1 text-right p-2 rounded-lg"
+                                     >
+                                       <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-400">{t.name}</p>
+                                       <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{t.technicalOffer?.substring(0, 35)}...</p>
+                                     </button>
+                                     <button
+                                       type="button"
+                                       onClick={() => { openEditTemplate(t); setShowTemplates(false); }}
+                                       className="p-1.5 text-slate-600 hover:text-indigo-400 hover:bg-white/5 rounded-lg transition-all"
+                                       title="تعديل القالب"
+                                     >
+                                       <Edit3 size={13} />
+                                     </button>
+                                     <button
+                                       type="button"
+                                       onClick={() => setTemplateToDelete(t.id)}
+                                       className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all"
+                                       title="حذف القالب"
+                                     >
+                                       <Trash2 size={13} />
+                                     </button>
+                                   </div>
+                                 ))
+                               )}
+                            </div>
+                         </motion.div>
+                       )}
+                     </AnimatePresence>
+                  </div>
                </div>
 
               <div className="space-y-3">
@@ -772,16 +871,24 @@ export default function EditQuotationPage() {
         {/* Page 1 Signatures */}
         <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 mt-auto">
           <div className="flex flex-col items-center">
-            <p className="mb-4 text-slate-800 font-black">المدير العام (General Manager)</p>
+            <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
+            {company?.stampUrl && (
+              <img src={company.stampUrl} alt="Stamp" className="h-24 w-24 object-contain mb-2 opacity-80" />
+            )}
+            {company?.managerName && (
+              <p className="text-base font-black text-slate-800 mb-2">{company.managerName}</p>
+            )}
             {formData.status === 'APPROVED' ? (
                <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
                  <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
-                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير العام'}</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || company?.managerName || 'إدارة المشاريع'}</p>
                  <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
                </div>
             ) : (
-               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
+               <div className="w-full">
+                 <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">التوقيع والختم</p>
+               </div>
             )}
           </div>
           <div className="flex flex-col items-center">
@@ -845,16 +952,24 @@ export default function EditQuotationPage() {
 
         <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-auto">
           <div className="flex flex-col items-center">
-            <p className="mb-4 text-slate-800 font-black">المدير العام (General Manager)</p>
+            <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
+            {company?.stampUrl && (
+              <img src={company.stampUrl} alt="Stamp" className="h-24 w-24 object-contain mb-2 opacity-80" />
+            )}
+            {company?.managerName && (
+              <p className="text-base font-black text-slate-800 mb-2">{company.managerName}</p>
+            )}
             {formData.status === 'APPROVED' ? (
                <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
                  <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
-                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير العام'}</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || company?.managerName || 'إدارة المشاريع'}</p>
                  <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
                </div>
             ) : (
-               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
+               <div className="w-full">
+                 <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">التوقيع والختم</p>
+               </div>
             )}
           </div>
           <div className="flex flex-col items-center">
@@ -864,6 +979,146 @@ export default function EditQuotationPage() {
         </div>
         </div>
       </div>
+
+      {/* Template Create/Edit Modal */}
+      <AnimatePresence>
+        {isTemplateFormOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => { if (!isSavingTemplate) setIsTemplateFormOpen(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                <h3 className="text-lg font-black text-white">
+                  {editingTemplateId ? 'تعديل القالب' : 'حفظ كقالب جديد'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsTemplateFormOpen(false)}
+                  className="p-1.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">اسم القالب *</label>
+                  <input
+                    type="text"
+                    value={templateFormData.name}
+                    onChange={e => setTemplateFormData({...templateFormData, name: e.target.value})}
+                    className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+                    placeholder="مثال: قالب عزل حراري + توريد"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">نطاق العمل (Scope of Work)</label>
+                  <textarea
+                    rows={4}
+                    value={templateFormData.technicalOffer}
+                    onChange={e => setTemplateFormData({...templateFormData, technicalOffer: e.target.value})}
+                    className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">الشروط والأحكام (Terms & Conditions)</label>
+                  <textarea
+                    rows={4}
+                    value={templateFormData.termsConditions}
+                    onChange={e => setTemplateFormData({...templateFormData, termsConditions: e.target.value})}
+                    className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y"
+                  />
+                </div>
+
+                {templateMessage && (
+                  <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold ${templateMessage.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}`}>
+                    {templateMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                    {templateMessage.text}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t border-white/5 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsTemplateFormOpen(false)}
+                  disabled={isSavingTemplate}
+                  className="px-6 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-white/20 font-bold transition-all text-sm"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTemplate}
+                  disabled={isSavingTemplate}
+                  className="px-6 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold transition-all text-sm flex items-center gap-2 shadow-lg"
+                >
+                  {isSavingTemplate ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  {editingTemplateId ? 'تحديث القالب' : 'حفظ القالب'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Dialog */}
+      <AnimatePresence>
+        {templateToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setTemplateToDelete(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden p-6 text-center"
+            >
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+                <AlertCircle size={28} className="text-rose-400" />
+              </div>
+              <h3 className="text-lg font-black text-white mb-2">حذف القالب</h3>
+              <p className="text-sm text-slate-400 mb-6">هل أنت متأكد من حذف هذا القالب؟</p>
+              <div className="flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setTemplateToDelete(null)}
+                  disabled={isDeletingTemplate}
+                  className="px-6 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-white/20 font-bold transition-all text-sm"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTemplate(templateToDelete!)}
+                  disabled={isDeletingTemplate}
+                  className="px-6 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold transition-all text-sm flex items-center gap-2 shadow-lg"
+                >
+                  {isDeletingTemplate ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                  حذف
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
