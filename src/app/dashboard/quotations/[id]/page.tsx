@@ -797,7 +797,7 @@ export default function EditQuotationPage() {
         <PrintLetterhead />
 
         {/* ===== Page 1 content wrapper ===== */}
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px] justify-between">
+        <div className="px-8 flex flex-col min-h-[calc(100vh-220px)] justify-between">
 
           <div>
 
@@ -898,7 +898,7 @@ export default function EditQuotationPage() {
       {/* Print Template — Page 2 (Scope + Terms) */}
       <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px] justify-between">
+        <div className="px-8 flex flex-col min-h-[calc(100vh-220px)] justify-between">
 
           <div>
 
