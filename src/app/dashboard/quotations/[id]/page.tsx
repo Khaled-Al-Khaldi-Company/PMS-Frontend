@@ -873,22 +873,17 @@ export default function EditQuotationPage() {
           <div className="flex flex-col items-center">
             <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
             {company?.stampUrl && (
-              <img src={company.stampUrl} alt="Stamp" className="h-24 w-24 object-contain mb-2 opacity-80" />
-            )}
-            {company?.managerName && (
-              <p className="text-base font-black text-slate-800 mb-2">{company.managerName}</p>
+              <img src={company.stampUrl} alt="Stamp" className="h-20 w-20 object-contain mb-2 mx-auto opacity-80" />
             )}
             {formData.status === 'APPROVED' ? (
-               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
+               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2">
                  <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
-                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || company?.managerName || 'إدارة المشاريع'}</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || 'إدارة المشاريع'}</p>
                  <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
                </div>
             ) : (
-               <div className="w-full">
-                 <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">التوقيع والختم</p>
-               </div>
+               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
             )}
           </div>
           <div className="flex flex-col items-center">
@@ -954,22 +949,17 @@ export default function EditQuotationPage() {
           <div className="flex flex-col items-center">
             <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
             {company?.stampUrl && (
-              <img src={company.stampUrl} alt="Stamp" className="h-24 w-24 object-contain mb-2 opacity-80" />
-            )}
-            {company?.managerName && (
-              <p className="text-base font-black text-slate-800 mb-2">{company.managerName}</p>
+              <img src={company.stampUrl} alt="Stamp" className="h-20 w-20 object-contain mb-2 mx-auto opacity-80" />
             )}
             {formData.status === 'APPROVED' ? (
-               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2 mt-2">
+               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 p-2 rounded-xl inline-block text-center shadow-md w-56 relative overflow-hidden transform -rotate-2">
                  <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 border-b border-emerald-200 pb-1 relative z-10 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
-                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || company?.managerName || 'إدارة المشاريع'}</p>
+                 <p className="text-base font-black mt-1 relative z-10">{formData.approvedBy || 'إدارة المشاريع'}</p>
                  <p className="text-[10px] font-mono mt-1 relative z-10">{formData.approvedAt ? new Date(formData.approvedAt).toLocaleString('en-GB') : new Date(formData.updatedAt).toLocaleString('en-GB')}</p>
                </div>
             ) : (
-               <div className="w-full">
-                 <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">التوقيع والختم</p>
-               </div>
+               <p className="border-t border-slate-900 border-dashed pt-2 mx-6 mt-12 w-full">التوقيع والختم</p>
             )}
           </div>
           <div className="flex flex-col items-center">
