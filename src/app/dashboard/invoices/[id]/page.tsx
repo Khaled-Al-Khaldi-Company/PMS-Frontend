@@ -28,6 +28,7 @@ import { resolveBillingMode, qtyToProgressPercent } from "@/lib/billingMode";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 
 function getLineContractQty(detail: any, invoice: any) {
+  if (!detail.boqItemId) return 1;
   const ci = invoice?.contract?.items?.find((x: any) => x.boqItemId === detail.boqItemId);
   return Number(ci?.assignedQty ?? detail.boqItem?.quantity ?? 1);
 }
@@ -188,7 +189,7 @@ export default function InvoiceViewPage() {
     if (!invoice?.details) return;
     const exportData = invoice.details.map((detail: any, index: number) => ({
       "م": index + 1,
-      "البند": detail.boqItem?.description,
+      "البند": detail.boqItem?.description || detail.description,
       "السابق": formatDetailProgress(detail, "previousQty", invoice),
       "الحالي": formatDetailProgress(detail, "currentQty", invoice),
       "الإجمالي": formatDetailProgress(detail, "totalQty", invoice),
@@ -332,10 +333,10 @@ export default function InvoiceViewPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-300">
                   {invoice.details?.map((detail: any, i: number) => (
-                    <tr key={detail.id} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={detail.id} className={`hover:bg-slate-800/30 transition-colors ${!detail.boqItemId ? 'bg-amber-500/[0.03]' : ''}`}>
                       <td className="px-4 py-4 w-[280px]">
-                        <p className="font-semibold text-white mb-1 truncate" title={detail.boqItem?.description}>{detail.boqItem?.description}</p>
-                        <p className="text-xs text-slate-500 font-mono">{detail.boqItem?.itemCode}</p>
+                        <p className="font-semibold text-white mb-1 truncate" title={detail.boqItem?.description || detail.description}>{detail.boqItem?.description || detail.description}</p>
+                        {detail.boqItem?.itemCode ? <p className="text-xs text-slate-500 font-mono">{detail.boqItem?.itemCode}</p> : detail.description ? <p className="text-[10px] text-amber-500/60 font-mono">أمر تغييري</p> : null}
                       </td>
                       <td className="px-4 py-4 text-center font-mono text-slate-400">{formatDetailProgress(detail, "previousQty", invoice)}</td>
                       <td className="px-4 py-4 text-center font-mono font-bold text-emerald-400 bg-emerald-500/5">{formatDetailProgress(detail, "currentQty", invoice)}</td>
@@ -520,7 +521,7 @@ export default function InvoiceViewPage() {
         <tbody>
           {invoice.details?.map((detail: any) => (
             <tr key={detail.id} className="border-2 border-slate-800 text-sm break-inside-avoid">
-              <td className="p-2 border-2 border-slate-800 font-bold">{detail.boqItem?.description}</td>
+              <td className="p-2 border-2 border-slate-800 font-bold">{detail.boqItem?.description || detail.description}</td>
               <td className="p-2 border-2 border-slate-800 text-center font-mono">{formatDetailProgress(detail, "previousQty", invoice)}</td>
               <td className="p-2 border-2 border-slate-800 text-center font-mono font-black">{formatDetailProgress(detail, "currentQty", invoice)}</td>
               <td className="p-2 border-2 border-slate-800 text-center font-mono">{formatDetailProgress(detail, "totalQty", invoice)}</td>
