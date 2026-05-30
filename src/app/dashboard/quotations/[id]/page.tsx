@@ -717,12 +717,12 @@ export default function EditQuotationPage() {
         <table className="w-full text-right text-sm border-collapse mb-10">
           <thead>
             <tr className="bg-slate-900 text-white font-bold text-xs uppercase">
-              <th className="border border-slate-900 py-3 px-2 text-center w-12 text-slate-200">م</th>
-              <th className="border border-slate-900 py-3 px-4 text-slate-200">البيان ومواصفات الأعمال</th>
-              <th className="border border-slate-900 py-3 px-2 text-center text-slate-200">الوحدة</th>
-              <th className="border border-slate-900 py-3 px-2 text-center text-slate-200">الكمية</th>
-              <th className="border border-slate-900 py-3 px-3 text-center text-slate-200">سعر الوحدة</th>
-              <th className="border border-slate-900 py-3 px-3 text-center text-slate-200">الإجمالي</th>
+              <th className="border border-slate-900 py-3 px-2 text-center w-12 text-slate-200">#</th>
+              <th className="border border-slate-900 py-3 px-4 text-slate-200">البيان ومواصفات الأعمال (Description)</th>
+              <th className="border border-slate-900 py-3 px-2 text-center text-slate-200">الوحدة (Unit)</th>
+              <th className="border border-slate-900 py-3 px-2 text-center text-slate-200">الكمية (Qty)</th>
+              <th className="border border-slate-900 py-3 px-3 text-center text-slate-200">سعر الوحدة (Unit Price)</th>
+              <th className="border border-slate-900 py-3 px-3 text-center text-slate-200">الإجمالي (Total)</th>
             </tr>
           </thead>
           <tbody>
@@ -765,10 +765,10 @@ export default function EditQuotationPage() {
       {/* Print Template — Page 2 (Scope + Terms) */}
       <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <div className="pt-20 px-8">
+        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
         
         {(formData.technicalOffer || formData.termsConditions) && (
-          <div className="mb-10">
+          <div className="flex-1">
             {formData.technicalOffer && (
               <div className="mb-8 pl-2">
                 <h3 className="text-sm font-black text-slate-800 mb-3 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني (Scope of Work):</h3>
@@ -791,7 +791,7 @@ export default function EditQuotationPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-8">
+        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-auto">
           <div className="flex flex-col items-center">
             <p className="mb-4 text-slate-800 font-black">المدير العام (General Manager)</p>
             {formData.status === 'APPROVED' ? (
