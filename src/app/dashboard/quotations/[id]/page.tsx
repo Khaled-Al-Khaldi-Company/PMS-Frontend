@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -26,6 +26,8 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import { toPng } from "html-to-image";
+import jsPDF from "jspdf";
 import PrintLetterhead from "../../components/PrintLetterhead";
 
 export default function EditQuotationPage() {
@@ -60,6 +62,64 @@ export default function EditQuotationPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const { pdfRef, downloadPdf } = useDownloadPdf();
+  const pdfRef2 = useRef<HTMLDivElement>(null);
+
+  const downloadQuotationPdf = async () => {
+    const el1 = pdfRef.current;
+    const el2 = pdfRef2.current;
+    if (!el1 || !el2) return;
+
+    el1.classList.remove("hidden");
+    el1.classList.add("print:block");
+    el2.classList.remove("hidden");
+    el2.classList.add("print:block");
+
+    try {
+      const dataUrl1 = await toPng(el1, { quality: 1, pixelRatio: 2, backgroundColor: "#ffffff" });
+      const dataUrl2 = await toPng(el2, { quality: 1, pixelRatio: 2, backgroundColor: "#ffffff" });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+
+      const img1 = new Image();
+      img1.src = dataUrl1;
+      await new Promise((resolve) => { img1.onload = resolve; });
+
+      const img2 = new Image();
+      img2.src = dataUrl2;
+      await new Promise((resolve) => { img2.onload = resolve; });
+
+      const imgHeight1 = (img1.height * imgWidth) / img1.width;
+      const imgHeight2 = (img2.height * imgWidth) / img2.width;
+
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      // Page 1 — financial table (with multi-page slicing if needed)
+      let heightLeft = imgHeight1;
+      let position = 0;
+      pdf.addImage(dataUrl1, "PNG", 0, position, imgWidth, imgHeight1);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight1;
+        pdf.addPage();
+        pdf.addImage(dataUrl1, "PNG", 0, position, imgWidth, imgHeight1);
+        heightLeft -= pageHeight;
+      }
+
+      // Page 2 — scope, terms, signatures
+      pdf.addPage();
+      pdf.addImage(dataUrl2, "PNG", 0, 0, imgWidth, imgHeight2);
+
+      pdf.save(`Quotation_${printMeta.ref || 'draft'}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      el1.classList.add("hidden");
+      el1.classList.remove("print:block");
+      el2.classList.add("hidden");
+      el2.classList.remove("print:block");
+    }
+  };
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -353,7 +413,7 @@ export default function EditQuotationPage() {
               <button type="button" onClick={handleExportExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-lg text-sm">
                 <FileSpreadsheet size={18} /> Excel
               </button>
-              <button type="button" onClick={() => downloadPdf(`Quotation_${printMeta.ref || 'draft'}.pdf`)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
+              <button type="button" onClick={downloadQuotationPdf} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
                 <Printer size={18} /> PDF
               </button>
               <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold transition-all shadow-lg text-sm">
@@ -633,12 +693,12 @@ export default function EditQuotationPage() {
         <PrintLetterhead />
 
         {/* ===== البيانات فوق الورقة ===== */}
-        <div className="pt-20 mb-8">
-          <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <div className="pt-20 mb-8 flex justify-between items-start">
+          <h1 className="text-3xl font-black text-slate-900">عرض سعر — Quotation</h1>
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
             <p className="text-sm font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
             <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 mt-3">عرض سعر — Quotation</h1>
         </div>
 
         <div className="mb-10 grid grid-cols-2 gap-8 text-sm">
@@ -700,8 +760,12 @@ export default function EditQuotationPage() {
           </div>
         </div>
 
-        {/* --- PAGE 2 --- */}
-        <div style={{ pageBreakBefore: 'always' }} className="pt-10"></div>
+      </div>
+
+      {/* Print Template — Page 2 (Scope + Terms) */}
+      <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+        <PrintLetterhead />
+        <div className="pt-20 px-8">
         
         {(formData.technicalOffer || formData.termsConditions) && (
           <div className="mb-10">
@@ -746,8 +810,7 @@ export default function EditQuotationPage() {
             <p className="border-t border-slate-900 border-dashed pt-2 mx-6 w-full">Signature / Stamp</p>
           </div>
         </div>
-
-
+        </div>
       </div>
     </>
   );
