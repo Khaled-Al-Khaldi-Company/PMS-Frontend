@@ -782,9 +782,30 @@ export default function EditQuotationPage() {
       <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
         <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
-        
-        {(formData.technicalOffer || formData.termsConditions) && (
           <div className="flex-1">
+
+        {/* Header info */}
+        <div className="mb-6 flex justify-between items-start">
+          <h1 className="text-2xl font-black text-slate-900">عرض سعر — Quotation</h1>
+          <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
+            <p className="text-xs font-bold text-slate-800">رقم العرض (Ref): <span className="font-mono text-indigo-700">{printMeta.ref}</span></p>
+            <p className="text-xs font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{printMeta.date}</span></p>
+          </div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-4 text-xs">
+          <div className="bg-white p-3 border border-slate-200 rounded-lg">
+            <p className="text-slate-500 font-bold mb-1 uppercase text-[10px]">العميل (Client):</p>
+            <p className="font-bold text-slate-900">{formData.clientName || '_______________'}</p>
+          </div>
+          <div className="bg-white p-3 border border-slate-200 rounded-lg">
+            <p className="text-slate-500 font-bold mb-1 uppercase text-[10px]">المشروع (Project):</p>
+            <p className="font-bold text-slate-900">{formData.title || '_______________'}</p>
+          </div>
+        </div>
+
+        {(formData.technicalOffer || formData.termsConditions) && (
+          <>
             {formData.technicalOffer && (
               <div className="mb-8 pl-2">
                 <h3 className="text-sm font-black text-slate-800 mb-3 border-b-2 border-slate-200 inline-block pb-1">نطاق العمل / العرض الفني (Scope of Work):</h3>
@@ -804,8 +825,9 @@ export default function EditQuotationPage() {
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
+        </div>
 
         <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-auto">
           <div className="flex flex-col items-center">
