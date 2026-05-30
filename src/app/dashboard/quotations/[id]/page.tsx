@@ -792,12 +792,12 @@ export default function EditQuotationPage() {
         </motion.div>
       </div>
 
-      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+      <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl" style={{ width: '210mm', minHeight: '297mm !important', maxHeight: '297mm', overflow: 'hidden', boxSizing: 'border-box', padding: '130px 40px 90px !important', backgroundImage: "url('/letterhead.png')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat' }}>
         {/* ===== الورقة الرسمية كخلفية ===== */}
         <PrintLetterhead />
 
         {/* ===== Page 1 content wrapper ===== */}
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
+        <div className="pt-20 px-8 flex flex-col" style={{ height: 'calc(297mm - 130px - 90px)' }}>
           <div className="flex-1">
 
         <div className="mb-8 flex justify-between items-start">
@@ -895,9 +895,9 @@ export default function EditQuotationPage() {
       </div>
 
       {/* Print Template — Page 2 (Scope + Terms) */}
-      <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
+      <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl" style={{ width: '210mm', minHeight: '297mm !important', maxHeight: '297mm', overflow: 'hidden', boxSizing: 'border-box', padding: '130px 40px 90px !important', backgroundImage: "url('/letterhead.png')", backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat' }}>
         <PrintLetterhead />
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
+        <div className="pt-20 px-8 flex flex-col" style={{ height: 'calc(297mm - 130px - 90px)' }}>
           <div className="flex-1">
 
         {/* Header info */}
