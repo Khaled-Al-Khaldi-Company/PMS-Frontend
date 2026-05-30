@@ -797,8 +797,9 @@ export default function EditQuotationPage() {
         <PrintLetterhead />
 
         {/* ===== Page 1 content wrapper ===== */}
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
-          <div className="flex-1">
+        <div className="pt-20 px-8 flex flex-col min-h-[1050px] justify-between">
+
+          <div>
 
         <div className="mb-8 flex justify-between items-start">
           <h1 className="text-3xl font-black text-slate-900">عرض سعر — Quotation</h1>
@@ -869,7 +870,7 @@ export default function EditQuotationPage() {
 
         </div>
         {/* Page 1 Signatures */}
-        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 mt-auto">
+        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10">
           <div className="flex flex-col items-center">
             <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
             {company?.stampUrl && (
@@ -897,8 +898,9 @@ export default function EditQuotationPage() {
       {/* Print Template — Page 2 (Scope + Terms) */}
       <div ref={pdfRef2} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
-        <div className="pt-20 px-8 flex flex-col min-h-[1050px]">
-          <div className="flex-1">
+        <div className="pt-20 px-8 flex flex-col min-h-[1050px] justify-between">
+
+          <div>
 
         {/* Header info */}
         <div className="mb-6 flex justify-between items-start">
@@ -945,7 +947,7 @@ export default function EditQuotationPage() {
         )}
         </div>
 
-        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid mt-auto">
+        <div className="grid grid-cols-2 gap-20 text-center font-bold text-sm text-slate-900 px-10 border-t-2 border-slate-200 pt-10 break-inside-avoid">
           <div className="flex flex-col items-center">
             <p className="mb-4 text-slate-800 font-black">إدارة المشاريع (Project Management)</p>
             {company?.stampUrl && (
