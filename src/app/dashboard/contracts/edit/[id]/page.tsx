@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   FileSignature, Save, ArrowRight, Loader2, PlusCircle,
-  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus, Printer
+  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus, Printer, Trash2
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
@@ -521,6 +521,7 @@ export default function EditContractPage() {
                 <th className="px-4 py-4 whitespace-nowrap">القيمة (SAR)</th>
                 <th className="px-4 py-4">تاريخ الإصدار</th>
                 <th className="px-4 py-4 text-center">الحالة</th>
+                <th className="px-4 py-4 text-center"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -534,27 +535,46 @@ export default function EditContractPage() {
                     </td>
                  </tr>
                ) : (
-                 contract.changeOrders.map((co: any) => (
-                   <tr key={co.id} className="hover:bg-slate-800/40 transition-colors">
-                     <td className="px-4 py-4 font-mono font-bold text-white">#{co.orderNumber}</td>
-                     <td className="px-4 py-4 font-medium max-w-[200px] truncate" title={co.title}>{co.title}</td>
-                     <td className="px-4 py-4">
-                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.type === 'ADDITION' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
-                         {co.type === 'ADDITION' ? 'بند إضافي (+)' : 'خصم متفق (-)'}
-                       </span>
-                     </td>
-                     <td className={`px-4 py-4 font-mono font-bold ${co.type === 'DEDUCTION' ? 'text-rose-400' : 'text-emerald-400'}`}>
-                       {co.type === 'DEDUCTION' ? '-' : ''}{Number(co.amount).toLocaleString('en-US')}
-                     </td>
-                     <td className="px-4 py-4 font-mono text-slate-400">
-                       {new Date(co.issueDate).toLocaleDateString('ar-SA')}
-                     </td>
-                     <td className="px-4 py-4 text-center">
-                       <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.status === 'APPROVED' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
-                         {co.status === 'APPROVED' ? 'معتمد ومؤثر' : 'مسودة'}
-                       </span>
-                     </td>
-                   </tr>
+                  contract.changeOrders.map((co: any) => (
+                    <tr key={co.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-4 font-mono font-bold text-white">#{co.orderNumber}</td>
+                      <td className="px-4 py-4 font-medium max-w-[200px] truncate" title={co.title}>{co.title}</td>
+                      <td className="px-4 py-4">
+                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.type === 'ADDITION' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                          {co.type === 'ADDITION' ? 'بند إضافي (+)' : 'خصم متفق (-)'}
+                        </span>
+                      </td>
+                      <td className={`px-4 py-4 font-mono font-bold ${co.type === 'DEDUCTION' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {co.type === 'DEDUCTION' ? '-' : ''}{Number(co.amount).toLocaleString('en-US')}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-slate-400">
+                        {new Date(co.issueDate).toLocaleDateString('ar-SA')}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${co.status === 'APPROVED' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
+                          {co.status === 'APPROVED' ? 'معتمد ومؤثر' : 'مسودة'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => {
+                              if (confirm(`حذف الملحق #${co.orderNumber}؟ سيتم عكس قيمته على العقد.`)) {
+                                const token = localStorage.getItem("token");
+                                axios.delete(`${API_BASE_URL}/v1/contracts/${contractId}/change-orders/${co.id}`, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                }).then(() => fetchContract())
+                                  .catch(() => alert("فشل حذف الملحق"));
+                              }
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                            title="حذف الملحق"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                  ))
                )}
             </tbody>

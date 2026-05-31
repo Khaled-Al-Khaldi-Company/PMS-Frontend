@@ -483,16 +483,13 @@ export default function InvoiceViewPage() {
       {/* ===== الورقة الرسمية كخلفية ===== */}
       <PrintLetterhead />
 
-      <div className="pt-20 px-8 flex flex-col" style={{ minHeight: 'calc(297mm - 130px - 90px)' }}>
-        <div className="flex-1">
-
       {/* ===== البيانات فوق الورقة ===== */}
-         <div className="mb-8 flex justify-between items-start">
-           <h1 className="text-3xl font-black text-slate-900">شهادة إنجاز ومستخلص — Payment Certificate</h1>
+         <div className="pt-20 mb-8">
            <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
              <p className="text-sm font-bold text-slate-800">رقم المستخلص (No): <span className="font-mono text-emerald-700">#{invoice.invoiceNumber}</span></p>
              <p className="text-sm font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
            </div>
+           <h1 className="text-3xl font-black text-slate-900 mt-3">شهادة إنجاز ومستخلص — Payment Certificate</h1>
          </div>
 
       {/* Meta Info */}
@@ -569,8 +566,6 @@ export default function InvoiceViewPage() {
         </div>
       </div>
 
-        </div>{/* end flex-1 */}
-
       {/* Signatures */}
       <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
         <h3 className="font-black text-lg mb-10 border-b-2 border-slate-800 pb-2 w-max text-slate-800 uppercase tracking-widest">الاعتمادات والموافقات (Approvals):</h3>
@@ -605,11 +600,10 @@ export default function InvoiceViewPage() {
               <p className="text-slate-400 w-full border-b-2 border-dashed border-slate-400 mt-auto"></p>
             )}
           </div>
+        </div>
       </div>
 
-      </div>{/* end signatures */}
 
-      </div>{/* end flex wrapper */}
 
     </div>
     </>
