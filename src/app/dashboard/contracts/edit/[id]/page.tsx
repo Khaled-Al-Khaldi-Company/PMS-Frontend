@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FileSignature, Save, ArrowRight, Loader2, PlusCircle,
-  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus, Printer, Trash2
+  Crown, HardHat, Building2, Edit3, AlertTriangle, Plus, Printer, Trash2,
+  Wallet, ShieldQuestion, X
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
@@ -26,6 +27,17 @@ export default function EditContractPage() {
   const [projectBoq, setProjectBoq] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [showBoqSelector, setShowBoqSelector] = useState(false);
+
+  // Edit change order modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingCo, setEditingCo] = useState<any>(null);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    type: "ADDITION",
+    status: "APPROVED",
+  });
+  const [editItems, setEditItems] = useState<any[]>([]);
+  const [isEditSaving, setIsEditSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     projectId: "",
@@ -117,6 +129,61 @@ export default function EditContractPage() {
     setSelectedItems(prev => prev.map(it => 
       it.boqItemId === id ? { ...it, [field]: value } : it
     ));
+  };
+
+  const openEditModal = (co: any) => {
+    setEditingCo(co);
+    setEditFormData({
+      title: co.title,
+      type: co.type,
+      status: co.status,
+    });
+    setEditItems(
+      co.items?.length > 0
+        ? co.items.map((i: any) => ({
+            description: i.description,
+            quantityChange: Number(i.quantityChange),
+            unitPrice: Number(i.unitPrice),
+          }))
+        : [{ description: "", quantityChange: 1, unitPrice: 0 }]
+    );
+    setEditModalOpen(true);
+  };
+
+  const saveEditChangeOrder = async () => {
+    if (!editingCo) return;
+    if (editItems.length === 0 || editItems.some(i => !i.description)) {
+      alert("يرجى إدخال بند واحد على الأقل وتعبئة وصفه.");
+      return;
+    }
+    setIsEditSaving(true);
+    const amount = editItems.reduce(
+      (acc, item) => acc + (Number(item.quantityChange) || 0) * (Number(item.unitPrice) || 0),
+      0
+    );
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${API_BASE_URL}/v1/contracts/${contractId}/change-orders/${editingCo.id}`,
+        {
+          ...editFormData,
+          amount,
+          items: editItems.map(i => ({
+            ...i,
+            quantityChange: Number(i.quantityChange),
+            unitPrice: Number(i.unitPrice),
+          })),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setEditModalOpen(false);
+      setEditingCo(null);
+      fetchContract();
+    } catch (err: any) {
+      alert(`خطأ أثناء تعديل الملحق: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setIsEditSaving(false);
+    }
   };
 
   const calculatedTotal = selectedItems.reduce((acc, it) => acc + (Number(it.assignedQty) * Number(it.unitPrice)), 0);
@@ -527,7 +594,7 @@ export default function EditContractPage() {
             <tbody className="divide-y divide-white/5 text-slate-300">
                {(!contract?.changeOrders || contract.changeOrders.length === 0) ? (
                  <tr>
-                    <td colSpan={6} className="px-4 py-16 text-center">
+                     <td colSpan={7} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center justify-center text-slate-500 gap-3">
                         <FileSignature size={36} className="opacity-20" />
                         <p>لا توجد ملاحق مسجلة لهذا العقد حتى الآن.</p>
@@ -558,6 +625,13 @@ export default function EditContractPage() {
                       <td className="px-4 py-4 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
+                            onClick={() => openEditModal(co)}
+                            className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors"
+                            title="تعديل الملحق"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
                             onClick={() => {
                               if (confirm(`حذف الملحق #${co.orderNumber}؟ سيتم عكس قيمته على العقد.`)) {
                                 const token = localStorage.getItem("token");
@@ -581,6 +655,214 @@ export default function EditContractPage() {
           </table>
         </div>
       </motion.div>
+
+      {/* Edit Change Order Modal */}
+      <AnimatePresence>
+      {editModalOpen && editingCo && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-slate-900 border border-white/10 w-full max-w-4xl rounded-[2.5rem] p-8 shadow-2xl relative overflow-y-auto max-h-[90vh]"
+          >
+            <div className={`absolute -right-10 -top-10 w-48 h-48 rounded-full blur-[60px] opacity-10 pointer-events-none ${editFormData.type === 'ADDITION' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                  <Edit3 size={22} className="text-blue-400" />
+                  تعديل الملحق #{editingCo.orderNumber}
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">تعديل بيانات وأبنية الملحق التغييري</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-6">
+                {/* Title */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-300">عنوان الملحق</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.title}
+                    onChange={e => setEditFormData({ ...editFormData, title: e.target.value })}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium"
+                  />
+                </div>
+
+                {/* Type selector */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div
+                    onClick={() => setEditFormData({ ...editFormData, type: 'ADDITION' })}
+                    className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center gap-2 transition-all ${
+                      editFormData.type === 'ADDITION'
+                        ? 'bg-emerald-500/10 border-emerald-500/50'
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    <Plus size={20} className={editFormData.type === 'ADDITION' ? 'text-emerald-400' : 'text-slate-500'} />
+                    <span className={`font-bold text-sm ${editFormData.type === 'ADDITION' ? 'text-emerald-400' : 'text-slate-500'}`}>إضافة / زيادة</span>
+                  </div>
+                  <div
+                    onClick={() => setEditFormData({ ...editFormData, type: 'DEDUCTION' })}
+                    className={`p-4 rounded-2xl border cursor-pointer flex flex-col items-center gap-2 transition-all ${
+                      editFormData.type === 'DEDUCTION'
+                        ? 'bg-rose-500/10 border-rose-500/50'
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    <ShieldQuestion size={20} className={editFormData.type === 'DEDUCTION' ? 'text-rose-400' : 'text-slate-500'} />
+                    <span className={`font-bold text-sm ${editFormData.type === 'DEDUCTION' ? 'text-rose-400' : 'text-slate-500'}`}>تنزيل / استبعاد</span>
+                  </div>
+                </div>
+
+                {/* Status toggle */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-300">الحالة</label>
+                  <select
+                    value={editFormData.status}
+                    onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all"
+                  >
+                    <option value="APPROVED">معتمد ومؤثر في العقد</option>
+                    <option value="DRAFT">مسودة (غير مؤثر)</option>
+                  </select>
+                </div>
+
+                {/* Items */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-white flex items-center gap-2">
+                      <Wallet size={16} className="text-blue-400" />
+                      بنود الملحق
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setEditItems([...editItems, { description: "", quantityChange: 1, unitPrice: 0 }])}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5 border border-emerald-500/20"
+                    >
+                      <Plus size={14} /> إضافة بند
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {editItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row gap-4 relative group"
+                      >
+                        <div className="flex-1 space-y-2">
+                          <label className="text-xs text-slate-400">الوصف</label>
+                          <input
+                            type="text"
+                            required
+                            value={item.description}
+                            onChange={(e) => {
+                              const newItems = [...editItems];
+                              newItems[index].description = e.target.value;
+                              setEditItems(newItems);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="w-full sm:w-24 space-y-2">
+                          <label className="text-xs text-slate-400">الكمية</label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={item.quantityChange}
+                            onChange={(e) => {
+                              const newItems = [...editItems];
+                              newItems[index].quantityChange = e.target.value;
+                              setEditItems(newItems);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm text-center focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="w-full sm:w-32 space-y-2">
+                          <label className="text-xs text-slate-400">سعر الوحدة (SAR)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={item.unitPrice}
+                            onChange={(e) => {
+                              const newItems = [...editItems];
+                              newItems[index].unitPrice = e.target.value;
+                              setEditItems(newItems);
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm text-center focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        {editItems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setEditItems(editItems.filter((_, i) => i !== index))}
+                            className="absolute -left-2 -top-2 w-7 h-7 rounded-full bg-rose-500 flex items-center justify-center text-white shadow-lg"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                <div className="bg-slate-800/40 border border-white/5 rounded-3xl p-6">
+                  <h4 className="font-bold text-white mb-6">ملخص التعديل</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">النوع</span>
+                      <span className={`font-bold ${editFormData.type === 'ADDITION' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {editFormData.type === 'ADDITION' ? 'إضافة' : 'تنزيل'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">الحالة</span>
+                      <span className={`font-bold ${editFormData.status === 'APPROVED' ? 'text-blue-400' : 'text-slate-400'}`}>
+                        {editFormData.status === 'APPROVED' ? 'معتمد' : 'مسودة'}
+                      </span>
+                    </div>
+                    <div className="pt-4 border-t border-white/10">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-slate-400">الإجمالي (SAR)</span>
+                        <span className={`font-mono text-xl font-black ${editFormData.type === 'ADDITION' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {editFormData.type === 'DEDUCTION' ? '-' : ''}
+                          {editItems.reduce((acc, i) => acc + (Number(i.quantityChange) || 0) * (Number(i.unitPrice) || 0), 0).toLocaleString('en-US')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={saveEditChangeOrder}
+                    disabled={isEditSaving}
+                    className="w-full mt-8 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-white shadow-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                  >
+                    {isEditSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    حفظ التعديلات
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      </AnimatePresence>
     </div>
 
       {/* Print View */}
