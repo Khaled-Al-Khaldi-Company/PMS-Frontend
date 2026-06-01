@@ -113,8 +113,10 @@
    الورقة تظهر عبر background-image على حاوية المحتوى
    ================================================================ */
 .print-on-letterhead {
-  /* الورقة كخلفية */
-  background-image: url('/letterhead.png') !important;
+  /* الورقة كخلفية مع طبقة بيضاء شفافة فوقها لتخفيف تأثيرها */
+  background-image:
+    linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.55)),
+    url('/letterhead.png') !important;
   background-size: 100% 100% !important;
   background-repeat: no-repeat !important;
   background-attachment: scroll !important;
