@@ -127,8 +127,10 @@
   padding-left: 40px !important;
   padding-right: 40px !important;
 
-  /* صفحة A4 كاملة */
-  min-height: 100vh !important;
+  /* صفحة A4 كاملة - box-sizing border-box يحافظ على المقاس مع البادينج */
+  box-sizing: border-box !important;
+  width: 210mm !important;
+  min-height: 297mm !important;
 }
 
 /* Overrides to make all tables inside print-on-letterhead look professional and ink-friendly */
