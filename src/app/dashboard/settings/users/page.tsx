@@ -44,7 +44,7 @@ export default function UsersManagementPage() {
   // Project Permissions State
   const [userProjectPerms, setUserProjectPerms] = useState<any[]>([]);
   const [showProjectModal, setShowProjectModal] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
 
   const fetchUsers = async () => {
@@ -144,19 +144,26 @@ export default function UsersManagementPage() {
   };
 
   const handleAddProjectPerm = async () => {
-    if (!editingUserId || !selectedProjectId) return;
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/v1/users/${editingUserId}/project-permissions`, {
-        projectId: selectedProjectId,
-        permissions: selectedPerms,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      setShowProjectModal(false);
-      setSelectedProjectId("");
-      setSelectedPerms([]);
-      fetchUserProjectPerms(editingUserId);
-    } catch (err: any) {
-      alert("فشل إسناد المشروع: " + (err.response?.data?.message || err.message));
+    if (!editingUserId || selectedProjectIds.length === 0) return;
+    const token = localStorage.getItem("token");
+    let success = 0;
+    let fail = 0;
+    for (const projectId of selectedProjectIds) {
+      try {
+        await axios.post(`${API_BASE_URL}/v1/users/${editingUserId}/project-permissions`, {
+          projectId, permissions: selectedPerms,
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        success++;
+      } catch {
+        fail++;
+      }
+    }
+    setShowProjectModal(false);
+    setSelectedProjectIds([]);
+    setSelectedPerms([]);
+    fetchUserProjectPerms(editingUserId);
+    if (fail > 0) {
+      alert(`تم إسناد ${success} مشروع بنجاح، فشل ${fail} مشروع.`);
     }
   };
 
@@ -327,7 +334,7 @@ export default function UsersManagementPage() {
                   </h3>
                   <button
                     type="button"
-                    onClick={() => { setSelectedProjectId(""); setSelectedPerms([]); setShowProjectModal(true); }}
+                    onClick={() => { setSelectedProjectIds([]); setSelectedPerms([]); setShowProjectModal(true); }}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
                   >
                     <Plus size={14} /> إسناد مشروع
@@ -388,20 +395,49 @@ export default function UsersManagementPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">المشروع</label>
-                <select
-                  value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500 focus:outline-none"
-                >
-                  <option value="">اختر المشروع</option>
+                <label className="text-xs text-slate-400 mb-2 block">المشاريع (اختر واحد أو أكثر)</label>
+                <div className="max-h-48 overflow-y-auto border border-slate-800 rounded-2xl p-2 bg-slate-950/50 space-y-1">
                   {projects
                     .filter(p => !userProjectPerms.some(pp => pp.projectId === p.id))
-                    .map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
-                    ))
-                  }
-                </select>
+                    .length === 0 ? (
+                    <p className="text-slate-500 text-xs text-center py-4">جميع المشاريع مسندة بالفعل</p>
+                  ) : (
+                    projects
+                      .filter(p => !userProjectPerms.some(pp => pp.projectId === p.id))
+                      .map(p => {
+                        const isSelected = selectedProjectIds.includes(p.id);
+                        return (
+                          <label
+                            key={p.id}
+                            onClick={() => {
+                              setSelectedProjectIds(prev =>
+                                prev.includes(p.id)
+                                  ? prev.filter(id => id !== p.id)
+                                  : [...prev, p.id]
+                              );
+                            }}
+                            className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-colors ${
+                              isSelected
+                                ? 'bg-emerald-500/10 border border-emerald-500/30'
+                                : 'bg-slate-900/50 border border-transparent hover:bg-slate-800/50'
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'border-slate-600'
+                            }`}>
+                              {isSelected && <span className="text-white text-xs font-bold">✓</span>}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-white">{p.name}</p>
+                              <p className="text-xs text-slate-500 font-mono">{p.code}</p>
+                            </div>
+                          </label>
+                        );
+                      })
+                  )}
+                </div>
               </div>
 
               <div>
@@ -425,7 +461,7 @@ export default function UsersManagementPage() {
                 <button
                   type="button"
                   onClick={handleAddProjectPerm}
-                  disabled={!selectedProjectId || selectedPerms.length === 0}
+                  disabled={selectedProjectIds.length === 0 || selectedPerms.length === 0}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={16} /> حفظ الإسناد
