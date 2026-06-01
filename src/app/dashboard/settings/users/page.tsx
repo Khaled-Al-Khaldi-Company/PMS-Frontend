@@ -3,17 +3,33 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Users, UserPlus, FileEdit, Trash2, Shield, Lock, Activity, CheckCircle, XCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Users, UserPlus, FileEdit, Trash2, Shield, Lock, Activity, CheckCircle, XCircle,
+  Building2, Plus, X, Save, Loader2
+} from "lucide-react";
 import axios from "axios";
+
+const ALL_PERMISSIONS = [
+  "QUOTATION_CREATE", "QUOTATION_APPROVE",
+  "PROJECT_MANAGE",
+  "PO_CREATE", "PO_APPROVE",
+  "CONTRACT_CREATE", "CONTRACT_APPROVE",
+  "INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE",
+  "EXPENSE_CREATE", "EXPENSE_APPROVE",
+  "MANAGE_USERS",
+  "FINANCE_VIEW",
+  "VIEW_ALL_RECORDS",
+];
 
 export default function UsersManagementPage() {
   const router = useRouter();
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Form State
+
+  // User Form State
   const [showModal, setShowModal] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -24,6 +40,12 @@ export default function UsersManagementPage() {
     roleId: "",
     isActive: true
   });
+
+  // Project Permissions State
+  const [userProjectPerms, setUserProjectPerms] = useState<any[]>([]);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
 
   const fetchUsers = async () => {
     try {
@@ -46,27 +68,52 @@ export default function UsersManagementPage() {
     } catch {}
   };
 
+  const fetchProjects = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/projects`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProjects(res.data);
+    } catch {}
+  };
+
+  const fetchUserProjectPerms = async (userId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/v1/users/${userId}/project-permissions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserProjectPerms(res.data);
+    } catch {
+      setUserProjectPerms([]);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchRoles();
+    fetchProjects();
   }, []);
 
   const openAddUser = () => {
     setEditingUserId(null);
     setFormData({ firstName: "", lastName: "", email: "", password: "", roleId: roles[0]?.id || "", isActive: true });
+    setUserProjectPerms([]);
     setShowModal(true);
   };
 
   const openEditUser = (user: any) => {
     setEditingUserId(user.id);
-    setFormData({ 
-      firstName: user.firstName, 
-      lastName: user.lastName, 
-      email: user.email, 
-      password: "", // Left blank intentionally
-      roleId: user.roleId, 
-      isActive: user.isActive 
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      password: "",
+      roleId: user.roleId,
+      isActive: user.isActive
     });
+    fetchUserProjectPerms(user.id);
     setShowModal(true);
   };
 
@@ -75,14 +122,12 @@ export default function UsersManagementPage() {
     try {
       const token = localStorage.getItem("token");
       if (editingUserId) {
-        // Update
         const payload: any = { ...formData };
-        if (!payload.password) delete payload.password; // Don`t submit blank password
+        if (!payload.password) delete payload.password;
         await axios.patch(`${API_BASE_URL}/v1/users/${editingUserId}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        // Create
         if (!formData.password) {
            alert("كلمة المرور مطلوبة للمستخدم الجديد!");
            return;
@@ -96,6 +141,43 @@ export default function UsersManagementPage() {
     } catch (err: any) {
       alert("حدث خطأ أثناء حفظ بيانات المستخدم: " + (err.response?.data?.message || err.message));
     }
+  };
+
+  const handleAddProjectPerm = async () => {
+    if (!editingUserId || !selectedProjectId) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API_BASE_URL}/v1/users/${editingUserId}/project-permissions`, {
+        projectId: selectedProjectId,
+        permissions: selectedPerms,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setShowProjectModal(false);
+      setSelectedProjectId("");
+      setSelectedPerms([]);
+      fetchUserProjectPerms(editingUserId);
+    } catch (err: any) {
+      alert("فشل إسناد المشروع: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleRemoveProjectPerm = async (projectId: string) => {
+    if (!editingUserId) return;
+    if (!confirm("إزالة هذا المشروع من صلاحيات المستخدم؟")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_BASE_URL}/v1/users/${editingUserId}/project-permissions/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchUserProjectPerms(editingUserId);
+    } catch (err: any) {
+      alert("فشل إزالة المشروع: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const togglePerm = (perm: string) => {
+    setSelectedPerms(prev =>
+      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
+    );
   };
 
   if (isLoading) {
@@ -172,13 +254,21 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
+      {/* User Edit/Create Modal */}
+      <AnimatePresence>
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-6 shadow-2xl">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl p-6 shadow-2xl"
+          >
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Shield className="text-indigo-400" /> 
-              {editingUserId ? "تعديل مستخدم" : "إضافة مستخدم جديد"}
+              <Shield className="text-indigo-400" />
+              {editingUserId ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
             </h2>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -198,7 +288,7 @@ export default function UsersManagementPage() {
                 <label className="text-xs text-slate-400 mb-1 block">كلمة المرور {editingUserId && "(اتركها فارغة إذا لم ترد التغيير)"}</label>
                 <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none" dir="ltr" minLength={6} />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">صلاحية النظام</label>
@@ -226,9 +316,133 @@ export default function UsersManagementPage() {
                 </button>
               </div>
             </form>
-          </div>
+
+            {/* Project Permissions Section - only for editing */}
+            {editingUserId && (
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Building2 size={18} className="text-emerald-400" />
+                    المشاريع المسندة
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedProjectId(""); setSelectedPerms([]); setShowProjectModal(true); }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
+                  >
+                    <Plus size={14} /> إسناد مشروع
+                  </button>
+                </div>
+
+                {userProjectPerms.length === 0 ? (
+                  <p className="text-slate-500 text-sm text-center py-6">لم يُسند أي مشروع لهذا المستخدم بعد</p>
+                ) : (
+                  <div className="space-y-3">
+                    {userProjectPerms.map((pp: any) => (
+                      <div key={pp.projectId} className="bg-slate-800/40 border border-slate-700 rounded-2xl p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-bold text-white text-sm">{pp.project.name}</p>
+                            <p className="text-xs text-slate-500 font-mono">{pp.project.code}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveProjectPerm(pp.projectId)}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(pp.permissions as string[]).map((perm: string) => (
+                            <span key={perm} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                              {perm}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
+
+      {/* Add Project Permission Modal */}
+      <AnimatePresence>
+      {showProjectModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-6 shadow-2xl"
+          >
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+              <Building2 size={18} className="text-emerald-400" />
+              إسناد صلاحيات مشروع
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">المشروع</label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="">اختر المشروع</option>
+                  {projects
+                    .filter(p => !userProjectPerms.some(pp => pp.projectId === p.id))
+                    .map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 mb-2 block">الصلاحيات المسموحة لهذا المستخدم داخل المشروع</label>
+                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-slate-800 rounded-2xl p-3 bg-slate-950/50">
+                  {ALL_PERMISSIONS.map(perm => (
+                    <label key={perm} className="flex items-center gap-2 cursor-pointer p-1.5 rounded-lg hover:bg-slate-800/50">
+                      <input
+                        type="checkbox"
+                        checked={selectedPerms.includes(perm)}
+                        onChange={() => togglePerm(perm)}
+                        className="rounded accent-emerald-500"
+                      />
+                      <span className="text-xs text-slate-300">{perm}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleAddProjectPerm}
+                  disabled={!selectedProjectId || selectedPerms.length === 0}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save size={16} /> حفظ الإسناد
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowProjectModal(false)}
+                  className="px-6 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      </AnimatePresence>
     </div>
   );
 }
