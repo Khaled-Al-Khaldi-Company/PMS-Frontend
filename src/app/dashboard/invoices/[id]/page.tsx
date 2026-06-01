@@ -483,10 +483,10 @@ export default function InvoiceViewPage() {
       {/* ===== الورقة الرسمية كخلفية ===== */}
       <PrintLetterhead />
 
-      <div className="pt-20 px-8 flex flex-col" style={{ minHeight: 'calc(297mm - 130px - 90px)' }}>
-        <div className="flex-1">
+      <div className="pt-20 px-8 flex flex-col justify-between" style={{ minHeight: 'calc(297mm - 130px - 90px)' }}>
 
       {/* ===== البيانات فوق الورقة ===== */}
+         <div>
          <div className="mb-8 flex justify-between items-start">
            <h1 className="text-3xl font-black text-slate-900">شهادة إنجاز ومستخلص — Payment Certificate</h1>
            <div className="inline-block bg-slate-50 p-3 rounded-lg border border-slate-200">
@@ -569,7 +569,7 @@ export default function InvoiceViewPage() {
         </div>
       </div>
 
-        </div>{/* end flex-1 */}
+        </div>{/* end content wrapper */}
 
       {/* Signatures */}
       <div className="mt-16 pt-8 break-inside-avoid border-t-2 border-slate-100 text-black">
