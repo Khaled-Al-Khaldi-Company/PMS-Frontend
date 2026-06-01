@@ -630,10 +630,10 @@ export default function ProjectDashboardPage() {
                        </div>
                        
                        <div className="flex justify-between items-center pt-3 border-t border-white/5">
-                         <span className="text-xs text-slate-500">{report.createdBy || 'المهندس'}</span>
-                         <button className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
-                           <FileText size={12} /> عرض
-                         </button>
+                          <span className="text-xs text-slate-500">{report.createdBy || 'المهندس'}</span>
+                          <Link href={`/dashboard/projects/${projectId}/dpr/${report.id}`} className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
+                            <FileText size={12} /> عرض
+                          </Link>
                        </div>
                      </div>
                    ))}
