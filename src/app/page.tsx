@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#09090b]">
-      <LanguageSwitcher />
+      <LanguageSwitcher className="fixed top-4 left-4 z-[100] w-auto px-3 py-2 border border-white/10 hover:bg-white/10" />
       {/* Dynamic Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/20 blur-[120px]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[100px]" />

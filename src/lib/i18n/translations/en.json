@@ -12,20 +12,27 @@
     "close": "Close",
     "back": "Back",
     "print": "Print",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "logout": "Logout",
+    "loginAs": "Connected as"
   },
   "nav": {
     "dashboard": "Dashboard",
     "projects": "Projects",
-    "contracts": "Contracts",
-    "invoices": "Invoices",
-    "purchases": "Purchases",
-    "expenses": "Expenses",
-    "reports": "Reports",
-    "settings": "Settings",
-    "users": "Users",
-    "analytics": "Analytics",
-    "inventory": "Inventory"
+    "quotations": "Quotations",
+    "boq": "Bill of Quantities",
+    "purchases": "Purchases & Materials",
+    "inventory": "Site Inventory",
+    "contracts": "Contracts & Subcontractors",
+    "invoices": "Payment Certificates",
+    "expenses": "Expenses & Advances",
+    "reports": "Reports Center",
+    "analytics": "Profit & Loss (P&L)",
+    "contacts": "Clients & Suppliers",
+    "company": "Company Profile",
+    "settings": "Daftra Integration",
+    "users": "User Management",
+    "roles": "Permissions Matrix (RBAC)"
   },
   "login": {
     "title": "Sign In",

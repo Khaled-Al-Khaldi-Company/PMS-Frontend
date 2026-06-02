@@ -21,8 +21,11 @@ import {
   Banknote,
   Shield
 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { t, dir } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -57,23 +60,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const menuItems = [
-    { icon: Building2, label: "الرئيسية", path: "/dashboard", req: [] }, // Mada accessible to all
-    { icon: Briefcase, label: "المشاريع", path: "/dashboard/projects", req: ["PROJECT_MANAGE"] },
-    { icon: FileCheck2, label: "عروض الأسعار", path: "/dashboard/quotations", req: ["QUOTATION_CREATE", "QUOTATION_APPROVE"] },
-    // Everyone involved in projects can see BOQ for reference usually, but let's restrict to projects/invoices 
-    { icon: FileSpreadsheet, label: "جداول الكميات", path: "/dashboard/boq", req: ["PROJECT_MANAGE", "INVOICE_CREATE"] },
-    { icon: ShoppingCart, label: "المشتريات والمواد", path: "/dashboard/purchases", req: ["PO_CREATE", "PO_APPROVE"] },
-    { icon: Building2, label: "مستودعات الموقع", path: "/dashboard/inventory", req: ["PO_CREATE", "INVOICE_CREATE"] },
-    { icon: FileSignature, label: "العقود والمقاولين", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
-    { icon: Receipt, label: "المستخلصات", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
-    { icon: Banknote, label: "العهد والمصروفات", path: "/dashboard/expenses", req: ["EXPENSE_CREATE", "EXPENSE_APPROVE"] },
-    { icon: FileSpreadsheet, label: "مركز التقارير الشامل", path: "/dashboard/reports", req: [] },
-    { icon: PieChart, label: "أرباح وخسائر المشاريع (P&L)", path: "/dashboard/analytics", req: [] },
-    { icon: UserCircle, label: "العملاء والموردين", path: "/dashboard/contacts", req: ["PROJECT_MANAGE", "CONTRACT_CREATE", "PO_CREATE"] },
-    { icon: Building2, label: "بيانات هوية المنشأة الأساسية", path: "/dashboard/settings/company", req: ["MANAGE_USERS"] },
-    { icon: Settings, label: "إعدادات دفترة (الربط)", path: "/dashboard/settings", req: ["MANAGE_USERS"] },
-    { icon: UserCircle, label: "إدارة المستخدمين", path: "/dashboard/settings/users", req: ["MANAGE_USERS"] },
-    { icon: Shield, label: "مصفوفة الصلاحيات (RBAC)", path: "/dashboard/settings/roles", req: ["MANAGE_USERS"] },
+    { icon: Building2, labelKey: "nav.dashboard", path: "/dashboard", req: [] },
+    { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"] },
+    { icon: FileCheck2, labelKey: "nav.quotations", path: "/dashboard/quotations", req: ["QUOTATION_CREATE", "QUOTATION_APPROVE"] },
+    { icon: FileSpreadsheet, labelKey: "nav.boq", path: "/dashboard/boq", req: ["PROJECT_MANAGE", "INVOICE_CREATE"] },
+    { icon: ShoppingCart, labelKey: "nav.purchases", path: "/dashboard/purchases", req: ["PO_CREATE", "PO_APPROVE"] },
+    { icon: Building2, labelKey: "nav.inventory", path: "/dashboard/inventory", req: ["PO_CREATE", "INVOICE_CREATE"] },
+    { icon: FileSignature, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
+    { icon: Receipt, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
+    { icon: Banknote, labelKey: "nav.expenses", path: "/dashboard/expenses", req: ["EXPENSE_CREATE", "EXPENSE_APPROVE"] },
+    { icon: FileSpreadsheet, labelKey: "nav.reports", path: "/dashboard/reports", req: [] },
+    { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [] },
+    { icon: UserCircle, labelKey: "nav.contacts", path: "/dashboard/contacts", req: ["PROJECT_MANAGE", "CONTRACT_CREATE", "PO_CREATE"] },
+    { icon: Building2, labelKey: "nav.company", path: "/dashboard/settings/company", req: ["MANAGE_USERS"] },
+    { icon: Settings, labelKey: "nav.settings", path: "/dashboard/settings", req: ["MANAGE_USERS"] },
+    { icon: UserCircle, labelKey: "nav.users", path: "/dashboard/settings/users", req: ["MANAGE_USERS"] },
+    { icon: Shield, labelKey: "nav.roles", path: "/dashboard/settings/roles", req: ["MANAGE_USERS"] },
   ];
 
   const visibleMenuItems = menuItems.filter(item => hasAccess(item.req));
@@ -149,20 +151,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   />
                 )}
                 <item.icon size={20} className={isActive ? "text-blue-400" : "text-slate-400"} />
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{t(item.labelKey)}</span>
               </motion.button>
             );
           })}
         </nav>
 
-        <div className="p-4 mt-auto border-t border-white/5">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-4 h-max w-max max-w-full">
+        <div className="p-4 mt-auto border-t border-white/5 space-y-2">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 h-max w-max max-w-full">
             <UserCircle size={28} className="text-slate-400 shrink-0" />
             <div className="overflow-hidden w-full pl-2">
               <p className="text-sm font-medium text-white block truncate w-32">{userName}</p>
-              <p className="text-xs text-slate-400">متصل ({userRole})</p>
+              <p className="text-xs text-slate-400">{t("common.loginAs")} ({userRole})</p>
             </div>
           </div>
+
+          <LanguageSwitcher />
           
           <button 
             onClick={() => {
@@ -172,7 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="w-full flex items-center justify-center gap-2 p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
           >
             <LogOut size={18} />
-            <span className="font-medium text-sm w-max block">تسجيل الخروج</span>
+            <span className="font-medium text-sm w-max block">{t("common.logout")}</span>
           </button>
         </div>
       </motion.aside>
