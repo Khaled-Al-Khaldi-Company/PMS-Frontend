@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight } from "lucide-react";
@@ -13,19 +13,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [savedEmail, setSavedEmail] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("authorizedDevice");
-      if (stored) {
-        setSavedEmail(stored);
-        setEmail(stored);
-        setIsAuthorized(true);
-      }
-    }
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,10 +29,8 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "فشل تسجيل الدخول");
 
-      // Save token & authorize this device
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("authorizedDevice", email);
 
       router.push("/dashboard");
     } catch (err: any) {
@@ -75,8 +60,7 @@ export default function LoginPage() {
           <p className="text-slate-400 text-sm">نظام إدارة المقاولات والمستخلصات ERP</p>
         </div>
 
-        {isAuthorized ? (
-          <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
             {error && (
               <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-lg text-center border border-red-500/20">
                 {error}
@@ -121,17 +105,6 @@ export default function LoginPage() {
               <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
             </button>
           </form>
-        ) : (
-          <div className="text-center space-y-6 py-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 mb-2">
-              <Lock size={32} />
-            </div>
-            <p className="text-slate-300 font-bold text-lg">جهاز غير معتمد</p>
-            <p className="text-slate-500 text-sm leading-relaxed max-w-sm mx-auto">
-              هذا الجهاز غير مسجل في النظام. الرجاء التواصل مع الإدارة لتسجيل جهازك وتمكين الدخول.
-            </p>
-          </div>
-        )}
       </motion.div>
     </div>
   );
