@@ -239,15 +239,23 @@ export default function UsersManagementPage() {
                     </span>
                   </td>
                   <td className="px-4 py-4 text-center">
-                    {user.isActive ? (
-                      <span className="inline-flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
-                         <CheckCircle size={14} /> نشط
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 text-red-400 text-xs font-bold">
-                         <XCircle size={14} /> موقوف
-                      </span>
-                    )}
+                    <button type="button" onClick={async () => {
+                      const token = localStorage.getItem("token");
+                      try {
+                        await axios.patch(`${API_BASE_URL}/v1/users/${user.id}`, { isActive: !user.isActive }, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        fetchUsers();
+                      } catch (err: any) {
+                        alert("فشل تغيير حالة المستخدم: " + (err.response?.data?.message || err.message));
+                      }
+                    }} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
+                      user.isActive
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30'
+                        : 'bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30'
+                    }`}>
+                      {user.isActive ? <><CheckCircle size={14} /> نشط</> : <><XCircle size={14} /> موقوف</>}
+                    </button>
                   </td>
                   <td className="px-4 py-4 text-left">
                     <button onClick={() => openEditUser(user)} className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-indigo-600 rounded-lg transition-colors">
