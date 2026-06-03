@@ -10,6 +10,7 @@ import {
   Sliders, ToggleLeft
 } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from "@/lib/i18n/context";
 import {
   lineContractTotal,
   progressPercentToQty,
@@ -19,6 +20,7 @@ import {
 
 export default function EditInvoicePage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const params = useParams();
   const invoiceId = params.id as string;
 
@@ -231,7 +233,7 @@ export default function EditInvoicePage() {
           <div className="w-20 h-20 border-4 border-amber-500/20 rounded-full animate-ping absolute top-0 right-0"></div>
           <Loader2 className="animate-spin text-amber-500 relative z-10" size={80} strokeWidth={1.5} />
         </div>
-        <p className="text-slate-400 mt-6 text-lg font-medium animate-pulse">جاري تجهيز بيئة التعديل الفائقة...</p>
+        <p className="text-slate-400 mt-6 text-lg font-medium animate-pulse">{t("common.loading")}</p>
       </div>
     );
   }
@@ -259,11 +261,11 @@ export default function EditInvoicePage() {
           <div>
             <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-l from-amber-400 to-orange-300 flex items-center gap-3 drop-shadow-sm">
               <Edit3 className="text-amber-500" size={28} />
-              تعديل المستخلص #{invoice?.invoiceNumber}
+              {t("invoice.edit")} #{invoice?.invoiceNumber}
             </h1>
             <p className="text-slate-400 text-sm mt-1.5 font-medium flex items-center gap-2">
               <LayoutTemplate size={14} className="text-slate-500" />
-              شاشة الاحترافية لإدارة الكميات واستقطاعات المقاولين
+              {t("invoice.editSubtitle") || "شاشة الاحترافية لإدارة الكميات واستقطاعات المقاولين"}
             </p>
           </div>
         </div>
@@ -277,7 +279,7 @@ export default function EditInvoicePage() {
           <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <RefreshCcw size={18} className="text-amber-500" /> 
-              جدول حصر الأعمال المنفذة (BOQ)
+              {t("invoice.boqTableTitle") || "جدول حصر الأعمال المنفذة (BOQ)"}
             </h2>
           </div>
 
@@ -286,27 +288,27 @@ export default function EditInvoicePage() {
               <table className="w-full text-right text-sm">
                 <thead className="bg-slate-900/80 sticky top-0 z-10 shadow-md backdrop-blur-md">
                   <tr>
-                    <th colSpan={6} className="px-4 py-3 text-center border-b border-white/5 text-slate-300 font-semibold text-xs uppercase tracking-wider">بيانات عقد المشروع المعتمدة</th>
-                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-white/5 bg-slate-800/30 text-slate-400 font-semibold text-xs tracking-wider">الأعمال السابقة</th>
-                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-amber-500/20 bg-amber-500/10 text-amber-400 font-bold text-xs shadow-inner">المنفذ حالياً (للتعديل)</th>
-                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-white/5 bg-indigo-900/20 text-indigo-300 font-semibold text-xs tracking-wider">الإجمالي التراكمي</th>
+                    <th colSpan={6} className="px-4 py-3 text-center border-b border-white/5 text-slate-300 font-semibold text-xs uppercase tracking-wider">{t("invoice.boqTable.contractData") || "بيانات عقد المشروع المعتمدة"}</th>
+                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-white/5 bg-slate-800/30 text-slate-400 font-semibold text-xs tracking-wider">{t("invoice.boqTable.previous")}</th>
+                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-amber-500/20 bg-amber-500/10 text-amber-400 font-bold text-xs shadow-inner">{t("invoice.boqTable.current")}</th>
+                    <th colSpan={2} className="px-4 py-3 text-center border-b border-r border-white/5 bg-indigo-900/20 text-indigo-300 font-semibold text-xs tracking-wider">{t("invoice.boqTable.total")}</th>
                   </tr>
                   <tr className="bg-slate-900/50 text-[11px] text-slate-400 border-b border-white/5 uppercase tracking-widest font-mono">
                     <th className="px-3 py-2.5 text-center w-10">#</th>
-                    <th className="px-4 py-2.5">وصف البند</th>
-                    <th className="px-2 py-2.5 text-center">الوحدة</th>
-                    <th className="px-3 py-2.5 text-center">الكمية</th>
-                    <th className="px-3 py-2.5 text-center">الفئة (SAR)</th>
-                    <th className="px-3 py-2.5 text-center">الإجمالي</th>
+                    <th className="px-4 py-2.5">{t("invoice.boqTable.item")}</th>
+                    <th className="px-2 py-2.5 text-center">{t("invoice.boqTable.unit") || "الوحدة"}</th>
+                    <th className="px-3 py-2.5 text-center">{t("invoice.boqTable.qty") || "الكمية"}</th>
+                    <th className="px-3 py-2.5 text-center">{t("invoice.boqTable.category")}</th>
+                    <th className="px-3 py-2.5 text-center">{t("invoice.boqTable.total")}</th>
 
-                    <th className="px-3 py-2.5 text-center border-r border-white/5">ك.سابقة</th>
-                    <th className="px-3 py-2.5 text-center">ق.سابقة</th>
+                    <th className="px-3 py-2.5 text-center border-r border-white/5">{t("invoice.boqTable.prevQty") || "ك.سابقة"}</th>
+                    <th className="px-3 py-2.5 text-center">{t("invoice.boqTable.prevValue") || "ق.سابقة"}</th>
 
-                    <th className="px-3 py-2.5 text-center border-r border-amber-500/20 text-amber-500/70">ك.حالية</th>
-                    <th className="px-3 py-2.5 text-center text-amber-500/70">ق.حالية</th>
+                    <th className="px-3 py-2.5 text-center border-r border-amber-500/20 text-amber-500/70">{t("invoice.boqTable.currentQty") || "ك.حالية"}</th>
+                    <th className="px-3 py-2.5 text-center text-amber-500/70">{t("invoice.boqTable.currentValue")}</th>
 
-                    <th className="px-3 py-2.5 text-center border-r border-white/5 text-indigo-300/70">ك.إجمالي</th>
-                    <th className="px-3 py-2.5 text-center text-indigo-300/70">ق.إجمالي</th>
+                    <th className="px-3 py-2.5 text-center border-r border-white/5 text-indigo-300/70">{t("invoice.boqTable.totalQty") || "ك.إجمالي"}</th>
+                    <th className="px-3 py-2.5 text-center text-indigo-300/70">{t("invoice.boqTable.totalValue") || "ق.إجمالي"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-300 font-medium tracking-tight">
@@ -349,7 +351,7 @@ export default function EditInvoicePage() {
                           <div className="flex flex-col gap-1">
                             <span className={`truncate block leading-tight ${isCompleted ? 'text-slate-500' : isActive ? 'text-amber-100 font-semibold' : 'text-slate-200'}`} title={item.description}>
                               {item.description}
-                              {isCompleted && <span className="mr-2 text-[9px] bg-slate-700 text-slate-300 px-1 rounded uppercase font-bold tracking-tighter">منتهي</span>}
+                              {isCompleted && <span className="mr-2 text-[9px] bg-slate-700 text-slate-300 px-1 rounded uppercase font-bold tracking-tighter">{t("common.completed") || "منتهي"}</span>}
                             </span>
                             <span className="text-[10px] text-slate-500 font-mono tracking-wider">{item.itemCode || 'BOQ-ITEM'}</span>
                           </div>
@@ -357,7 +359,7 @@ export default function EditInvoicePage() {
                         <td className="px-2 py-4 text-center text-slate-400">
                           {item.unit}
                           {isLumpSum && (
-                            <span className="block text-[9px] text-amber-400/80 mt-0.5">مقطوعية</span>
+                            <span className="block text-[9px] text-amber-400/80 mt-0.5">{t("invoice.lumpSum") || "مقطوعية"}</span>
                           )}
                         </td>
                         <td className="px-3 py-4 text-center font-mono text-slate-300">{item.quantity}</td>
@@ -434,14 +436,14 @@ export default function EditInvoicePage() {
             <div className="p-5 border-b border-white/5 bg-slate-900/40">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Tag size={18} className="text-emerald-400" />
-                الاستقطاعات والضرائب
+                {t("invoice.deductionsAndTax") || "الاستقطاعات والضرائب"}
               </h3>
             </div>
             
             <div className="p-5 space-y-5">
               <div className="relative group">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Percent size={12} /> نسبة الضريبة (VAT)
+                  <Percent size={12} /> {t("invoice.taxPercent") || "نسبة الضريبة (VAT)"}
                 </label>
                 <div className="relative">
                   <input 
@@ -456,7 +458,7 @@ export default function EditInvoicePage() {
 
               <div className="relative group">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Wallet size={12} /> استقطاع الدفعة المقدمة
+                  <Wallet size={12} /> {t("invoice.advanceDeduction") || "استقطاع الدفعة المقدمة"}
                 </label>
                 <div className="relative">
                   <input 
@@ -471,7 +473,7 @@ export default function EditInvoicePage() {
 
               <div className="relative group">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <Clock size={12} /> غرامات تأخير وإخرى
+                  <Clock size={12} /> {t("invoice.delayPenalty") || "غرامات تأخير وإخرى"}
                 </label>
                 <div className="relative">
                   <input 
@@ -487,7 +489,7 @@ export default function EditInvoicePage() {
               {/* Deduction Timing Control */}
               <div className="pt-2 border-t border-white/5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                  <Sliders size={12} /> توقيت احتساب الخصومات
+                  <Sliders size={12} /> {t("invoice.deductionTiming") || "توقيت احتساب الخصومات"}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -499,7 +501,7 @@ export default function EditInvoicePage() {
                         : 'bg-slate-900/50 border-slate-700/50 text-slate-500 hover:border-slate-600'
                     }`}
                   >
-                    قبل الضريبة
+                    {t("invoice.beforeVat") || "قبل الضريبة"}
                   </button>
                   <button
                     type="button"
@@ -510,11 +512,11 @@ export default function EditInvoicePage() {
                         : 'bg-slate-900/50 border-slate-700/50 text-slate-500 hover:border-slate-600'
                     }`}
                   >
-                    بعد الضريبة
+                    {t("invoice.afterVat") || "بعد الضريبة"}
                   </button>
                 </div>
                 <p className="text-[10px] text-slate-600 mt-1.5">
-                  {deductionTiming === 'BEFORE_VAT' ? '✓ الضريبة تُحسب على الصافي بعد الخصومات' : '✓ الضريبة تُحسب على الإجمالي قبل الخصومات'}
+                  {deductionTiming === 'BEFORE_VAT' ? (t("invoice.vatBeforeHint") || '✓ الضريبة تُحسب على الصافي بعد الخصومات') : (t("invoice.vatAfterHint") || '✓ الضريبة تُحسب على الإجمالي قبل الخصومات')}
                 </p>
               </div>
 
@@ -535,9 +537,9 @@ export default function EditInvoicePage() {
                   </div>
                   <div>
                     <p className={`text-xs font-bold ${deferDeductions ? 'text-orange-400' : 'text-slate-400'}`}>
-                      تأجيل الخصومات للمستخلص القادم
+                      {t("invoice.deferDeductions") || "تأجيل الخصومات للمستخلص القادم"}
                     </p>
-                    <p className="text-[10px] text-slate-600">لا تُرسل الخصومات لدفترة الآن</p>
+                    <p className="text-[10px] text-slate-600">{t("invoice.deferDeductionsHint") || "لا تُرسل الخصومات لدفترة الآن"}</p>
                   </div>
                 </label>
               </div>
@@ -546,41 +548,41 @@ export default function EditInvoicePage() {
 
           <div className="glass-dark border border-amber-500/20 rounded-3xl p-6 sticky top-24 shadow-[0_0_40px_rgba(245,158,11,0.08)]">
              <h3 className="text-sm font-bold text-amber-400 mb-5 flex items-center justify-center gap-2 uppercase tracking-wide">
-               <Calculator size={16} /> ملخص الحساب النهائي الحسابي
-             </h3>
+                <Calculator size={16} /> {t("invoice.financialSummary.net") || "ملخص الحساب النهائي الحسابي"}
+              </h3>
              
              <div className="space-y-3.5 mb-8">
-               <div className="flex justify-between items-center text-sm bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
-                 <span className="text-slate-400">إجمالي كميات المستخلص</span>
-                 <span className="font-mono text-white font-bold">SAR {currentGross.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-               </div>
+                <div className="flex justify-between items-center text-sm bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                  <span className="text-slate-400">{t("invoice.financialSummary.gross") || "إجمالي كميات المستخلص"}</span>
+                  <span className="font-mono text-white font-bold">SAR {currentGross.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
                
-               <div className="flex justify-between items-center text-sm px-2">
-                 <span className="text-rose-400 flex items-center gap-1.5">محتجز أعمال ({retentionPercent}%)</span>
-                 <span className="font-mono text-rose-400">- {retentionAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-               </div>
+                <div className="flex justify-between items-center text-sm px-2">
+                  <span className="text-rose-400 flex items-center gap-1.5">{t("invoice.financialSummary.retention") || `محتجز أعمال (${retentionPercent}%)`}</span>
+                  <span className="font-mono text-rose-400">- {retentionAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
 
-               {advanceDeduction > 0 && (
-                 <div className="flex justify-between items-center text-sm px-2">
-                   <span className="text-rose-300">خصم دفعة مقدمة</span>
-                   <span className="font-mono text-rose-300">- {advanceDeduction.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                 </div>
-               )}
+                {advanceDeduction > 0 && (
+                  <div className="flex justify-between items-center text-sm px-2">
+                    <span className="text-rose-300">{t("invoice.advanceDeduction") || "خصم دفعة مقدمة"}</span>
+                    <span className="font-mono text-rose-300">- {advanceDeduction.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                  </div>
+                )}
 
-               {(delayPenalty > 0 || otherDeductions > 0) && (
-                 <div className="flex justify-between items-center text-sm px-2">
-                   <span className="text-rose-300">أي غرامات مسجلة</span>
-                   <span className="font-mono text-rose-300">- {(delayPenalty + otherDeductions).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                 </div>
-               )}
+                {(delayPenalty > 0 || otherDeductions > 0) && (
+                  <div className="flex justify-between items-center text-sm px-2">
+                    <span className="text-rose-300">{t("invoice.financialSummary.otherDeductions") || "أي غرامات مسجلة"}</span>
+                    <span className="font-mono text-rose-300">- {(delayPenalty + otherDeductions).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                  </div>
+                )}
 
-               <div className="flex justify-between items-center text-sm px-2 py-2 border-y border-white/10 mt-2">
-                 <span className="text-blue-400 font-medium">ضريبة القيمة المضافة</span>
-                 <span className="font-mono text-blue-400 font-bold">+ {taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-               </div>
+                <div className="flex justify-between items-center text-sm px-2 py-2 border-y border-white/10 mt-2">
+                  <span className="text-blue-400 font-medium">{t("invoice.financialSummary.tax") || "ضريبة القيمة المضافة"}</span>
+                  <span className="font-mono text-blue-400 font-bold">+ {taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
 
-               <div className="pt-2 flex flex-col gap-1 text-center">
-                 <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest">إجمالي المستحق للمقاول</span>
+                <div className="pt-2 flex flex-col gap-1 text-center">
+                  <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest">{t("invoice.financialSummary.net") || "إجمالي المستحق للمقاول"}</span>
                  <span className="font-mono text-emerald-400 font-black text-2xl drop-shadow-[0_0_10px_rgba(16,185,129,0.3)] bg-emerald-500/10 py-2 rounded-xl border border-emerald-500/20">
                    SAR {expectedNet.toLocaleString(undefined, {minimumFractionDigits: 2})}
                  </span>
@@ -594,7 +596,7 @@ export default function EditInvoicePage() {
                 className="w-full flex justify-center items-center gap-2 px-6 py-4 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} className="group-hover:scale-110 transition-transform" />}
-                حفظ تعديلات المسودة
+                {t("common.save")}
               </button>
           </div>
         </div>

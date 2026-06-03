@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '@/lib/api';
 import { User, Building, Phone, Mail, FileText, MapPin, MoreVertical, Edit, Trash2, Plus, X } from 'lucide-react';
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function ContactsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'suppliers' | 'clients'>('suppliers');
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +72,7 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")) return;
+    if (!confirm(t("contacts.deleteConfirm"))) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_BASE_URL}/v1/contacts/${activeTab}/${id}`, {
@@ -78,7 +80,7 @@ export default function ContactsPage() {
       });
       fetchData();
     } catch (err) {
-      alert("حدث خطأ أثناء الحذف، ربما السجل مرتبط بعمليات مالية!");
+      alert(t("contacts.deleteError"));
     }
   };
 
@@ -98,7 +100,7 @@ export default function ContactsPage() {
       setIsModalOpen(false);
       fetchData();
     } catch (err: any) {
-      alert(`حدث خطأ أثناء الحفظ:\n${err.response?.data?.message || err.message}`);
+      alert(t("contacts.saveError") + ":\n" + (err.response?.data?.message || err.message));
     }
   };
 
@@ -110,10 +112,10 @@ export default function ContactsPage() {
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <Building className="text-indigo-500" size={32} />
-            إدارة جهات الاتصال (CRM)
+            {t("nav.contacts")}
           </h1>
           <p className="text-slate-400 mt-2 text-sm">
-            أرشيف متكامل لإدارة بيانات الموردين والعملاء والسجلات الضريبية بحرية كاملة
+            {t("contacts.subtitle")}
           </p>
         </div>
         <button 
@@ -121,7 +123,7 @@ export default function ContactsPage() {
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl shadow-lg transition-all flex items-center gap-2 font-medium"
         >
           <Plus size={20} />
-          إضافة {activeTab === 'suppliers' ? 'مورد جديد' : 'عميل جديد'}
+          {t("contacts.addNew")} {activeTab === 'suppliers' ? t("contacts.newSupplier") : t("contacts.newClient")}
         </button>
       </div>
 
@@ -131,13 +133,13 @@ export default function ContactsPage() {
           onClick={() => setActiveTab('suppliers')}
           className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all flex justify-center items-center gap-2 ${activeTab === 'suppliers' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
         >
-           قائمة الموردين
+           {t("contacts.supplierList")}
         </button>
         <button 
           onClick={() => setActiveTab('clients')}
           className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all flex justify-center items-center gap-2 ${activeTab === 'clients' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
         >
-           قائمة العملاء
+           {t("contacts.clientList")}
         </button>
       </div>
 
@@ -156,7 +158,7 @@ export default function ContactsPage() {
                     {item.name} 
                   </h3>
                   <p className="text-sm text-slate-400 font-medium">
-                    {item.commercialName || "لم يسجل الاسم التجاري"}
+                    {item.commercialName || t("contacts.noCommercialName")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -175,22 +177,22 @@ export default function ContactsPage() {
                  <div className="flex items-start gap-3">
                    <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800/50 text-indigo-400"><FileText size={14} /></div>
                    <div className="flex-1">
-                     <p className="text-slate-500 text-xs">الرقم الضريبي والسجل</p>
-                     <p className="text-slate-300">{item.taxNumber ? `ضريبي: ${item.taxNumber}` : 'لا يوجد ضرائب'} {item.crNumber ? `| س.ت: ${item.crNumber}` : ''}</p>
+                     <p className="text-slate-500 text-xs">{t("contacts.taxAndReg")}</p>
+                     <p className="text-slate-300">{item.taxNumber ? `${t("contacts.tax")}: ${item.taxNumber}` : t("contacts.noTax")} {item.crNumber ? `| ${t("contacts.cr")}: ${item.crNumber}` : ''}</p>
                    </div>
                  </div>
                  
                  <div className="flex items-start gap-3">
                    <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800/50 text-indigo-400"><MapPin size={14} /></div>
                    <div className="flex-1">
-                     <p className="text-slate-500 text-xs">العنوان</p>
-                     <p className="text-slate-300">{item.address || 'غير محدد'}</p>
+                     <p className="text-slate-500 text-xs">{t("contacts.address")}</p>
+                     <p className="text-slate-300">{item.address || t("contacts.notSet")}</p>
                    </div>
                  </div>
 
                  <div className="flex items-center gap-3">
                    <div className="p-1.5 rounded-lg bg-slate-800/50 text-indigo-400"><Phone size={14} /></div>
-                   <p className="text-slate-300">{item.phone || 'بدون هاتف'}</p>
+                    <p className="text-slate-300">{item.phone || t("contacts.noPhone")}</p>
                  </div>
               </div>
 
@@ -205,8 +207,8 @@ export default function ContactsPage() {
           {data.length === 0 && (
             <div className="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
               <User size={48} className="text-slate-600 mb-4" />
-              <h3 className="text-xl font-bold text-slate-300 mb-2">لا يوجد سجلات</h3>
-              <p className="text-slate-500">اضغط على زر الإضافة لإنشاء القيد الأول في قاعدة البيانات.</p>
+              <h3 className="text-xl font-bold text-slate-300 mb-2">{t("contacts.noRecords")}</h3>
+              <p className="text-slate-500">{t("contacts.noRecordsHint")}</p>
             </div>
           )}
         </div>
@@ -219,7 +221,7 @@ export default function ContactsPage() {
             <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 {editingItem ? <Edit size={20} className="text-indigo-400" /> : <Plus size={20} className="text-indigo-400" />}
-                {editingItem ? 'تعديل السجل' : 'إضافة سجل جديد'}
+                {editingItem ? t("contacts.editRecord") : t("contacts.addRecord")}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
                 <X size={20} />
@@ -229,48 +231,48 @@ export default function ContactsPage() {
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">* الاسم المختصر (اساسي)</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="مثال: الراجحي" />
+                  <label className="text-sm font-semibold text-slate-300">* {t("contacts.shortName")}</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder={t("contacts.shortNamePlaceholder")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">الاسم التجاري الكامل</label>
-                  <input value={formData.commercialName} onChange={e => setFormData({...formData, commercialName: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="مثال: شركة الراجحي للحديد المحدودة" />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.commercialName")}</label>
+                  <input value={formData.commercialName} onChange={e => setFormData({...formData, commercialName: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.commercialNamePlaceholder")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">الرقم الضريبي VAT</label>
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.taxNumber")}</label>
                   <input value={formData.taxNumber} onChange={e => setFormData({...formData, taxNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="3000..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">رقم السجل التجاري CR</label>
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.crNumber")}</label>
                   <input value={formData.crNumber} onChange={e => setFormData({...formData, crNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="1010..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">رقم الهاتف التواصل</label>
+                  <label className="text-sm font-semibold text-slate-300">{t("common.phone")}</label>
                   <input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="05xxxxxxxx" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">البريد الإلكتروني</label>
+                  <label className="text-sm font-semibold text-slate-300">{t("common.email")}</label>
                   <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="info@example.com" />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-300">العنوان أو المقر</label>
-                  <input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="الرياض، حي السلي، شارع اسطنبول" />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.addressLabel")}</label>
+                  <input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.addressPlaceholder")} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-300">نوع النشاط (اختياري)</label>
-                  <input value={formData.activityType} onChange={e => setFormData({...formData, activityType: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="مثال: توريد مواد بناء، مقاولات عامة..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.activityType")}</label>
+                  <input value={formData.activityType} onChange={e => setFormData({...formData, activityType: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.activityPlaceholder")} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-300">ملاحظات داخلية / أرقام تواصل أخرى</label>
-                  <textarea rows={3} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder="اكتب أي معلومات إضافية عن هذه الجهة..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.notes")}</label>
+                  <textarea rows={3} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder={t("contacts.notesPlaceholder")} />
                 </div>
               </div>
               <div className="mt-8 pt-6 border-t border-slate-800 flex gap-4">
                 <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-colors">
-                  {editingItem ? 'حفظ التعديلات' : 'إضافة إلى الأرشيف'}
+                  {editingItem ? t("contacts.saveEdit") : t("contacts.addToArchive")}
                 </button>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors">
-                  إلغاء
+                  {t("common.cancel")}
                 </button>
               </div>
             </form>

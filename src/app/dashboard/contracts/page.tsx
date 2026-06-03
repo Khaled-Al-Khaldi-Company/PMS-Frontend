@@ -29,6 +29,7 @@ import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintLetterhead from "../components/PrintLetterhead";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function ContractsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -39,6 +40,7 @@ export default function ContractsPage() {
   const [filterType, setFilterType] = useState<"all" | "MAIN_CONTRACT" | "SUBCONTRACT">("all");
 
   const { pdfRef, downloadPdf } = useDownloadPdf();
+  const { t } = useLanguage();
 
   const fetchProjects = async () => {
     try {
@@ -138,7 +140,7 @@ export default function ContractsPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <FileSignature className="text-orange-500" size={28} />
-            إدارة العقود والمقاولين
+            {t("contract.title")}
           </h1>
           <p className="text-slate-400 text-sm">العقود الرئيسية (إيرادات) وعقود مقاولي الباطن (تكاليف) للمشاريع.</p>
         </div>
@@ -155,7 +157,7 @@ export default function ContractsPage() {
           <Link href="/dashboard/contracts/create" className="relative flex items-center gap-2 font-black py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] group bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white overflow-hidden hover:-translate-y-1">
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <Plus size={20} className="group-hover:rotate-90 transition-transform relative z-10" />
-            <span className="relative z-10 text-sm">تأسيس عقد جديد</span>
+            <span className="relative z-10 text-sm">{t("contract.create")}</span>
           </Link>
         </div>
       </div>
@@ -257,7 +259,7 @@ export default function ContractsPage() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="بحث برقم العقد أو المقاول..."
+            placeholder={t("common.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pr-12 pl-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
@@ -328,14 +330,14 @@ export default function ContractsPage() {
                       <Link
                         href={`/dashboard/contracts/edit/${contract.id}`}
                         className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all"
-                        title="تعديل العقد"
+                        title={t("common.edit")}
                       >
                         <Edit3 size={15} />
                       </Link>
                       <button
                         onClick={() => deleteContract(contract.id)}
                         className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-all border border-transparent hover:border-rose-500/40"
-                        title="حذف العقد"
+                        title={t("common.delete")}
                       >
                         <Trash2 size={15} />
                       </button>
@@ -361,7 +363,7 @@ export default function ContractsPage() {
                   {/* Financial summary */}
                   <div className="bg-slate-900/40 rounded-2xl p-4 border border-white/5 mb-4 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-slate-500 flex items-center gap-1"><Wallet size={11}/> قيمة العقد</span>
+                      <span className="text-xs text-slate-500 flex items-center gap-1"><Wallet size={11}/> {t("contract.value")}</span>
                       <span className="font-mono font-bold text-white text-sm">SAR {Number(contract.totalValue).toLocaleString('en-US')}</span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -463,10 +465,10 @@ export default function ContractsPage() {
             <thead>
               <tr className="border-b-2 border-gray-800 bg-gray-100">
                 <th className="py-2.5 px-3 font-bold">#</th>
-                <th className="py-2.5 px-3 font-bold">رقم العقد</th>
+                <th className="py-2.5 px-3 font-bold">{t("contract.referenceNumber")}</th>
                 <th className="py-2.5 px-3 font-bold">النوع</th>
                 <th className="py-2.5 px-3 font-bold">الطرف</th>
-                <th className="py-2.5 px-3 font-bold text-left">قيمة العقد</th>
+                <th className="py-2.5 px-3 font-bold text-left">{t("contract.value")}</th>
                 <th className="py-2.5 px-3 font-bold text-left">المنجز</th>
                 <th className="py-2.5 px-3 font-bold text-center">% الإنجاز</th>
                 <th className="py-2.5 px-3 font-bold text-center">المحتجز %</th>

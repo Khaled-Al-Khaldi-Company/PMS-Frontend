@@ -9,6 +9,7 @@ import {
   Building2, Plus, X, Save, Loader2
 } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from "@/lib/i18n/context";
 
 const ALL_PERMISSIONS = [
   "QUOTATION_CREATE", "QUOTATION_APPROVE",
@@ -95,6 +96,8 @@ export default function UsersManagementPage() {
     fetchRoles();
     fetchProjects();
   }, []);
+
+  const { t } = useLanguage();
 
   const openAddUser = () => {
     setEditingUserId(null);
@@ -188,7 +191,7 @@ export default function UsersManagementPage() {
   };
 
   if (isLoading) {
-    return <div className="text-center p-12 text-slate-400">جاري تحميل المستخدمين...</div>;
+    return <div className="text-center p-12 text-slate-400">{t("common.loading")}</div>;
   }
 
   return (
@@ -200,14 +203,14 @@ export default function UsersManagementPage() {
             <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/20">
               <Users className="text-indigo-400" size={24} />
             </div>
-            إدارة المستخدمين والصلاحيات
+            {t("users.title")}
           </h1>
           <p className="text-slate-400 text-sm mt-2">
-            تمكنك هذه الشاشة من إضافة مهندسين ومراجعين وتخصيص صلاحياتهم (RBAC).
+            {t("users.subtitle")}
           </p>
         </div>
         <button onClick={openAddUser} className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 transition-all text-sm">
-          <UserPlus size={18} /> إضافة مستخدم جديد
+          <UserPlus size={18} /> {t("users.addUser")}
         </button>
       </div>
 
@@ -216,11 +219,11 @@ export default function UsersManagementPage() {
           <table className="w-full text-right text-sm">
             <thead className="bg-slate-900/80">
               <tr>
-                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5">المستخدم</th>
-                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5">البريد الإلكتروني</th>
-                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-center">الدور / الصلاحية</th>
-                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-center">الحالة</th>
-                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-left">إجراءات</th>
+                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5">{t("users.tableUser")}</th>
+                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5">{t("users.tableEmail")}</th>
+                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-center">{t("users.tableRole")}</th>
+                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-center">{t("users.tableStatus")}</th>
+                <th className="px-4 py-3 text-slate-400 font-bold text-xs uppercase border-b border-white/5 text-left">{t("users.tableActions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -254,7 +257,7 @@ export default function UsersManagementPage() {
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30'
                         : 'bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30'
                     }`}>
-                      {user.isActive ? <><CheckCircle size={14} /> نشط</> : <><XCircle size={14} /> موقوف</>}
+                      {user.isActive ? <><CheckCircle size={14} /> نشط</> : <><XCircle size={14} /> {t("users.inactiveToggle")}</>}
                     </button>
                   </td>
                   <td className="px-4 py-4 text-left">
@@ -281,32 +284,32 @@ export default function UsersManagementPage() {
           >
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <Shield className="text-indigo-400" />
-              {editingUserId ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
+              {editingUserId ? t("users.editUser") : t("users.addUser")}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">الاسم الأول</label>
+                  <label className="text-xs text-slate-400 mb-1 block">{t("users.firstName")}</label>
                   <input required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">اسم العائلة</label>
+                  <label className="text-xs text-slate-400 mb-1 block">{t("users.lastName")}</label>
                   <input required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">البريد الإلكتروني (لتسجيل الدخول)</label>
+                <label className="text-xs text-slate-400 mb-1 block">{t("users.email")}</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full text-left font-mono bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none" dir="ltr" />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">كلمة المرور {editingUserId && "(اتركها فارغة إذا لم ترد التغيير)"}</label>
+                <label className="text-xs text-slate-400 mb-1 block">{t("users.password")} {editingUserId && t("users.passwordHint")}</label>
                 <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none" dir="ltr" minLength={6} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">صلاحية النظام</label>
+                  <label className="text-xs text-slate-400 mb-1 block">{t("users.role")}</label>
                   <select required value={formData.roleId} onChange={e => setFormData({...formData, roleId: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none">
                      <option value="" disabled>اختر الصلاحية</option>
                      {roles.map(r => (
@@ -317,17 +320,17 @@ export default function UsersManagementPage() {
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block text-center">حالة الحساب</label>
                   <button type="button" onClick={() => setFormData({...formData, isActive: !formData.isActive})} className={`w-full py-2.5 rounded-xl font-bold flex flex-col items-center justify-center transition-colors ${formData.isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
-                    {formData.isActive ? 'مُفعّل نشط' : 'موقوف'}
+                    {formData.isActive ? t("users.activeToggle") : t("users.inactiveToggle")}
                   </button>
                 </div>
               </div>
 
               <div className="mt-8 flex gap-4 pt-4 border-t border-slate-800">
                 <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors">
-                  حفظ المستخدم
+                  {t("users.saveUser")}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)} className="px-6 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors">
-                  إلغاء
+                  {t("common.cancel")}
                 </button>
               </div>
             </form>
@@ -338,14 +341,14 @@ export default function UsersManagementPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <Building2 size={18} className="text-emerald-400" />
-                    المشاريع المسندة
+                    {t("users.assignedProjects")}
                   </h3>
                   <button
                     type="button"
                     onClick={() => { setSelectedProjectIds([]); setSelectedPerms([]); setShowProjectModal(true); }}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
                   >
-                    <Plus size={14} /> إسناد مشروع
+                    <Plus size={14} /> {t("users.assignProject")}
                   </button>
                 </div>
 
@@ -403,7 +406,7 @@ export default function UsersManagementPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-slate-400 mb-2 block">المشاريع (اختر واحد أو أكثر)</label>
+                <label className="text-xs text-slate-400 mb-2 block">{t("users.selectProjects")}</label>
                 <div className="max-h-48 overflow-y-auto border border-slate-800 rounded-2xl p-2 bg-slate-950/50 space-y-1">
                   {projects
                     .filter(p => !userProjectPerms.some(pp => pp.projectId === p.id))
@@ -449,7 +452,7 @@ export default function UsersManagementPage() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 mb-2 block">الصلاحيات المسموحة لهذا المستخدم داخل المشروع</label>
+                <label className="text-xs text-slate-400 mb-2 block">{t("users.selectPerms")}</label>
                 <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-slate-800 rounded-2xl p-3 bg-slate-950/50">
                   {ALL_PERMISSIONS.map(perm => (
                     <label key={perm} className="flex items-center gap-2 cursor-pointer p-1.5 rounded-lg hover:bg-slate-800/50">
@@ -472,14 +475,14 @@ export default function UsersManagementPage() {
                   disabled={selectedProjectIds.length === 0 || selectedPerms.length === 0}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
-                  <Save size={16} /> حفظ الإسناد
+                  <Save size={16} /> {t("users.saveAssignment")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowProjectModal(false)}
                   className="px-6 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-colors"
                 >
-                  إلغاء
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>

@@ -28,11 +28,13 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 import Link from "next/link";
 
 export default function ProjectDashboardPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const projectId = params.id as string;
   
   const [project, setProject] = useState<any>(null);
@@ -124,10 +126,10 @@ export default function ProjectDashboardPage() {
   };
 
   const statusMap: Record<string, any> = {
-    PLANNING: { label: "قيد التخطيط", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", glow: "from-amber-500/20", icon: Clock },
-    ACTIVE: { label: "نشط (قيد التنفيذ)", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", glow: "from-blue-500/20", icon: HardHat },
-    COMPLETED: { label: "مكتمل", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", glow: "from-emerald-500/20", icon: CheckCircle2 },
-    ON_HOLD: { label: "متوقف", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", glow: "from-rose-500/20", icon: Activity },
+    PLANNING: { label: t("project.status.planning"), color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", glow: "from-amber-500/20", icon: Clock },
+    ACTIVE: { label: t("project.status.active"), color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", glow: "from-blue-500/20", icon: HardHat },
+    COMPLETED: { label: t("project.status.completed"), color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", glow: "from-emerald-500/20", icon: CheckCircle2 },
+    ON_HOLD: { label: t("project.status.onHold"), color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", glow: "from-rose-500/20", icon: Activity },
   };
 
   if (isLoading) {
@@ -137,7 +139,7 @@ export default function ProjectDashboardPage() {
           <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full animate-ping absolute top-0 right-0"></div>
           <Loader2 className="animate-spin text-blue-500 relative z-10" size={64} strokeWidth={1.5} />
         </div>
-        <p className="text-slate-400 mt-6 text-sm font-bold tracking-wider uppercase animate-pulse">جاري تحميل لوحة تحكم المشروع...</p>
+        <p className="text-slate-400 mt-6 text-sm font-bold tracking-wider uppercase animate-pulse">{t("common.loading")}</p>
       </div>
     );
   }
@@ -191,10 +193,10 @@ export default function ProjectDashboardPage() {
       {/* Hero Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <button onClick={() => router.push('/dashboard/projects')} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all shadow-lg hover:-translate-x-1" title="عودة للمشاريع">
+          <button onClick={() => router.push('/dashboard/projects')} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all shadow-lg hover:-translate-x-1" title={t("common.back")}>
             <ArrowRight size={22} />
           </button>
-          <Link href={`/dashboard/projects/edit/${project.id}`} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 transition-all shadow-lg hover:scale-105" title="تعديل بيانات المشروع">
+          <Link href={`/dashboard/projects/edit/${project.id}`} className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 text-slate-300 hover:text-amber-400 transition-all shadow-lg hover:scale-105" title={t("common.edit")}>
             <Edit size={20} />
           </Link>
           <div className="flex-1">
@@ -208,11 +210,11 @@ export default function ProjectDashboardPage() {
             </div>
             <div className="flex items-center gap-4 text-sm font-medium">
               <span className="text-slate-400 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-800 font-mono uppercase tracking-widest text-[11px] shadow-inner">
-                كود: {project.code}
+                {t("project.codeLabel")}: {project.code}
               </span>
               <span className="flex items-center gap-1.5 text-slate-400">
                 <Building2 size={14} className="text-blue-500" />
-                {project.client?.name || "عميل النظام الداخلي"}
+                {project.client?.name || t("project.defaultClient")}
               </span>
             </div>
           </div>
@@ -220,10 +222,10 @@ export default function ProjectDashboardPage() {
         
         <div className="flex items-center gap-3 w-full lg:w-auto">
           <Link href={`/dashboard/contracts/create?project=${project.id}`} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all shadow-lg text-sm">
-            <FileSignature size={18} /> عقد جديد
+            <FileSignature size={18} /> {t("project.newContract")}
           </Link>
           <Link href={`/dashboard/invoices/create?project=${project.id}`} className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:-translate-y-1 text-sm">
-            <Wallet size={18} /> مستخلص جديد
+            <Wallet size={18} /> {t("project.newInvoice")}
           </Link>
         </div>
       </div>
@@ -231,11 +233,11 @@ export default function ProjectDashboardPage() {
       {/* Smart Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
         {[
-          { id: 'OVERVIEW', label: 'اللوحة الرئيسية', icon: PieChart },
-          { id: 'BOQ', label: 'بنود الأعمال (BOQ)', icon: ClipboardList, badge: project.boqItems?.length },
-          { id: 'CONTRACTS', label: 'العقود (رئيسي / باطن)', icon: FileSignature, badge: project.contracts?.length },
-          { id: 'DAFTRA', label: 'مزامنة دفترة (ERP)', icon: Activity, badge: 'Live' },
-          { id: 'DPR', label: 'التقارير اليومية', icon: FileText, badge: project.dailyReports?.length || 0 },
+          { id: 'OVERVIEW', label: t("project.tabs.overview"), icon: PieChart },
+          { id: 'BOQ', label: t("project.tabs.boq"), icon: ClipboardList, badge: project.boqItems?.length },
+          { id: 'CONTRACTS', label: t("project.tabs.contracts"), icon: FileSignature, badge: project.contracts?.length },
+          { id: 'DAFTRA', label: t("project.tabs.daftra"), icon: Activity, badge: 'Live' },
+          { id: 'DPR', label: t("project.tabs.dpr"), icon: FileText, badge: project.dailyReports?.length || 0 },
         ].map(tab => (
           <button
             key={tab.id}
@@ -280,14 +282,14 @@ export default function ProjectDashboardPage() {
                  
                  <div className="relative z-10 flex justify-between items-start mb-10">
                    <div>
-                     <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-                       <Wallet size={20} className="text-emerald-400" /> الحالة المالية والحصر للمشروع
-                     </h3>
-                     <p className="text-sm text-slate-400">يعكس هذا المؤشر حجم الأعمال المنفذة مقابل إجمالي الكميات المقررة (BOQ).</p>
+                      <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                        <Wallet size={20} className="text-emerald-400" /> {t("project.overview.financialStatus")}
+                      </h3>
+                      <p className="text-sm text-slate-400">{t("project.overview.financialDesc")}</p>
                    </div>
                    <div className="text-right">
-                     <p className="text-3xl font-black text-emerald-400 tracking-tight drop-shadow-sm">{progressPercent.toFixed(1)}%</p>
-                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">نسبة الإنجاز المالي</p>
+                      <p className="text-3xl font-black text-emerald-400 tracking-tight drop-shadow-sm">{progressPercent.toFixed(1)}%</p>
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">{t("project.overview.progressPercent")}</p>
                    </div>
                  </div>
 
@@ -295,8 +297,8 @@ export default function ProjectDashboardPage() {
                    {/* Progress Bar Component */}
                    <div>
                      <div className="flex justify-between text-xs font-bold mb-3 uppercase tracking-wider">
-                       <span className="text-emerald-400">المنفذ الفعلي: SAR {executedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                       <span className="text-slate-400">الإجمالي: SAR {totalBoqValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      <span className="text-emerald-400">{t("project.overview.executed")}: SAR {executedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="text-slate-400">{t("project.overview.total")}: SAR {totalBoqValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                      </div>
                      <div className="h-4 bg-slate-900/80 border border-white/5 rounded-full overflow-hidden flex shadow-inner">
                        <motion.div 
@@ -311,14 +313,14 @@ export default function ProjectDashboardPage() {
                    </div>
 
                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                     <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
-                       <p className="text-xs text-slate-500 mb-1 font-bold uppercase tracking-wider">الميزانية أو قيمة العقد الأساسي</p>
-                       <p className="text-xl font-black text-amber-300">SAR {mainContractValue ? Number(mainContractValue).toLocaleString() : '---'}</p>
-                     </div>
-                     <div className="bg-indigo-500/[0.02] border border-indigo-500/10 p-4 rounded-2xl">
-                       <p className="text-xs text-indigo-400/70 mb-1 font-bold uppercase tracking-wider mt-1 flex items-center gap-1"><FileSignature size={12}/> ترسيات مقاولي الباطن</p>
-                       <p className="text-xl font-black text-indigo-300">SAR {subContractsValue.toLocaleString()}</p>
-                     </div>
+                      <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
+                        <p className="text-xs text-slate-500 mb-1 font-bold uppercase tracking-wider">{t("project.overview.budgetOrContract")}</p>
+                        <p className="text-xl font-black text-amber-300">SAR {mainContractValue ? Number(mainContractValue).toLocaleString() : '---'}</p>
+                      </div>
+                      <div className="bg-indigo-500/[0.02] border border-indigo-500/10 p-4 rounded-2xl">
+                        <p className="text-xs text-indigo-400/70 mb-1 font-bold uppercase tracking-wider mt-1 flex items-center gap-1"><FileSignature size={12}/> {t("project.overview.subcontracts")}</p>
+                        <p className="text-xl font-black text-indigo-300">SAR {subContractsValue.toLocaleString()}</p>
+                      </div>
                    </div>
                  </div>
               </div>
@@ -327,7 +329,7 @@ export default function ProjectDashboardPage() {
               <div className="space-y-6">
                 <div className="glass-dark border border-white/5 rounded-3xl p-6 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-l from-blue-500 via-indigo-500 to-transparent opacity-50" />
-                  <h3 className="text-sm font-bold text-slate-300 mb-6 uppercase tracking-wider border-b border-white/5 pb-3">الإدارة والمواعيد</h3>
+                  <h3 className="text-sm font-bold text-slate-300 mb-6 uppercase tracking-wider border-b border-white/5 pb-3">{t("project.overview.management")}</h3>
                   
                   <div className="space-y-5">
                     <div className="flex items-center gap-4">
@@ -335,8 +337,8 @@ export default function ProjectDashboardPage() {
                         <User size={20} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">مدير المشروع الأساسي</p>
-                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "لم يتم التعيين"}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t("project.overview.projectManager")}</p>
+                        <p className="text-sm font-bold text-white mt-0.5">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : t("project.overview.notAssigned")}</p>
                       </div>
                     </div>
 
@@ -345,8 +347,8 @@ export default function ProjectDashboardPage() {
                         <Calendar size={20} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">تاريخ الانطلاق</p>
-                        <p className="text-sm font-bold text-white mt-0.5">{project.startDate ? new Date(project.startDate).toLocaleDateString('ar-SA') : "غير مجدول"}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t("project.overview.startDate")}</p>
+                        <p className="text-sm font-bold text-white mt-0.5">{project.startDate ? new Date(project.startDate).toLocaleDateString('ar-SA') : t("project.overview.notScheduled")}</p>
                       </div>
                     </div>
 
@@ -355,20 +357,20 @@ export default function ProjectDashboardPage() {
                         <AlertCircle size={20} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">التسليم المتوقع</p>
-                        <p className="text-sm font-bold text-rose-200 mt-0.5">{project.endDate ? new Date(project.endDate).toLocaleDateString('ar-SA') : "مفتوح - جاري التنفيذ"}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t("project.overview.expectedDelivery")}</p>
+                        <p className="text-sm font-bold text-rose-200 mt-0.5">{project.endDate ? new Date(project.endDate).toLocaleDateString('ar-SA') : t("project.overview.openInProgress")}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="glass-dark border border-white/5 rounded-3xl p-6 shadow-xl flex items-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-colors group">
+                  <div className="glass-dark border border-white/5 rounded-3xl p-6 shadow-xl flex items-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-colors group">
                   <div className="w-12 h-12 rounded-full border border-indigo-500/30 bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
                      {project.contracts?.length || 0}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">إجمالي العقود المرتبطة</h4>
-                    <p className="text-xs text-slate-400 mt-1">اضغط للتفاصيل في التبويب المخصص</p>
+                    <h4 className="text-sm font-bold text-white">{t("project.overview.totalContracts")}</h4>
+                    <p className="text-xs text-slate-400 mt-1">{t("project.overview.clickForDetails")}</p>
                   </div>
                 </div>
               </div>
@@ -381,11 +383,11 @@ export default function ProjectDashboardPage() {
               <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <ClipboardList size={20} className="text-blue-500" />
-                  جداول الكميات المعتمدة للمشروع (BOQ)
+                  {t("project.tabs.boq")}
                 </h2>
                 <div className="flex items-center gap-4">
                   <span className="text-xs font-mono text-slate-400 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-                    الإجمالي: SAR {totalBoqValue.toLocaleString()}
+                    {t("project.boqTotal")}: SAR {totalBoqValue.toLocaleString()}
                   </span>
                   <button 
                     onClick={() => {
@@ -395,7 +397,7 @@ export default function ProjectDashboardPage() {
                     }}
                     className="flex items-center gap-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg transition"
                   >
-                    <Plus size={14} /> إضافة بند جديد
+                    <Plus size={14} /> {t("project.addBoqItem")}
                   </button>
                 </div>
               </div>
@@ -404,13 +406,13 @@ export default function ProjectDashboardPage() {
                 <table className="w-full text-right text-sm">
                   <thead className="bg-slate-900/80 sticky top-0 shadow-sm">
                     <tr className="text-xs uppercase tracking-widest text-slate-400 font-bold border-b border-white/5">
-                      <th className="px-6 py-4">وصف التوريد / التركيب</th>
-                      <th className="px-4 py-4 text-center">الوحدة</th>
-                      <th className="px-4 py-4 text-center font-mono text-emerald-500/70">متوقع</th>
-                      <th className="px-4 py-4 text-center font-mono text-blue-400/70">منفذ</th>
-                      <th className="px-4 py-4 text-center">الفئة (SAR)</th>
-                      <th className="px-6 py-4 text-center">إجمالي المتوقع</th>
-                      <th className="px-4 py-4 text-center">إجراءات</th>
+                      <th className="px-6 py-4">{t("project.boq.description")}</th>
+                      <th className="px-4 py-4 text-center">{t("project.boq.unit")}</th>
+                      <th className="px-4 py-4 text-center font-mono text-emerald-500/70">{t("project.boq.expected")}</th>
+                      <th className="px-4 py-4 text-center font-mono text-blue-400/70">{t("project.boq.executed")}</th>
+                      <th className="px-4 py-4 text-center">{t("project.boq.unitPrice")}</th>
+                      <th className="px-6 py-4 text-center">{t("project.boq.totalExpected")}</th>
+                      <th className="px-4 py-4 text-center">{t("project.boq.actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -430,14 +432,14 @@ export default function ProjectDashboardPage() {
                             <button 
                               onClick={() => handleEditBoqClick(item)}
                               className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors"
-                              title="تعديل"
+                              title={t("common.edit")}
                             >
                               <Edit size={14} />
                             </button>
                             <button 
                               onClick={() => handleDeleteBoqItem(item.id)}
                               className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                              title="حذف"
+                              title={t("common.delete")}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -446,7 +448,7 @@ export default function ProjectDashboardPage() {
                       </tr>
                     )) : (
                       <tr>
-                        <td colSpan={7} className="py-16 text-center text-slate-500 text-sm">لا توجد بنود كميات مسجلة لهذا المشروع بعد.</td>
+                        <td colSpan={7} className="py-16 text-center text-slate-500 text-sm">{t("project.boq.noItems")}</td>
                       </tr>
                     )}
                   </tbody>
@@ -465,11 +467,11 @@ export default function ProjectDashboardPage() {
                   <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
                     {isMain ? (
                       <div className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center gap-1.5">
-                        <Building2 size={12} /> عقد رئيسي مع المالك
+                        <Building2 size={12} /> {t("project.contract.mainContract")}
                       </div>
                     ) : (
                       <div className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center gap-1.5">
-                        <HardHat size={12} /> عقد مقاول باطن
+                        <HardHat size={12} /> {t("project.contract.subContract")}
                       </div>
                     )}
                     <span className={`text-slate-500 transition-colors ${isMain ? 'group-hover:text-amber-400' : 'group-hover:text-indigo-400'}`}>
@@ -477,12 +479,12 @@ export default function ProjectDashboardPage() {
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-1 line-clamp-1">
-                    {isMain ? (project.client?.name || 'مجهول (جهة مالكة)') : (contract.subcontractor?.name || 'مجهول')}
+                    {isMain ? (project.client?.name || t("project.contract.unknownClient")) : (contract.subcontractor?.name || t("project.contract.unknown"))}
                   </h3>
                   <p className="text-sm font-mono text-slate-400 mb-6">Ref: {contract.referenceNumber}</p>
                   
                   <div className="bg-slate-900/50 rounded-2xl p-4 border border-white/5 shadow-inner">
-                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">إجمالي العقد المتفق عليه</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">{t("project.contract.totalValue")}</p>
                     <p className={`text-lg font-black font-mono ${isMain ? 'text-amber-300' : 'text-indigo-300'}`}>
                       SAR {Number(contract.totalValue || 0).toLocaleString('en-US')}
                     </p>
@@ -490,7 +492,7 @@ export default function ProjectDashboardPage() {
                 </div>
                 );
               }) : (
-                <div className="col-span-full py-20 text-center text-slate-500 font-bold">لا توجد عقود مسجلة لهذا المشروع بعد.</div>
+                <div className="col-span-full py-20 text-center text-slate-500 font-bold">{t("project.contract.noContracts")}</div>
               )}
             </div>
           )}
@@ -501,14 +503,14 @@ export default function ProjectDashboardPage() {
                <div className="glass-dark border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
                  <div>
-                   <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                     <Activity size={24} className="text-emerald-400" /> المركز المالي في دفترة (ERP Sync)
-                   </h3>
-                   <p className="text-sm text-slate-400">ملخص حي لتكاليف وإيرادات المشروع المُسجلة رسمياً كفواتير وقيود يومية في برنامج دفترة.</p>
+                    <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                      <Activity size={24} className="text-emerald-400" /> {t("project.daftra.title")}
+                    </h3>
+                    <p className="text-sm text-slate-400">{t("project.daftra.description")}</p>
                  </div>
                  <div className="bg-emerald-500/10 border border-emerald-500/30 px-6 py-3 rounded-2xl flex items-center gap-3">
                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-emerald-400 font-bold font-mono tracking-wide">متصل - مزامنة حية</span>
+                   <span className="text-emerald-400 font-bold font-mono tracking-wide">{t("project.daftra.connected")}</span>
                  </div>
                </div>
 
@@ -516,52 +518,52 @@ export default function ProjectDashboardPage() {
                   {/* Revenue Card */}
                   <div className="glass p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all" />
-                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">إجمالي الإيرادات (مستخلصات معتمدة)</h3>
+                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">{t("project.daftra.totalRevenue")}</h3>
                      <p className="text-3xl font-mono font-black text-white mb-1"><span className="text-sm text-emerald-500 mr-1">SAR</span>{totalCertifiedRevenue.toLocaleString('en-US', {maximumFractionDigits:0})}</p>
                      {certifiedInvoicesCount > 0 ? (
-                       <p className="text-xs text-emerald-400 font-bold flex items-center gap-1"><TrendingUp size={14} /> {certifiedInvoicesCount} مستخلص معتمد</p>
-                     ) : (
-                       <p className="text-xs text-slate-500 font-bold">لا توجد مستخلصات معتمدة بعد</p>
+                      <p className="text-xs text-emerald-400 font-bold flex items-center gap-1"><TrendingUp size={14} /> {certifiedInvoicesCount} {t("project.daftra.certifiedInvoices")}</p>
+                      ) : (
+                        <p className="text-xs text-slate-500 font-bold">{t("project.daftra.noCertifiedInvoices")}</p>
                      )}
                   </div>
 
                   {/* Cost Card */}
                   <div className="glass p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-rose-500/30 transition-colors flex flex-col justify-between">
                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all" />
-                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">تكاليف المشروع الفعلية (مشتريات ومقاولين)</h3>
+                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">{t("project.daftra.totalCost")}</h3>
                      <p className="text-3xl font-mono font-black text-white mb-2"><span className="text-sm text-rose-500 mr-1">SAR</span>{totalCertifiedCost.toLocaleString('en-US', {maximumFractionDigits:0})}</p>
                      
                      <div className="space-y-1.5 mt-2 border-t border-white/5 pt-3">
-                       <div className="flex justify-between items-center text-[11px] font-bold">
-                         <span className="text-slate-500 flex items-center gap-1.5"><HardHat size={12}/> مقاولي باطن:</span>
-                         <span className="text-rose-400 font-mono text-xs">{subcontractorCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
-                       </div>
-                       <div className="flex justify-between items-center text-[11px] font-bold">
-                         <span className="text-slate-500 flex items-center gap-1.5"><ClipboardList size={12}/> أوامر شراء (مواد):</span>
-                         <span className="text-rose-400 font-mono text-xs">{poCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
-                       </div>
-                       <div className="flex justify-between items-center text-[11px] font-bold">
-                         <span className="text-slate-500 flex items-center gap-1.5"><Wallet size={12}/> مصروفات ونثريات:</span>
-                         <span className="text-rose-400 font-mono text-xs">{expensesCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
-                       </div>
+                        <div className="flex justify-between items-center text-[11px] font-bold">
+                          <span className="text-slate-500 flex items-center gap-1.5"><HardHat size={12}/> {t("project.daftra.subcontractors")}:</span>
+                          <span className="text-rose-400 font-mono text-xs">{subcontractorCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[11px] font-bold">
+                          <span className="text-slate-500 flex items-center gap-1.5"><ClipboardList size={12}/> {t("project.daftra.purchaseOrders")}:</span>
+                          <span className="text-rose-400 font-mono text-xs">{poCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[11px] font-bold">
+                          <span className="text-slate-500 flex items-center gap-1.5"><Wallet size={12}/> {t("project.daftra.expenses")}:</span>
+                          <span className="text-rose-400 font-mono text-xs">{expensesCost.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                        </div>
                      </div>
                   </div>
 
                   {/* Profitability Card */}
                   <div className="glass p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-colors flex flex-col justify-center bg-blue-500/[0.02]">
                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all" />
-                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">الربحية الإجمالية الحالية</h3>
+                     <h3 className="text-slate-400 font-bold text-sm mb-3 uppercase tracking-wider">{t("project.daftra.profitability")}</h3>
                      <p className="text-4xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300 drop-shadow-sm mb-1">
                        <span className="text-sm text-blue-500 mr-1">SAR</span>
                        {Math.max(0, totalCertifiedRevenue - totalCertifiedCost).toLocaleString('en-US', {maximumFractionDigits:0})}
                      </p>
-                     <p className="text-xs text-slate-500 font-bold uppercase">مركز التكلفة: {project.code}</p>
+                     <p className="text-xs text-slate-500 font-bold uppercase">{t("project.daftra.costCenter")}: {project.code}</p>
                   </div>
                </div>
 
                <div className="glass-dark border border-white/5 rounded-3xl overflow-hidden shadow-2xl mt-6 pb-6">
                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                   <h3 className="text-lg font-bold text-white">سجل القيود المالية المرفوعة</h3>
+                    <h3 className="text-lg font-bold text-white">{t("project.daftra.financialLog")}</h3>
                    <span className="text-xs text-slate-500 font-mono bg-slate-900 px-3 py-1 rounded-full border border-white/5">Auto-Synced</span>
                  </div>
                  
@@ -574,10 +576,10 @@ export default function ProjectDashboardPage() {
                        <Activity size={14} className="text-blue-400" />
                      </div>
                    </div>
-                   <h4 className="text-xl font-bold text-white mb-2">الدورة المستندية مطابقة تماماً</h4>
-                   <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-                     بمجرد اعتماد أي مستخلص دفع في هذا المشروع، يقوم النظام بتوليد فاتورة شراء وتوجيهها لمركز تكلفة المشروع في دفترة أوتوماتيكياً.
-                   </p>
+                   <h4 className="text-xl font-bold text-white mb-2">{t("project.daftra.syncStatus")}</h4>
+                    <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                      {t("project.daftra.syncDescription")}
+                    </p>
                  </div>
                </div>
              </div>
@@ -588,14 +590,14 @@ export default function ProjectDashboardPage() {
              <div className="glass-dark border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden min-h-[50vh]">
                <div className="flex justify-between items-center mb-8 pb-6 border-b border-white/5">
                  <div>
-                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                     <FileText className="text-amber-500" size={24} /> 
-                     التقارير اليومية للموقع (DPR)
-                   </h2>
-                   <p className="text-sm text-slate-400 mt-1">سجل يومي دقيق لعدد العمالة والمعدات والإنجازات بالموقع.</p>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <FileText className="text-amber-500" size={24} /> 
+                      {t("project.tabs.dpr")}
+                    </h2>
+                    <p className="text-sm text-slate-400 mt-1">{t("project.dpr.description")}</p>
                  </div>
-                 <Link href={`/dashboard/projects/${projectId}/dpr/create`} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg hover:-translate-y-0.5 text-sm">
-                   <Plus size={18} /> تقرير جديد
+                  <Link href={`/dashboard/projects/${projectId}/dpr/create`} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg hover:-translate-y-0.5 text-sm">
+                    <Plus size={18} /> {t("project.dpr.newReport")}
                  </Link>
                </div>
 
@@ -613,26 +615,26 @@ export default function ProjectDashboardPage() {
                        </div>
                        
                        <div className="space-y-4 mb-4">
-                         <p className="text-sm text-white line-clamp-2" title={report.workPerformed}>
-                           {report.workPerformed || "لم يتم تدوين أعمال"}
-                         </p>
+                          <p className="text-sm text-white line-clamp-2" title={report.workPerformed}>
+                            {report.workPerformed || t("project.dpr.noWorkRecorded")}
+                          </p>
                          
                          <div className="grid grid-cols-2 gap-3">
                            <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
-                             <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><User size={10}/> عمالة</p>
-                             <p className="font-bold font-mono text-blue-300">{report.labors?.reduce((sum: number, l: any) => sum + l.count, 0) || 0} فرد</p>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><User size={10}/> {t("project.dpr.labor")}</p>
+                              <p className="font-bold font-mono text-blue-300">{report.labors?.reduce((sum: number, l: any) => sum + l.count, 0) || 0} {t("project.dpr.workers")}</p>
                            </div>
                            <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
-                             <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><HardHat size={10}/> معدات</p>
-                             <p className="font-bold font-mono text-amber-300">{report.equipments?.reduce((sum: number, e: any) => sum + e.count, 0) || 0} آلية</p>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><HardHat size={10}/> {t("project.dpr.equipment")}</p>
+                              <p className="font-bold font-mono text-amber-300">{report.equipments?.reduce((sum: number, e: any) => sum + e.count, 0) || 0} {t("project.dpr.machines")}</p>
                            </div>
                          </div>
                        </div>
                        
                        <div className="flex justify-between items-center pt-3 border-t border-white/5">
-                          <span className="text-xs text-slate-500">{report.createdBy || 'المهندس'}</span>
-                          <Link href={`/dashboard/projects/${projectId}/dpr/${report.id}`} className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
-                            <FileText size={12} /> عرض
+                           <span className="text-xs text-slate-500">{report.createdBy || t("project.dpr.defaultEngineer")}</span>
+                           <Link href={`/dashboard/projects/${projectId}/dpr/${report.id}`} className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
+                             <FileText size={12} /> {t("common.view")}
                           </Link>
                        </div>
                      </div>
@@ -641,8 +643,8 @@ export default function ProjectDashboardPage() {
                ) : (
                  <div className="flex flex-col items-center justify-center text-slate-500 min-h-[30vh]">
                    <FileText size={48} className="mb-4 opacity-50 text-amber-500" />
-                   <p className="text-lg font-bold text-slate-300 mb-1">لا توجد تقارير يومية حتى الآن</p>
-                   <p className="text-sm">قم بتسجيل التقرير الأول اليوم لتتبع سير العمل.</p>
+                    <p className="text-lg font-bold text-slate-300 mb-1">{t("project.dpr.noReports")}</p>
+                    <p className="text-sm">{t("project.dpr.noReportsHint")}</p>
                  </div>
                )}
              </div>
@@ -662,10 +664,10 @@ export default function ProjectDashboardPage() {
               className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
             >
               <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Plus size={20} className="text-blue-400" />
-                  {isEditingBoq ? "تعديل بند الكميات (BOQ)" : "إضافة بند كميات (BOQ) مباشر"}
-                </h2>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Plus size={20} className="text-blue-400" />
+                    {isEditingBoq ? t("project.boq.editItem") : t("project.boq.addItem")}
+                  </h2>
                 <button onClick={closeBoqModal} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
                   <X size={20} />
                 </button>
@@ -673,43 +675,43 @@ export default function ProjectDashboardPage() {
               
               <form onSubmit={handleAddBoq} className="p-6 space-y-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">م (رقم البند)</label>
+                  <label className="text-sm font-semibold text-slate-300">{t("project.boq.itemCode")}</label>
                   <input required value={newBoq.itemCode} onChange={e => setNewBoq({...newBoq, itemCode: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono" placeholder="01" />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">وصف دقيق للأعمال</label>
-                  <input required value={newBoq.description} onChange={e => setNewBoq({...newBoq, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="مثال: توريد وتركيب أجهزة..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("project.boq.description")}</label>
+                  <input required value={newBoq.description} onChange={e => setNewBoq({...newBoq, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder={t("project.boq.descriptionPlaceholder")} />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-300">الوحدة</label>
+                    <label className="text-sm font-semibold text-slate-300">{t("project.boq.unit")}</label>
                     <input required value={newBoq.unit} onChange={e => setNewBoq({...newBoq, unit: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-center" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-300">الكمية</label>
+                    <label className="text-sm font-semibold text-slate-300">{t("project.boq.quantity")}</label>
                     <input type="number" required min="1" step="any" value={newBoq.quantity} onChange={e => setNewBoq({...newBoq, quantity: Number(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-emerald-400 font-bold font-mono focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-center" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-300">السعر (SAR)</label>
+                    <label className="text-sm font-semibold text-slate-300">{t("project.boq.unitPrice")}</label>
                     <input type="number" required min="0" step="any" value={newBoq.unitPrice} onChange={e => setNewBoq({...newBoq, unitPrice: Number(e.target.value)})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-blue-400 font-bold font-mono focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-center" />
                   </div>
                 </div>
 
                 <div className="pt-2">
                   <div className="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl flex justify-between items-center text-sm">
-                    <span className="text-slate-400 font-bold">الإجمالي المعتمد للمشروع:</span>
+                    <span className="text-slate-400 font-bold">{t("project.boq.totalApproved")}:</span>
                     <span className="font-mono text-white text-lg font-black">SAR {(newBoq.quantity * newBoq.unitPrice).toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div className="mt-8 pt-4 flex gap-4">
                   <button type="button" onClick={closeBoqModal} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors">
-                    إلغاء
+                    {t("common.cancel")}
                   </button>
                   <button type="submit" disabled={isSubmittingBoq} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2">
-                    {isSubmittingBoq ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />} {isEditingBoq ? "تحديث البند" : "إضافة واعتماد البند"}
+                    {isSubmittingBoq ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />} {isEditingBoq ? t("project.boq.updateItem") : t("project.boq.addAndApprove")}
                   </button>
                 </div>
               </form>

@@ -6,9 +6,11 @@ import { motion } from "framer-motion";
 import { Building2, Save, ArrowRight, Loader2 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function EditProjectPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const params = useParams();
   const projectId = params.id as string;
   
@@ -87,7 +89,7 @@ export default function EditProjectPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
          <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
-         <p className="text-slate-400 font-bold">جاري تحميل بيانات المشروع...</p>
+         <p className="text-slate-400 font-bold">{t("common.loading")}</p>
       </div>
     );
   }
@@ -104,7 +106,7 @@ export default function EditProjectPage() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Building2 className="text-blue-500" size={24} />
-            تعديل بيانات المشروع
+            {t("project.edit")}
           </h1>
         </div>
       </div>
@@ -123,7 +125,7 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">اسم المشروع</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.name")}</label>
               <input
                 type="text"
                 required
@@ -134,7 +136,7 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">كود المشروع</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.code")}</label>
               <input
                 type="text"
                 required
@@ -146,14 +148,14 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-slate-300">الجهة المالكة</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.client")}</label>
               <select
                 required
                 value={formData.clientId}
                 onChange={e => setFormData({...formData, clientId: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
               >
-                <option value="" disabled>-- اختر جهة مالكة --</option>
+                <option value="" disabled>{t("project.selectClient")}</option>
                 {clients.map(client => (
                   <option key={client.id} value={client.id}>{client.name}</option>
                 ))}
@@ -161,7 +163,7 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-slate-300">وصف نطاق العمل</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.description")}</label>
               <textarea
                 value={formData.description}
                 onChange={e => setFormData({...formData, description: e.target.value})}
@@ -171,7 +173,7 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">تاريخ البداية</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.startDate")}</label>
               <input
                 type="date"
                 value={formData.startDate}
@@ -181,7 +183,7 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">تاريخ التسليم</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.endDate")}</label>
               <input
                 type="date"
                 value={formData.endDate}
@@ -191,16 +193,16 @@ export default function EditProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">حالة المشروع</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.status")}</label>
               <select
                 value={formData.status}
                 onChange={e => setFormData({...formData, status: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
               >
-                <option value="PLANNING">قيد التخطيط والدراسة</option>
-                <option value="ACTIVE">نشط وقيد التنفيذ</option>
-                <option value="COMPLETED">مكتمل</option>
-                <option value="ON_HOLD">متوقف</option>
+                <option value="PLANNING">{t("project.status.planning")}</option>
+                <option value="ACTIVE">{t("project.status.active")}</option>
+                <option value="COMPLETED">{t("project.status.completed")}</option>
+                <option value="ON_HOLD">{t("project.status.onHold")}</option>
               </select>
             </div>
           </div>
@@ -211,7 +213,7 @@ export default function EditProjectPage() {
               onClick={() => router.back()}
               className="px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-colors"
             >
-              إلغاء
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
@@ -219,7 +221,7 @@ export default function EditProjectPage() {
               className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all disabled:opacity-50"
             >
               {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              <span>حفظ التعديلات</span>
+              <span>{t("common.save")}</span>
             </button>
           </div>
         </form>

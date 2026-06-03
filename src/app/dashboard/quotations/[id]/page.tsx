@@ -22,7 +22,8 @@ import {
   LayoutTemplate,
   Link2Off,
   Edit3,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
@@ -32,8 +33,10 @@ import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import PrintLetterhead from "../../components/PrintLetterhead";
 import { useCompany } from "@/context/CompanyContext";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function EditQuotationPage() {
+  const { t } = useLanguage();
   const { company } = useCompany();
   const router = useRouter();
   const params = useParams();
@@ -411,12 +414,12 @@ export default function EditQuotationPage() {
   const handleExportExcel = () => {
     if (!formData.items || formData.items.length === 0) return;
     const exportData = formData.items.map((item: any) => ({
-      "م": item.itemCode,
-      "وصف البند": item.description,
-      "الوحدة": item.unit,
-      "الكمية": item.quantity,
-      "سعر الوحدة": item.unitPrice,
-      "الإجمالي": item.quantity * item.unitPrice
+      [t("common.no")]: item.itemCode,
+      [t("common.description")]: item.description,
+      [t("common.unit")]: item.unit,
+      [t("common.quantity")]: item.quantity,
+      [t("boq.unitPrice")]: item.unitPrice,
+      [t("boq.printTotal")]: item.quantity * item.unitPrice
     }));
     exportToCsv(`Quotation_${printMeta.ref || 'Draft'}.csv`, exportData);
   };
@@ -425,7 +428,7 @@ export default function EditQuotationPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] print:hidden">
          <Loader2 className="animate-spin text-pink-500 mb-4" size={48} />
-         <p className="text-slate-400 font-bold tracking-widest text-sm">جاري جلب عرض السعر...</p>
+         <p className="text-slate-400 font-bold tracking-widest text-sm">{t("quotations.loadingQuotation")}</p>
       </div>
     );
   }
@@ -457,13 +460,13 @@ export default function EditQuotationPage() {
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-500/10 flex items-center justify-center border border-indigo-500/20 shadow-lg">
                   <FileText className="text-indigo-400" size={24} />
                 </div>
-                مراجعة وتعديل عرض السعر
+                {t("quotations.editTitle")}
               </h1>
               <p className="text-slate-400 text-sm mt-2 font-medium flex items-center gap-2 font-mono">
                 {printMeta.ref} - {formData.clientName}
                 {formData.projectId && (
                   <span className="bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded-full text-xs font-bold border border-emerald-500/20 flex items-center gap-1">
-                    <CheckCircle2 size={14} /> تم تحويله لمشروع
+                    <CheckCircle2 size={14} /> {t("quotations.convertedToProject")}
                   </span>
                 )}
               </p>
@@ -472,7 +475,7 @@ export default function EditQuotationPage() {
           
           <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
             <div className="flex items-center gap-3 bg-slate-900/50 p-1.5 rounded-xl border border-white/5">
-              <span className="text-sm font-bold text-slate-400 mr-2">حالة العرض:</span>
+              <span className="text-sm font-bold text-slate-400 mr-2">{t("quotations.statusLabel")}</span>
               <select 
                 value={formData.status} 
                 onChange={e => setFormData({...formData, status: e.target.value})}
@@ -484,52 +487,52 @@ export default function EditQuotationPage() {
                   'text-slate-300 border-slate-700'
                 }`}
               >
-                <option value="DRAFT">مسودة (Draft)</option>
-                <option value="SUBMITTED">مُرسل للعميل (Submitted)</option>
-                <option value="APPROVED">معتمد (Approved)</option>
-                <option value="REJECTED">مرفوض (Rejected)</option>
+                <option value="DRAFT">{t("invoice.status.draft")} (Draft)</option>
+                <option value="SUBMITTED">{t("invoice.status.submitted")} (Submitted)</option>
+                <option value="APPROVED">{t("invoice.status.certified")} (Approved)</option>
+                <option value="REJECTED">{t("expense.status.rejected")} (Rejected)</option>
               </select>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               {formData.status === 'APPROVED' && !formData.projectId && hasPermission('QUOTATION_APPROVE') && (
                 <button type="button" onClick={handleConvertToProject} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-all animate-pulse text-sm">
-                  <Wand2 size={18} /> تحويل لمشروع تنفيذي
+                  <Wand2 size={18} /> {t("quotations.convertProject")}
                 </button>
               )}
               {formData.status === 'APPROVED' && !formData.projectId && hasPermission('QUOTATION_CREATE') && (
                 <button type="button" onClick={handleRevertToDraft} disabled={isReverting} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-500/30 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 font-bold transition-all shadow-lg text-sm">
-                  <ArrowRight size={18} /> {isReverting ? 'جاري الإرجاع...' : 'إرجاع للمسودة'}
+                  <ArrowRight size={18} /> {isReverting ? t("quotations.reverting") : t("quotations.revertToDraft")}
                 </button>
               )}
               <button type="button" onClick={handleExportExcel} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-lg text-sm">
-                <FileSpreadsheet size={18} /> Excel
+                <FileSpreadsheet size={18} /> {t("quotations.exportExcel")}
               </button>
               <button type="button" onClick={downloadQuotationPdf} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
-                <Printer size={18} /> PDF
+                <Printer size={18} /> {t("quotations.pdfButton")}
               </button>
               <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold transition-all shadow-lg text-sm">
-                <Printer size={18} /> معاينة وطباعة
+                <Printer size={18} /> {t("quotations.printPreview")}
               </button>
               {isEditable && hasPermission('QUOTATION_CREATE') && (
                 <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
-                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحديث البيانات
+                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {t("quotations.saveBtn")}
                 </button>
               )}
               {formData.status !== 'APPROVED' && hasPermission('QUOTATION_CREATE') && (
                 <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
-                  <Trash2 size={18} /> حذف العرض
+                  <Trash2 size={18} /> {t("quotations.deleteQuotation")}
                 </button>
               )}
               {formData.status === 'APPROVED' && hasPermission('QUOTATION_FORCE_DELETE') && (
                 <div className="flex gap-2 w-full sm:w-auto">
                   {formData.projectId && (
-                    <button type="button" onClick={handleUnlink} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold transition-all shadow-lg text-sm" title="فك الارتباط يدوياً">
-                      <Link2Off size={18} /> فك الارتباط
+                    <button type="button" onClick={handleUnlink} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold transition-all shadow-lg text-sm" title={t("quotations.unlinkTitle")}>
+                      <Link2Off size={18} /> {t("quotations.unlink")}
                     </button>
                   )}
                   <button type="button" onClick={handleDeleteQuotation} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-lg text-sm">
-                    <Trash2 size={18} /> حذف العرض
+                    <Trash2 size={18} /> {t("quotations.deleteQuotation")}
                   </button>
                 </div>
               )}
@@ -545,7 +548,7 @@ export default function EditQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Building2 size={14} className="text-indigo-400" />
-                  العميل / الجهة المالكة المستهدفة
+                  {t("quotations.clientLabel")}
                 </label>
                 <input 
                   type="text" 
@@ -560,7 +563,7 @@ export default function EditQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileSignature size={14} className="text-indigo-400" />
-                  وصف المشروع أو عنوان عرض السعر
+                  {t("quotations.titleLabel")}
                 </label>
                 <input 
                   type="text" 
@@ -581,7 +584,7 @@ export default function EditQuotationPage() {
                     onChange={e => setFormData({...formData, hasVat: e.target.checked})}
                     className={`w-5 h-5 rounded accent-indigo-500 border-slate-700 ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
                   />
-                  <span className={`font-bold text-sm ${!isEditable ? 'text-slate-400' : 'text-white'}`}>تطبيق ضريبة القيمة المضافة 15% 🇸🇦</span>
+                  <span className={`font-bold text-sm ${!isEditable ? 'text-slate-400' : 'text-white'}`}>{t("quotations.vatLabel")}</span>
                 </label>
               </div>
             </div>
@@ -597,7 +600,7 @@ export default function EditQuotationPage() {
                        className={`flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg ${!isEditable ? 'opacity-50 cursor-not-allowed' : ''}`}
                      >
                        <LayoutTemplate size={14} />
-                       {showTemplates ? 'إغلاق القوالب' : 'قوالب جاهزة'}
+                       {showTemplates ? t("quotations.templateClose") : t("quotations.templateOpen")}
                      </button>
 
                      <AnimatePresence>
@@ -609,18 +612,18 @@ export default function EditQuotationPage() {
                            className="absolute left-0 top-full mt-2 w-80 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
                          >
                             <div className="p-3 border-b border-white/5 mb-1 flex items-center justify-between">
-                               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
+                               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t("quotations.templateSelectorTitle")}</h4>
                                <button
                                  type="button"
                                  onClick={openCreateTemplate}
                                  className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 text-[10px] font-bold transition-all"
                                >
-                                 <Plus size={12} /> حفظ كقالب
+                                 <Plus size={12} /> {t("quotations.saveAsTemplate")}
                                </button>
                             </div>
                             <div className="max-h-64 overflow-y-auto custom-scrollbar">
                                {templates.length === 0 ? (
-                                 <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
+                                 <p className="p-4 text-xs text-slate-600 text-center italic">{t("quotations.noTemplates")}</p>
                                ) : (
                                  templates.map(t => (
                                    <div
@@ -646,7 +649,7 @@ export default function EditQuotationPage() {
                                        type="button"
                                        onClick={() => { openEditTemplate(t); setShowTemplates(false); }}
                                        className="p-1.5 text-slate-600 hover:text-indigo-400 hover:bg-white/5 rounded-lg transition-all"
-                                       title="تعديل القالب"
+                                       title={t("common.edit")}
                                      >
                                        <Edit3 size={13} />
                                      </button>
@@ -654,7 +657,7 @@ export default function EditQuotationPage() {
                                        type="button"
                                        onClick={() => setTemplateToDelete(t.id)}
                                        className="p-1.5 text-slate-600 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all"
-                                       title="حذف القالب"
+                                       title={t("common.delete")}
                                      >
                                        <Trash2 size={13} />
                                      </button>
@@ -671,7 +674,7 @@ export default function EditQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileText size={14} className="text-indigo-400" />
-                  العرض الفني / نطاق العمل
+                  {t("quotations.technicalOffer")}
                 </label>
                 <textarea 
                   rows={4}
@@ -679,14 +682,14 @@ export default function EditQuotationPage() {
                   value={formData.technicalOffer} 
                   onChange={e => setFormData({...formData, technicalOffer: e.target.value})} 
                   className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px] ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
-                  placeholder="مثال: يختص هذا العرض بتوريد وتركيب الأنظمة الموضحة بالجدول بموجب المواصفات العالمية المعتمدة..." 
+                  placeholder={t("quotations.technicalOfferPlaceholder")} 
                 />
               </div>
 
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <ScrollText size={14} className="text-indigo-400" />
-                  الشروط والأحكام / شروط العقد
+                  {t("quotations.termsConditions")}
                 </label>
                 <textarea 
                   rows={4}
@@ -694,7 +697,7 @@ export default function EditQuotationPage() {
                   value={formData.termsConditions} 
                   onChange={e => setFormData({...formData, termsConditions: e.target.value})} 
                   className={`w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner resize-y min-h-[120px] ${!isEditable ? 'opacity-60 cursor-not-allowed' : ''}`} 
-                  placeholder="مثال: مدة التنفيذ 45 يوماً من تاريخ استلام الدفعة المقدمة. الدفعة المقدمة 50%..." 
+                  placeholder={t("quotations.termsConditionsPlaceholder")} 
                 />
               </div>
             </div>
@@ -703,22 +706,22 @@ export default function EditQuotationPage() {
               <div className="flex items-center justify-between border-b border-white/5 pb-4">
                 <h3 className="font-extrabold text-xl text-white flex items-center gap-2 drop-shadow-sm">
                   <ListOrdered className="text-indigo-400" size={24} />
-                  جداول التكلفة التفصيلية
+                  {t("quotations.itemsTitle")}
                 </h3>
                 {isEditable && (
                   <button type="button" onClick={handleAddItem} className="flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-white bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/20 hover:border-indigo-500 px-4 py-2 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.5)]">
-                    <Plus size={18} /> إدراج بند جديد
+                    <Plus size={18} /> {t("quotations.addItem")}
                   </button>
                 )}
               </div>
 
               <div className="hidden lg:grid grid-cols-12 gap-4 px-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">
-                <div className="col-span-1">بند رقم</div>
-                <div className="col-span-4 text-right">وصف تفصيلي للأعمال</div>
-                <div className="col-span-2">الوحدة</div>
-                <div className="col-span-1">الكمية</div>
-                <div className="col-span-2">سعر الإفراد (SAR)</div>
-                <div className="col-span-2 text-left">القيمة الإجمالية (SAR)</div>
+                <div className="col-span-1">{t("quotations.colItemCode")}</div>
+                <div className="col-span-4 text-right">{t("quotations.colDescriptionWide")}</div>
+                <div className="col-span-2">{t("quotations.colUnitShort")}</div>
+                <div className="col-span-1">{t("quotations.colQtyShort")}</div>
+                <div className="col-span-2">{t("quotations.colUnitPriceShort")}</div>
+                <div className="col-span-2 text-left">{t("quotations.colTotalShort")}</div>
               </div>
 
               <div className="space-y-3">
@@ -763,7 +766,7 @@ export default function EditQuotationPage() {
                         {(item.quantity * item.unitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       {isEditable && (
-                        <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title="حذف البند">
+                        <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title={t("quotations.deleteItemTitle")}>
                           <Trash2 size={18} />
                         </button>
                       )}
@@ -776,19 +779,19 @@ export default function EditQuotationPage() {
             <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 md:px-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden space-y-4">
                <div className="absolute inset-0 bg-indigo-500/5 mix-blend-overlay" />
                <div className="relative z-10 flex justify-between items-center border-b border-white/5 pb-4">
-                 <span className="text-slate-400 font-bold">المجموع الفرعي (Subtotal)</span>
+                 <span className="text-slate-400 font-bold">{t("quotations.subtotal")}</span>
                  <span className="font-mono text-xl text-white">{calculateSubTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR</span>
                </div>
                {formData.hasVat && (
                  <div className="relative z-10 flex justify-between items-center border-b border-white/5 pb-4">
-                   <span className="text-slate-400 font-bold text-indigo-400">ضريبة القيمة المضافة (VAT 15%)</span>
+                   <span className="text-slate-400 font-bold text-indigo-400">{t("quotations.vatDisplay")}</span>
                    <span className="font-mono text-xl text-indigo-400">{calculateVat().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR</span>
                  </div>
                )}
                <div className="relative z-10 flex justify-between items-center flex-col md:flex-row gap-4 pt-2">
                  <div>
-                   <h4 className="text-xl font-bold text-white mb-1">المبلغ الإجمالي المستحق</h4>
-                   <p className="text-sm text-slate-400">Net Total Amount</p>
+<h4 className="text-xl font-bold text-white mb-1">{t("quotations.totalAmount")}</h4>
+                    <p className="text-sm text-slate-400">{t("quotations.netTotal")}</p>
                  </div>
                  <div className="flex items-baseline gap-2">
                    <span className="text-slate-400 font-bold tracking-widest text-sm">SAR</span>
@@ -995,7 +998,7 @@ export default function EditQuotationPage() {
             >
               <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <h3 className="text-lg font-black text-white">
-                  {editingTemplateId ? 'تعديل القالب' : 'حفظ كقالب جديد'}
+                  {editingTemplateId ? t("quotations.editTemplate") : t("quotations.saveAsNewTemplate")}
                 </h3>
                 <button
                   type="button"
@@ -1008,18 +1011,18 @@ export default function EditQuotationPage() {
 
               <div className="p-6 space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">اسم القالب *</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t("quotations.templateNameLabel")}</label>
                   <input
                     type="text"
                     value={templateFormData.name}
                     onChange={e => setTemplateFormData({...templateFormData, name: e.target.value})}
                     className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-                    placeholder="مثال: قالب عزل حراري + توريد"
+                    placeholder={t("quotations.templateNamePlaceholder")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">نطاق العمل (Scope of Work)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t("quotations.templateScope")}</label>
                   <textarea
                     rows={4}
                     value={templateFormData.technicalOffer}
@@ -1029,7 +1032,7 @@ export default function EditQuotationPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">الشروط والأحكام (Terms & Conditions)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t("quotations.templateTerms")}</label>
                   <textarea
                     rows={4}
                     value={templateFormData.termsConditions}
@@ -1053,53 +1056,15 @@ export default function EditQuotationPage() {
                   disabled={isSavingTemplate}
                   className="px-6 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-white/20 font-bold transition-all text-sm"
                 >
-                  إلغاء
+{t("common.cancel")}
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveTemplate}
+                  onClick={() => setIsTemplateFormOpen(false)}
                   disabled={isSavingTemplate}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold transition-all text-sm flex items-center gap-2 shadow-lg"
-                >
-                  {isSavingTemplate ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  {editingTemplateId ? 'تحديث القالب' : 'حفظ القالب'}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Delete Confirmation Dialog */}
-      <AnimatePresence>
-        {templateToDelete && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-            onClick={() => setTemplateToDelete(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden p-6 text-center"
-            >
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
-                <AlertCircle size={28} className="text-rose-400" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">حذف القالب</h3>
-              <p className="text-sm text-slate-400 mb-6">هل أنت متأكد من حذف هذا القالب؟</p>
-              <div className="flex justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setTemplateToDelete(null)}
-                  disabled={isDeletingTemplate}
                   className="px-6 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-white/20 font-bold transition-all text-sm"
                 >
-                  إلغاء
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="button"
@@ -1108,7 +1073,7 @@ export default function EditQuotationPage() {
                   className="px-6 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold transition-all text-sm flex items-center gap-2 shadow-lg"
                 >
                   {isDeletingTemplate ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                  حذف
+                  {t("common.delete")}
                 </button>
               </div>
             </motion.div>

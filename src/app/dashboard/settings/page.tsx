@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const [resetConfirmText, setResetConfirmText] = useState("");
   const [isResetting, setIsResetting] = useState(false);
   const [resetDone, setResetDone] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -75,11 +77,11 @@ export default function SettingsPage() {
         setTimeout(() => setIsSaved(false), 3000);
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert(`فشل الحفظ: ${errorData.message || res.statusText}`);
+        alert(t("settings.page.saveFail") + (errorData.message || res.statusText));
       }
     } catch (err: any) {
       console.error(err);
-      alert(`خطأ في الشبكة أثناء الحفظ: ${err.message}`);
+      alert(t("settings.page.networkError") + err.message);
     }
   };
 
@@ -93,16 +95,16 @@ export default function SettingsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setSyncStatus({type: 'success', message: 'تمت مزامنة مراكز التكلفة والمشاريع مع دفترة بنجاح!'});
+        setSyncStatus({type: 'success', message: t("settings.page.syncSuccess")});
       } else {
         const errorData = await res.json().catch(() => ({}));
-        let extMsg = errorData.message || 'فشل الاتصال بـ دفترة، يرجى التحقق من المفتاح والدومين.';
+        let extMsg = errorData.message || t("settings.page.syncFail");
         if (Array.isArray(extMsg)) extMsg = extMsg[0];
-        setSyncStatus({type: 'error', message: typeof extMsg === 'string' ? extMsg : 'فشل مجهول.'});
+        setSyncStatus({type: 'error', message: typeof extMsg === 'string' ? extMsg : t("settings.page.syncFailUnknown")});
       }
     } catch (err: any) {
       console.error(err);
-      setSyncStatus({type: 'error', message: `مشكلة في الاتصال: ${err.message || String(err)}`});
+      setSyncStatus({type: 'error', message: t("settings.page.syncNetworkError") + (err.message || String(err))});
     } finally {
       setIsSyncing(false);
       setTimeout(() => setSyncStatus({type: 'idle', message: ''}), 6000);
@@ -122,7 +124,7 @@ export default function SettingsPage() {
       setResetConfirmText("");
       setTimeout(() => setResetDone(false), 5000);
     } catch (err: any) {
-      alert(err.response?.data?.message || "فشل التصفير. يرجى المحاولة مجدداً.");
+      alert(err.response?.data?.message || t("settings.page.resetFail"));
     } finally {
       setIsResetting(false);
     }
@@ -130,11 +132,11 @@ export default function SettingsPage() {
 
   const syncModules = [
     {
-      title: "مستخلصات الدفع (Invoices)",
-      pms: "نظام إدارة المشاريع (PMS)",
-      daftra: "فواتير شراء مركز التكلفة (Bills)",
-      status: "متزامن",
-      desc: "أي مستخلص يُعتمد يتم إرساله إلى دفترة كفاتورة مشتريات وتوجيهها لمركز تكلفة المشروع.",
+      title: t("settings.page.sync.invoices.title"),
+      pms: t("settings.page.sync.invoices.pms"),
+      daftra: t("settings.page.sync.invoices.daftra"),
+      status: t("settings.page.sync.invoices.status"),
+      desc: t("settings.page.sync.invoices.desc"),
       styles: {
         badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
         borderHover: "hover:border-emerald-500/30",
@@ -143,11 +145,11 @@ export default function SettingsPage() {
       }
     },
     {
-      title: "العقود والمقاولين (Contracts)",
-      pms: "سجل المقاولين في PMS",
-      daftra: "دليل الموردين الذكي (Vendors)",
-      status: "قيد المزامنة",
-      desc: "تُسجّل بيانات الموردين والمقاولين من PMS إلى دفترة لإدارة الحسابات بصورة مركزية.",
+      title: t("settings.page.sync.contracts.title"),
+      pms: t("settings.page.sync.contracts.pms"),
+      daftra: t("settings.page.sync.contracts.daftra"),
+      status: t("settings.page.sync.contracts.status"),
+      desc: t("settings.page.sync.contracts.desc"),
       styles: {
         badge: "bg-blue-500/10 text-blue-400 border-blue-500/20",
         borderHover: "hover:border-blue-500/30",
@@ -156,11 +158,11 @@ export default function SettingsPage() {
       }
     },
     {
-      title: "تتبع المشاريع (Projects)",
-      pms: "المشروع وتفاصيله (PMS)",
-      daftra: "مراكز التكلفة (Cost Centers)",
-      status: "متزامن",
-      desc: "لضمان فصل الإيرادات والمصروفات، يُنشأ لكل مشروع (مركز تكلفة) موازٍ في دفترة.",
+      title: t("settings.page.sync.projects.title"),
+      pms: t("settings.page.sync.projects.pms"),
+      daftra: t("settings.page.sync.projects.daftra"),
+      status: t("settings.page.sync.projects.status"),
+      desc: t("settings.page.sync.projects.desc"),
       styles: {
         badge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
         borderHover: "hover:border-indigo-500/30",
@@ -169,11 +171,11 @@ export default function SettingsPage() {
       }
     },
     {
-      title: "أوامر الشراء (Purchase Orders)",
-      pms: "طلبات الشراء P.O (PMS)",
-      daftra: "أوامر الشراء الرسمية (Daftra)",
-      status: "مخطط",
-      desc: "تحويل طلبات الإمداد الميدانية إلى دورة محاسبية نظامية في دفترة للموافقات والدفع.",
+      title: t("settings.page.sync.po.title"),
+      pms: t("settings.page.sync.po.pms"),
+      daftra: t("settings.page.sync.po.daftra"),
+      status: t("settings.page.sync.po.status"),
+      desc: t("settings.page.sync.po.desc"),
       styles: {
         badge: "bg-orange-500/10 text-orange-400 border-orange-500/20",
         borderHover: "hover:border-orange-500/30",
@@ -194,14 +196,14 @@ export default function SettingsPage() {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-600/20 to-slate-500/10 flex items-center justify-center border border-slate-500/20 shadow-lg">
               <Settings className="text-slate-400" size={24} />
             </div>
-            الإعدادات العـامة وربط الـ ERP
+            {t("settings.page.header")}
           </h1>
-          <p className="text-slate-400 text-sm mt-2 font-medium">لوحة التحكم السحابية لربط نظام PMS مع منصة دفترة المحاسبية.</p>
+          <p className="text-slate-400 text-sm mt-2 font-medium">{t("settings.page.headerDesc")}</p>
         </div>
         
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
           <CheckCircle2 size={18} />
-          <span className="font-bold text-sm">الاتصال نشط (Connected)</span>
+          <span className="font-bold text-sm">{t("settings.page.connected")}</span>
         </div>
       </div>
 
@@ -214,18 +216,18 @@ export default function SettingsPage() {
               <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
                 <LinkIcon size={20} />
               </div>
-              <h2 className="text-xl font-bold text-white">بيانات الـ API (دفترة)</h2>
+              <h2 className="text-xl font-bold text-white">{t("settings.page.apiData")}</h2>
             </div>
             
             <form onSubmit={handleSave} className="space-y-5" autoComplete="off">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
-                    <Server size={14} className="text-emerald-400" /> الدومين الفرعي (Subdomain)
+                    <Server size={14} className="text-emerald-400" /> {t("settings.page.subdomain")}
                   </label>
                   {domain.includes('@') && (
                     <span className="text-xs text-rose-400 font-medium animate-pulse">
-                      يرجى إدخال اسم الدومين فقط وليس الإيميل
+                      {t("settings.page.subdomainHint")}
                     </span>
                   )}
                 </div>
@@ -247,7 +249,7 @@ export default function SettingsPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
-                  <Key size={14} className="text-emerald-400" /> مفتاح الربط (API Token)
+                  <Key size={14} className="text-emerald-400" /> {t("settings.page.apiToken")}
                 </label>
                 <input 
                   type="password" 
@@ -263,14 +265,14 @@ export default function SettingsPage() {
               <div className="pt-2">
                 <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                   {isSaved ? <CheckCircle2 size={18} className="animate-in zoom-in" /> : <Save size={18} />}
-                  <span>{isSaved ? "تم الحفظ بنجاح" : "حفظ الإعدادات"}</span>
+                  <span>{isSaved ? t("settings.page.savedBtn") : t("settings.page.saveBtn")}</span>
                 </button>
               </div>
             </form>
 
             <div className="mt-6 p-4 rounded-xl bg-slate-800/40 border border-white/5 text-sm text-slate-400 flex items-start gap-3">
               <AlertCircle size={18} className="text-amber-400 shrink-0 mt-0.5" />
-              <p className="leading-relaxed">تأكد من السماح بصلاحيات الـ API للمستخلصات والفواتير من لوحة تحكم حسابك في دفترة.</p>
+              <p className="leading-relaxed">{t("settings.page.apiNote")}</p>
             </div>
 
             <div className="mt-6">
@@ -280,8 +282,8 @@ export default function SettingsPage() {
                     <ArrowLeftRight size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white mb-0.5">لوحة المطابقة اليدوية الذكية</h3>
-                    <p className="text-xs text-slate-400">اربط معرفات الموردين لمنع أخطاء الترحيل</p>
+                    <h3 className="text-sm font-bold text-white mb-0.5">{t("settings.page.mappingTitle")}</h3>
+                    <p className="text-xs text-slate-400">{t("settings.page.mappingDesc")}</p>
                   </div>
                 </div>
                 <div className="text-slate-500 group-hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg group-hover:-translate-x-1 duration-300">
@@ -295,8 +297,8 @@ export default function SettingsPage() {
                     <LayoutTemplate size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white mb-0.5">قوالب عروض الأسعار</h3>
-                    <p className="text-xs text-slate-400">تحكم بنصوص المواصفات والشروط الجاهزة</p>
+                    <h3 className="text-sm font-bold text-white mb-0.5">{t("settings.page.templatesTitle")}</h3>
+                    <p className="text-xs text-slate-400">{t("settings.page.templatesDesc")}</p>
                   </div>
                 </div>
                 <div className="text-slate-500 group-hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg group-hover:-translate-x-1 duration-300">
@@ -316,8 +318,8 @@ export default function SettingsPage() {
                   <Database size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">خريطة مزامنة البيانات</h2>
-                  <p className="text-sm text-slate-400 mt-1">توضح كيف يتم ترحيل التكاليف والإيرادات للبرنامج المالي.</p>
+                  <h2 className="text-xl font-bold text-white">{t("settings.page.syncTitle")}</h2>
+                  <p className="text-sm text-slate-400 mt-1">{t("settings.page.syncDesc")}</p>
                 </div>
               </div>
               <button 
@@ -326,7 +328,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 text-sm font-bold transition-all disabled:opacity-50"
               >
                 <RefreshCcw size={16} className={isSyncing ? "animate-spin" : ""} />
-                مزامنة قسرية للبيانات
+                {t("settings.page.syncBtn")}
               </button>
             </div>
 
@@ -368,7 +370,7 @@ export default function SettingsPage() {
 
                  <div className="flex flex-col gap-2 mt-auto">
                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-white/5">
-                     <span className="text-xs text-slate-300 font-medium">نظام PMS</span>
+                     <span className="text-xs text-slate-300 font-medium">{t("settings.page.pmsLabel")}</span>
                      <span className={`text-xs font-bold font-mono ${mod.styles.pmsColor}`}>{mod.pms}</span>
                    </div>
                    <div className="flex justify-center -my-3 relative z-10">
@@ -377,7 +379,7 @@ export default function SettingsPage() {
                      </div>
                    </div>
                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/80 border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.2)]">
-                     <span className="text-xs text-slate-300 font-medium">برنامج دفترة</span>
+                     <span className="text-xs text-slate-300 font-medium">{t("settings.page.daftraLabel")}</span>
                      <span className="text-xs font-bold text-emerald-400">{mod.daftra}</span>
                    </div>
                  </div>
@@ -407,13 +409,12 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-xl font-black text-rose-400 flex items-center gap-2">
                 <AlertTriangle size={18} className="animate-pulse" />
-                منطقة الخطر – تصفير البيانات
+                {t("settings.page.danger.title")}
               </h2>
               <p className="text-sm text-rose-300/60 mt-1 max-w-xl leading-relaxed">
-                سيتم حذف <strong className="text-rose-300">جميع البيانات التشغيلية</strong> بشكل نهائي وغير قابل للاسترداد:
-                المشاريع، العقود، المستخلصات، الموردين، المواد، طلبات الشراء، والعروض السعرية.
+                {t("settings.page.danger.desc1")}<strong className="text-rose-300">{t("settings.page.danger.descStrong")}</strong>{t("settings.page.danger.desc2")}
                 <br />
-                <span className="text-rose-400/80 font-bold">يُحتفظ بـ: المستخدمين، الأدوار، وإعدادات النظام.</span>
+                <span className="text-rose-400/80 font-bold">{t("settings.page.danger.preserved")}</span>
               </p>
             </div>
           </div>
@@ -424,7 +425,7 @@ export default function SettingsPage() {
             className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-500/70 text-rose-400 hover:text-rose-300 text-sm font-black transition-all shadow-lg hover:shadow-rose-500/20 whitespace-nowrap group"
           >
             <Trash2 size={18} className="group-hover:animate-bounce" />
-            تصفير بيانات النظام
+            {t("settings.page.danger.resetBtn")}
           </button>
         </div>
 
@@ -438,7 +439,7 @@ export default function SettingsPage() {
               className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
             >
               <CheckCircle2 size={20} className="shrink-0" />
-              <p className="font-bold text-sm">✅ تم تصفير جميع البيانات بنجاح! النظام جاهز للاختبار من الصفر.</p>
+              <p className="font-bold text-sm">{t("settings.page.danger.resetSuccess")}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -483,15 +484,14 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <h3 className="text-2xl font-black text-center text-white mb-2">تأكيد نهائي للتصفير</h3>
+              <h3 className="text-2xl font-black text-center text-white mb-2">{t("settings.page.resetModal.title")}</h3>
               <p className="text-center text-slate-400 text-sm mb-6 leading-relaxed">
-                هذا الإجراء <strong className="text-rose-400">لا يمكن التراجع عنه</strong>.
-                سيتم حذف جميع المشاريع والعقود والمستخلصات والموردين والمواد وطلبات الشراء نهائياً.
+                {t("settings.page.resetModal.desc1")}<strong className="text-rose-400">{t("settings.page.resetModal.descStrong")}</strong>{t("settings.page.resetModal.desc2")}
               </p>
 
               {/* What will be deleted */}
               <div className="mb-6 p-4 rounded-2xl bg-rose-950/40 border border-rose-500/20 space-y-1.5">
-                {['المشاريع وبنود الكميات (BOQ)', 'العقود والمستخلصات', 'الموردين والعملاء', 'طلبات الشراء والمواد', 'العروض السعرية'].map(item => (
+                {[t("settings.page.resetModal.item1"), t("settings.page.resetModal.item2"), t("settings.page.resetModal.item3"), t("settings.page.resetModal.item4"), t("settings.page.resetModal.item5")].map(item => (
                   <div key={item} className="flex items-center gap-2 text-sm text-rose-300/80">
                     <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
                     {item}
@@ -502,14 +502,14 @@ export default function SettingsPage() {
               {/* Confirm input */}
               <div className="space-y-2 mb-6">
                 <label className="text-sm font-bold text-slate-300">
-                  اكتب <span className="text-rose-400 font-black font-mono bg-rose-500/10 px-2 py-0.5 rounded-lg">تصفير</span> للتأكيد:
+                  {t("settings.page.resetModal.confirmLabel")}<span className="text-rose-400 font-black font-mono bg-rose-500/10 px-2 py-0.5 rounded-lg">{t("settings.page.resetModal.confirmWord")}</span>{t("settings.page.resetModal.confirmSuffix")}
                 </label>
                 <input
                   id="reset-confirm-input"
                   type="text"
                   value={resetConfirmText}
                   onChange={e => setResetConfirmText(e.target.value)}
-                  placeholder="اكتب: تصفير"
+                  placeholder={t("settings.page.resetModal.confirmPlaceholder")}
                   className="w-full bg-slate-900 border border-rose-500/30 focus:border-rose-500/70 rounded-xl py-3 px-4 text-white font-mono text-center text-lg tracking-wider focus:outline-none transition-colors"
                   autoComplete="off"
                 />
@@ -520,8 +520,8 @@ export default function SettingsPage() {
                   onClick={() => setShowResetModal(false)}
                   className="flex-1 py-3 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 font-bold transition-all"
                 >
-                  إلغاء
-                </button>
+{t("settings.page.resetModal.cancel")}
+                  </button>
                 <button
                   id="btn-confirm-reset"
                   onClick={handleReset}
@@ -529,9 +529,9 @@ export default function SettingsPage() {
                   className="flex-1 py-3 rounded-xl font-black text-white transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-rose-700 to-red-600 hover:from-rose-600 hover:to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] disabled:shadow-none"
                 >
                   {isResetting ? (
-                    <><Loader2 size={18} className="animate-spin" /> جارٍ التصفير...</>
+                    <><Loader2 size={18} className="animate-spin" /> {t("settings.page.resetModal.resetting")}</>
                   ) : (
-                    <><Trash2 size={18} /> تأكيد التصفير النهائي</>
+                    <><Trash2 size={18} /> {t("settings.page.resetModal.confirmBtn")}</>
                   )}
                 </button>
               </div>

@@ -33,15 +33,16 @@ import {
 } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import { useLanguage } from "@/lib/i18n/context";
 
 // ==========================================
 // 1. Custom SVG Charts Components (Arabic Support)
 // ==========================================
 
 // Bar chart comparing Revenue & Costs per Project/Month
-const FinancialBarChart = ({ data }: { data: any[] }) => {
+const FinancialBarChart = ({ data, t }: { data: any[]; t: (key: string) => string }) => {
   if (!data || data.length === 0) {
-    return <div className="text-slate-500 text-xs text-center py-12">لا توجد بيانات كافية للتحليل البصري</div>;
+    return <div className="text-slate-500 text-xs text-center py-12">{t("reports.noDataVisual")}</div>;
   }
   const maxVal = Math.max(...data.map(d => Math.max(d.revenue, d.cost)), 1000);
   
@@ -84,10 +85,10 @@ const FinancialBarChart = ({ data }: { data: any[] }) => {
       </div>
       <div className="flex justify-center gap-6 mt-4 border-t border-white/5 print:border-slate-200 pt-3">
         <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
-          <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> الإيرادات
+          <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> {t("reports.revenues")}
         </div>
         <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
-          <div className="w-2.5 h-2.5 bg-rose-500 rounded" /> التكاليف
+          <div className="w-2.5 h-2.5 bg-rose-500 rounded" /> {t("reports.costs")}
         </div>
       </div>
     </div>
@@ -95,9 +96,9 @@ const FinancialBarChart = ({ data }: { data: any[] }) => {
 };
 
 // Donut chart showing Cost distribution
-const ExpensesDonutChart = ({ data }: { data: any[] }) => {
+const ExpensesDonutChart = ({ data, t }: { data: any[]; t: (key: string) => string }) => {
   if (!data || data.length === 0) {
-    return <div className="text-slate-500 text-xs text-center py-12">لا توجد نفقات للتحليل</div>;
+    return <div className="text-slate-500 text-xs text-center py-12">{t("reports.noExpenses")}</div>;
   }
   
   const radius = 50;
@@ -134,7 +135,7 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[9px] text-slate-500 print:text-slate-700 uppercase">إجمالي التكلفة</span>
+          <span className="text-[9px] text-slate-500 print:text-slate-700 uppercase">{t("reports.totalCost")}</span>
           <span className="text-xs font-black text-white print:text-black font-mono">
             {Number(data.reduce((sum, d) => sum + d.value, 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
@@ -158,7 +159,7 @@ const ExpensesDonutChart = ({ data }: { data: any[] }) => {
 };
 
 // Radial Ring & Top Items for BOQ Progress
-const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) => {
+const BoqProgressChart = ({ summary, items, t }: { summary: any, items: any[], t: (key: string) => string }) => {
   const progress = Number(summary?.overallProgress || 0);
   const radius = 55;
   const circumference = 2 * Math.PI * radius;
@@ -167,7 +168,7 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl backdrop-blur-md">
       <div className="flex flex-col items-center justify-center border-l border-white/5 print:border-slate-200 py-2">
-        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">معدل الإنجاز الكلي للمشروع</h4>
+        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">{t("reports.overallProgressTitle")}</h4>
         <div className="relative w-36 h-36">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 140 140">
             <circle cx="70" cy="70" r={radius} fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="10" />
@@ -187,12 +188,12 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-black text-white print:text-black font-mono">{progress}%</span>
-            <span className="text-[9px] text-slate-400 print:text-slate-600 mt-0.5">منجز تعاقدياً</span>
+            <span className="text-[9px] text-slate-400 print:text-slate-600 mt-0.5">{t("reports.contractuallyCompleted")}</span>
           </div>
         </div>
       </div>
       <div className="md:col-span-2 flex flex-col justify-between py-2">
-        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-3">أعلى بنود جدول الكميات تنفيذاً من حيث القيمة (Top 4)</h4>
+        <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-3">{t("reports.topBoqItems")}</h4>
         <div className="space-y-3.5">
           {items.slice(0, 4).map((item, idx) => (
             <div key={idx} className="space-y-1">
@@ -210,7 +211,7 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
               </div>
             </div>
           ))}
-          {items.length === 0 && <div className="text-slate-500 text-xs text-center py-6">لا توجد بنود مدخلة للمشروع المختار</div>}
+          {items.length === 0 && <div className="text-slate-500 text-xs text-center py-6">{t("reports.noBoqItems")}</div>}
         </div>
       </div>
     </div>
@@ -218,7 +219,7 @@ const BoqProgressChart = ({ summary, items }: { summary: any, items: any[] }) =>
 };
 
 // Stacked Progress Bar for Contracts
-const ContractsStackedBar = ({ summary }: { summary: any }) => {
+const ContractsStackedBar = ({ summary, t }: { summary: any; t: (key: string) => string }) => {
   const total = Number(summary?.totalValue || 0);
   const invoiced = Number(summary?.totalInvoiced || 0);
   const paid = Number(summary?.totalPaid || 0);
@@ -231,7 +232,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
   
   return (
     <div className="bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl mb-8 backdrop-blur-md">
-      <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">التحليل التراكمي المالي للعقود الحالية</h4>
+      <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4">{t("reports.cumulativeFinancialAnalysis")}</h4>
       <div className="w-full h-6 bg-slate-950 print:bg-slate-200 rounded-xl overflow-hidden flex border border-white/5 print:border-slate-300 p-0.5">
         {paid > 0 && (
           <motion.div 
@@ -241,7 +242,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
             className="h-full bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-l-lg relative group cursor-pointer"
           >
             <div className="absolute top-8 right-0 bg-slate-950 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-              المسدد: {paid.toLocaleString()} SAR ({paidPercent.toFixed(1)}%)
+              {t("reports.paid")}: {paid.toLocaleString()} SAR ({paidPercent.toFixed(1)}%)
             </div>
           </motion.div>
         )}
@@ -253,7 +254,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
             className="h-full bg-gradient-to-r from-blue-600 to-blue-500 relative group cursor-pointer"
           >
             <div className="absolute top-8 right-0 bg-slate-950 text-blue-400 text-[10px] px-2 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-              مستخلص معتمد غير مسدد: {(invoiced - paid).toLocaleString()} SAR ({unpaidInvoicedPercent.toFixed(1)}%)
+              {t("reports.certifiedUnpaid")}: {(invoiced - paid).toLocaleString()} SAR ({unpaidInvoicedPercent.toFixed(1)}%)
             </div>
           </motion.div>
         )}
@@ -265,7 +266,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
             className="h-full bg-slate-800 print:bg-slate-300 rounded-r-lg relative group cursor-pointer"
           >
             <div className="absolute top-8 left-0 bg-slate-950 text-slate-400 text-[10px] px-2 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-              متبقي قيمة العقد غير المنجز: {(total - invoiced).toLocaleString()} SAR ({remainingPercent.toFixed(1)}%)
+              {t("reports.remainingContractValue")}: {(total - invoiced).toLocaleString()} SAR ({remainingPercent.toFixed(1)}%)
             </div>
           </motion.div>
         )}
@@ -274,17 +275,17 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
       <div className="flex flex-wrap justify-between items-center gap-4 mt-6 border-t border-white/5 print:border-slate-200 pt-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
-            <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> المحصل فعلياً ({paidPercent.toFixed(1)}%)
+            <div className="w-2.5 h-2.5 bg-emerald-500 rounded" /> {t("reports.collected")} ({paidPercent.toFixed(1)}%)
           </div>
           <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
-            <div className="w-2.5 h-2.5 bg-blue-500 rounded" /> مستخلصات معتمدة غير مسددة ({unpaidInvoicedPercent.toFixed(1)}%)
+            <div className="w-2.5 h-2.5 bg-blue-500 rounded" /> {t("reports.certifiedUnpaidPercent")} ({unpaidInvoicedPercent.toFixed(1)}%)
           </div>
           <div className="flex items-center gap-2 text-[10px] text-slate-400 print:text-slate-700">
-            <div className="w-2.5 h-2.5 bg-slate-800 print:bg-slate-300 rounded" /> أعمال متبقية غير مستخلصة ({remainingPercent.toFixed(1)}%)
+            <div className="w-2.5 h-2.5 bg-slate-800 print:bg-slate-300 rounded" /> {t("reports.remainingUninvoiced")} ({remainingPercent.toFixed(1)}%)
           </div>
         </div>
         <div className="text-[11px] text-slate-400 print:text-slate-800 font-bold">
-          نسبة التحصيل المالي: <span className="font-bold text-emerald-400 print:text-emerald-600 font-mono">{invoiced > 0 ? ((paid / invoiced) * 100).toFixed(1) : 0}%</span> من إجمالي المستخلصات المعتمدة
+          {t("reports.collectionRatio")}: <span className="font-bold text-emerald-400 print:text-emerald-600 font-mono">{invoiced > 0 ? ((paid / invoiced) * 100).toFixed(1) : 0}%</span> {t("reports.ofTotalCertified")}
         </div>
       </div>
     </div>
@@ -292,7 +293,7 @@ const ContractsStackedBar = ({ summary }: { summary: any }) => {
 };
 
 // Bar chart comparing top contacts by volume
-const TopContactsChart = ({ data }: { data: any[] }) => {
+const TopContactsChart = ({ data, t }: { data: any[]; t: (key: string) => string }) => {
   const sorted = [...data].sort((a, b) => b.volume - a.volume).slice(0, 5);
   if (sorted.length === 0) return null;
   const maxVolume = Math.max(...sorted.map(d => d.volume), 1);
@@ -300,7 +301,7 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
   return (
     <div className="bg-slate-900/60 print:bg-slate-50 p-6 rounded-3xl border border-white/5 print:border-slate-200 shadow-xl mb-8 backdrop-blur-md">
       <h4 className="text-xs font-bold text-slate-400 print:text-slate-800 mb-4 flex items-center gap-2">
-        <Users size={14} className="text-indigo-400 print:text-indigo-700" /> تحليل أكبر 5 جهات تعامل مالي في المشاريع (SAR)
+        <Users size={14} className="text-indigo-400 print:text-indigo-700" /> {t("reports.top5Entities")}
       </h4>
       <div className="space-y-4">
         {sorted.map((item, idx) => {
@@ -309,7 +310,7 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
             <div key={idx} className="space-y-1 group">
               <div className="flex justify-between text-xs">
                 <span className="text-slate-300 print:text-slate-800 font-bold">
-                  {item.name} <span className="text-[10px] text-slate-500 print:text-slate-600 font-normal">({item.type === 'CLIENT' ? 'عميل' : 'مورد / مقاول'})</span>
+                  {item.name} <span className="text-[10px] text-slate-500 print:text-slate-600 font-normal">({item.type === 'CLIENT' ? t("reports.client") : t("reports.supplierContractor")})</span>
                 </span>
                 <span className="text-emerald-400 print:text-emerald-600 font-mono font-bold">{Number(item.volume).toLocaleString()} SAR</span>
               </div>
@@ -336,6 +337,7 @@ const TopContactsChart = ({ data }: { data: any[] }) => {
 export default function ReportsPage() {
   const { company } = useCompany();
   const { pdfRef, downloadPdf } = useDownloadPdf();
+  const { t } = useLanguage();
   const [reportType, setReportType] = useState('FINANCIAL_SUMMARY');
   const [projectId, setProjectId] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -409,10 +411,10 @@ export default function ReportsPage() {
     
     switch (reportType) {
       case 'FINANCIAL_SUMMARY':
-        headers = ['التاريخ', 'المشروع', 'العملية المالية', 'المبلغ (SAR)'];
+        headers = [t("reports.date"), t("reports.project"), t("reports.transactionType"), t("common.amount") + ' (SAR)'];
         rows = targetData.map((row: any) => [
           new Date(row.date).toLocaleDateString('ar-SA'),
-          row.project || 'عام',
+          row.project || t("reports.general"),
           row.type,
           row.amount.toString()
         ]);
@@ -420,10 +422,10 @@ export default function ReportsPage() {
       case 'CLIENT_CONTRACTS':
       case 'SUBCONTRACTOR_CONTRACTS':
       case 'CONTRACTS':
-        headers = ['رقم العقد/المرجع', 'نوع العقد', 'المشروع', 'الطرف الآخر', 'قيمة العقد (SAR)', 'المستخلصات المعتمدة (SAR)', 'المسدد فعلياً (SAR)', 'المتبقي (SAR)'];
+        headers = [t("reports.contractRef"), t("reports.contractType"), t("reports.project"), t("reports.secondParty"), t("reports.contractValue"), t("reports.certifiedInvoicesLabel") + ' (SAR)', t("reports.actuallyPaid") + ' (SAR)', t("reports.remaining") + ' (SAR)'];
         rows = targetData.map((row: any) => [
           row.referenceNumber,
-          row.type === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد مقاول باطن',
+          row.type === 'MAIN_CONTRACT' ? t("reports.ownerContract") : t("reports.subContract"),
           row.project,
           row.partyName,
           row.totalValue.toString(),
@@ -433,7 +435,7 @@ export default function ReportsPage() {
         ]);
         break;
       case 'BOQ_PROGRESS':
-        headers = ['بند الأعمال / الكود', 'المشروع', 'سعر الوحدة (SAR)', 'الكمية المقدرة', 'المنفذ الفعلي', 'الكمية المتبقية', 'قيمة الإنجاز المالي (SAR)', 'نسبة التقدم %'];
+        headers = [t("reports.boqItem"), t("reports.project"), t("reports.unitPrice") + ' (SAR)', t("reports.plannedQty"), t("reports.executedQty"), t("reports.remainingQty"), t("reports.executedValue") + ' (SAR)', t("reports.completionPercent")];
         rows = targetData.map((row: any) => [
           row.description,
           row.project,
@@ -448,11 +450,11 @@ export default function ReportsPage() {
       case 'ACHIEVEMENT_RECORDS':
       case 'CLIENT_ACHIEVEMENT_RECORDS':
       case 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS':
-        headers = ['رقم المحضر', 'المشروع', 'نوع العقد', 'الطرف الثاني', 'تاريخ الاعتماد', 'المعتمد', 'القيمة الإجمالية (SAR)', 'صافي المستحق (SAR)'];
+        headers = [t("reports.recordNumber"), t("reports.project"), t("reports.contractType"), t("reports.secondParty"), t("reports.approvalDate"), t("reports.approvedBy"), t("reports.grossAmount") + ' (SAR)', t("reports.netAmount") + ' (SAR)'];
         rows = targetData.map((row: any) => [
           row.invoiceNumber,
           row.project,
-          row.contractType === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد مقاول باطن',
+          row.contractType === 'MAIN_CONTRACT' ? t("reports.ownerContract") : t("reports.subContract"),
           row.partyName,
           row.approvedAt ? new Date(row.approvedAt).toLocaleDateString('ar-SA') : new Date(row.issueDate).toLocaleDateString('ar-SA'),
           row.approvedBy,
@@ -463,11 +465,11 @@ export default function ReportsPage() {
       case 'CONTACTS':
       case 'CLIENT_CONTACTS':
       case 'SUPPLIER_CONTACTS':
-        headers = ['الاسم', 'السجل التجاري', 'نوع جهة الاتصال', 'الهاتف', 'البريد', 'عدد المشاريع', 'العقود وأوامر الشراء', 'إجمالي حجم التعامل المالي (SAR)'];
+        headers = [t("reports.entityName"), t("reports.commercialReg"), t("reports.contactType"), t("common.phone"), t("common.email"), t("reports.projects"), t("reports.contractsOrders"), t("reports.totalVolume")];
         rows = targetData.map((row: any) => [
           row.name,
           row.commercialName,
-          row.type === 'CLIENT' ? 'عميل / مالك' : 'مورد / مقاول',
+          row.type === 'CLIENT' ? t("reports.clientType") : t("reports.supplierType"),
           row.phone,
           row.email,
           row.projectsCount.toString(),
@@ -476,18 +478,18 @@ export default function ReportsPage() {
         ]);
         break;
       case 'PURCHASES':
-        headers = ['التاريخ', 'رقم الـ PO', 'المشروع', 'المورد', 'قيمة الضريبة (SAR)', 'التكلفة الإجمالية (SAR)'];
+        headers = [t("reports.date"), t("reports.poNumber"), t("reports.project"), t("reports.supplier"), t("reports.taxAmount") + ' (SAR)', t("reports.totalCostSar")];
         rows = targetData.map((row: any) => [
           new Date(row.date).toLocaleDateString('ar-SA'),
           row.poNumber,
-          row.project || 'عام',
+          row.project || t("reports.general"),
           row.supplier,
           row.taxAmount.toString(),
           row.total.toString()
         ]);
         break;
       default:
-        headers = ['العنصر'];
+        headers = [t("common.item")];
         rows = targetData.map((row: any) => [JSON.stringify(row)]);
     }
     
@@ -624,9 +626,9 @@ export default function ReportsPage() {
     if (total === 0) return [];
     
     return [
-      { name: 'مشتريات مواد', value: purchases, percentage: (purchases/total)*100, color: '#f43f5e' },
-      { name: 'مصاريف نثرية', value: expenses, percentage: (expenses/total)*100, color: '#eab308' },
-      { name: 'عقود مقاولي الباطن', value: subcontracts, percentage: (subcontracts/total)*100, color: '#a855f7' }
+      { name: t("reports.materialsPurchases"), value: purchases, percentage: (purchases/total)*100, color: '#f43f5e' },
+      { name: t("reports.pettyExpenses"), value: expenses, percentage: (expenses/total)*100, color: '#eab308' },
+      { name: t("reports.subcontractorContracts"), value: subcontracts, percentage: (subcontracts/total)*100, color: '#a855f7' }
     ].filter(item => item.value > 0);
   };
 
@@ -663,9 +665,9 @@ export default function ReportsPage() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10">
           <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 flex items-center gap-3">
-            <PieChart size={32} className="text-blue-500" /> مركز التقارير الشامل والموحد
+            <PieChart size={32} className="text-blue-500" /> {t("reports.title")}
           </h1>
-          <p className="text-slate-400 mt-2 text-sm">شاشة ذكية متكاملة لاستخراج وتحليل وطباعة التقارير المالية والتعاقدية للمشاريع.</p>
+          <p className="text-slate-400 mt-2 text-sm">{t("reports.subtitle")}</p>
         </div>
 
         <div className="relative z-10 flex flex-wrap gap-3">
@@ -675,14 +677,14 @@ export default function ReportsPage() {
                 onClick={() => setShowCharts(!showCharts)}
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold border shadow-lg transition-all text-xs cursor-pointer ${showCharts ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20' : 'bg-slate-800 text-slate-400 border-white/5 hover:bg-slate-700'}`}
               >
-                <BarChart3 size={16} /> {showCharts ? 'إخفاء الرسوم البيانية' : 'عرض الرسوم البيانية'}
+                <BarChart3 size={16} /> {showCharts ? t("reports.hideCharts") : t("reports.showCharts")}
               </button>
               
               <button 
                 onClick={exportToExcel}
                 className="flex items-center gap-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 px-5 py-3 rounded-xl font-bold shadow-lg transition-all text-xs cursor-pointer"
               >
-                <FileSpreadsheet size={16} /> تصدير Excel (CSV)
+                <FileSpreadsheet size={16} /> {t("reports.exportExcel")}
               </button>
             </>
           )}
@@ -697,7 +699,7 @@ export default function ReportsPage() {
             onClick={handlePrint}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all text-xs cursor-pointer"
           >
-            <Printer size={16} /> طباعة التقرير
+            <Printer size={16} /> {t("reports.printReport")}
           </button>
         </div>
       </div>
@@ -706,70 +708,70 @@ export default function ReportsPage() {
       <div className="print-hide grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Navigation Tabs */}
         <div className="bg-[#0f1015]/60 backdrop-blur-md p-5 rounded-3xl border border-white/5 space-y-4 max-h-[80vh] overflow-y-auto shadow-2xl">
-           <label className="text-slate-400 text-xs font-bold flex items-center gap-2 mb-1"><Filter size={14}/> تصفية حسب نوع التقرير</label>
+           <label className="text-slate-400 text-xs font-bold flex items-center gap-2 mb-1"><Filter size={14}/> {t("reports.filterByReportType")}</label>
            
            {/* Group 1: General Reports */}
            <div className="space-y-1.5">
-             <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-2 mb-1">التقارير العامة</div>
-             <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><DollarSign size={16}/> الأرباح والخسائر (P&L)</span>
-               <TrendingUp size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('BOQ_PROGRESS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'BOQ_PROGRESS' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 font-black' : 'bg-slate-855/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><Layers size={16}/> كميات BOQ والمنجز</span>
-               <Activity size={14} className="opacity-60"/>
-             </button>
+              <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-2 mb-1">{t("reports.generalReports")}</div>
+              <button onClick={() => setReportType('FINANCIAL_SUMMARY')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'FINANCIAL_SUMMARY' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><DollarSign size={16}/> {t("reports.profitLoss")}</span>
+                <TrendingUp size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('BOQ_PROGRESS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'BOQ_PROGRESS' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 font-black' : 'bg-slate-855/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><Layers size={16}/> {t("reports.boqQuantities")}</span>
+                <Activity size={14} className="opacity-60"/>
+              </button>
            </div>
 
            {/* Group 2: Client Reports */}
            <div className="space-y-1.5 pt-2 border-t border-white/5">
-             <div className="text-[10px] uppercase tracking-wider text-blue-400 font-bold px-2 mb-1">تقارير العملاء</div>
-             <button onClick={() => setReportType('CLIENT_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_CONTRACTS' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود الملاك (العملاء)</span>
-               <Award size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('CLIENT_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><FileText size={16}/> محاضر إنجاز الملاك</span>
-               <CheckCircle2 size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('CLIENT_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><Users size={16}/> حركة العملاء المالية</span>
-               <Users size={14} className="opacity-60"/>
-             </button>
+              <div className="text-[10px] uppercase tracking-wider text-blue-400 font-bold px-2 mb-1">{t("reports.clientReports")}</div>
+              <button onClick={() => setReportType('CLIENT_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_CONTRACTS' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><Briefcase size={16}/> {t("reports.ownerContracts")}</span>
+                <Award size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('CLIENT_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><FileText size={16}/> {t("reports.ownerAchievementRecords")}</span>
+                <CheckCircle2 size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('CLIENT_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'CLIENT_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><Users size={16}/> {t("reports.clientFinancialActivity")}</span>
+                <Users size={14} className="opacity-60"/>
+              </button>
            </div>
 
            {/* Group 3: Supplier Reports */}
            <div className="space-y-1.5 pt-2 border-t border-white/5">
-             <div className="text-[10px] uppercase tracking-wider text-rose-400 font-bold px-2 mb-1">تقارير الموردين</div>
-             <button onClick={() => setReportType('SUBCONTRACTOR_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><Briefcase size={16}/> عقود مقاولي الباطن</span>
-               <Award size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('SUBCONTRACTOR_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><FileText size={16}/> محاضر إنجاز المقاولين</span>
-               <CheckCircle2 size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('SUPPLIER_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUPPLIER_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><Users size={16}/> حركة الموردين المالية</span>
-               <Users size={14} className="opacity-60"/>
-             </button>
-             <button onClick={() => setReportType('PURCHASES')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'PURCHASES' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
-               <span className="flex items-center gap-2"><ShoppingCart size={16}/> المشتريات والتكاليف</span>
-               <ShoppingCart size={14} className="opacity-60"/>
-             </button>
+              <div className="text-[10px] uppercase tracking-wider text-rose-400 font-bold px-2 mb-1">{t("reports.supplierReports")}</div>
+              <button onClick={() => setReportType('SUBCONTRACTOR_CONTRACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><Briefcase size={16}/> {t("reports.subcontractorContracts")}</span>
+                <Award size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('SUBCONTRACTOR_ACHIEVEMENT_RECORDS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><FileText size={16}/> {t("reports.contractorAchievementRecords")}</span>
+                <CheckCircle2 size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('SUPPLIER_CONTACTS')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'SUPPLIER_CONTACTS' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><Users size={16}/> {t("reports.supplierFinancialActivity")}</span>
+                <Users size={14} className="opacity-60"/>
+              </button>
+              <button onClick={() => setReportType('PURCHASES')} className={`w-full px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center justify-between transition-all cursor-pointer ${reportType === 'PURCHASES' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-black' : 'bg-slate-850/50 text-slate-400 border border-white/5 hover:bg-slate-805'}`}>
+                <span className="flex items-center gap-2"><ShoppingCart size={16}/> {t("reports.purchasesCosts")}</span>
+                <ShoppingCart size={14} className="opacity-60"/>
+              </button>
            </div>
         </div>
 
         {/* Filters Details */}
         <div className="lg:col-span-3 bg-[#0f1015]/60 backdrop-blur-md p-6 rounded-3xl border border-white/5 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-2xl">
            <div className="space-y-2">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Building size={14}/> فرز حسب المشروع</label>
+               <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Building size={14}/> {t("reports.filterByProject")}</label>
               <select 
                 value={projectId} 
                 onChange={(e) => setProjectId(e.target.value)}
                 className="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-colors"
               >
-                <option value="all">جميع المشاريع</option>
+                 <option value="all">{t("reports.allProjects")}</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
@@ -777,7 +779,7 @@ export default function ReportsPage() {
            </div>
            
            <div className="space-y-2">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> تاريخ البداية</label>
+               <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> {t("reports.startDate")}</label>
               <input 
                 type="date" 
                 value={dateRange.start}
@@ -787,7 +789,7 @@ export default function ReportsPage() {
            </div>
 
            <div className="space-y-2">
-              <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> تاريخ النهاية</label>
+               <label className="text-slate-400 text-xs font-bold flex items-center gap-2"><Calendar size={14}/> {t("reports.endDate")}</label>
               <input 
                 type="date" 
                 value={dateRange.end}
@@ -811,13 +813,13 @@ export default function ReportsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md relative overflow-hidden">
                   <h4 className="text-xs font-black text-slate-300 mb-4 flex items-center gap-2">
-                    <BarChart3 size={14} className="text-blue-500" /> الإيرادات مقابل التكاليف حسب المشاريع (SAR)
+                    <BarChart3 size={14} className="text-blue-500" /> {t("reports.revenueVsCost")}
                   </h4>
-                  <FinancialBarChart data={getFinancialChartData()} />
+                  <FinancialBarChart data={getFinancialChartData()} t={t} />
                 </div>
                 <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md relative overflow-hidden">
                   <h4 className="text-xs font-black text-slate-300 mb-4 flex items-center gap-2">
-                    <PieChart size={14} className="text-rose-500" /> تحليل وتوزيع هيكل التكاليف الكلية (%)
+                    <PieChart size={14} className="text-rose-500" /> {t("reports.costStructureAnalysis")}
                   </h4>
                   <ExpensesDonutChart data={getCostBreakdown()} />
                 </div>
@@ -844,39 +846,39 @@ export default function ReportsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64 opacity-50">
             <Loader2 className="animate-spin text-blue-500 mb-4" size={40} />
-            <p className="text-slate-400 print-hide">جاري استدعاء وتحليل بيانات التقرير...</p>
+            <p className="text-slate-400 print-hide">{t("reports.loadingReport")}</p>
           </div>
         ) : reportData ? (
           <>
             {/* Header of Report Document */}
             <div className="mb-8 border-b border-white/10 print:border-black/20 pb-6 flex flex-col md:flex-row justify-between items-center gap-4 text-right print:text-right">
                <div>
-                 <h2 className="text-2xl font-black text-white print-text-black uppercase">
-                   {reportType === 'FINANCIAL_SUMMARY' ? 'تقرير الأرباح والخسائر للمشاريع (P&L)' : 
-                    reportType === 'CONTRACTS' ? 'تقرير عقود المشاريع ومقاولي الباطن' :
-                    reportType === 'CLIENT_CONTRACTS' ? 'تقرير عقود الملاك (العملاء)' :
-                    reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'تقرير عقود مقاولي الباطن' :
-                    reportType === 'BOQ_PROGRESS' ? 'تقرير حصر كميات وبنود تعاقد BOQ المنجزة' :
-                    reportType === 'ACHIEVEMENT_RECORDS' ? 'سجل محاضر الإنجاز المعتمدة والمستخلصات' :
-                    reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? 'سجل محاضر إنجاز الملاك (العملاء)' :
-                    reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? 'سجل محاضر إنجاز مقاولي الباطن' :
-                    reportType === 'CONTACTS' ? 'تقرير حركة جهات الاتصال (العملاء والموردين) المالي' :
-                    reportType === 'CLIENT_CONTACTS' ? 'تقرير حركة جهات الاتصال (العملاء) المالي' :
-                    reportType === 'SUPPLIER_CONTACTS' ? 'تقرير حركة جهات الاتصال (الموردين) المالي' :
-                    reportType === 'PURCHASES' ? 'تقرير المشتريات والتكاليف العامة' :
-                    'تقرير المشتريات والتكاليف العامة'}
-                 </h2>
+                  <h2 className="text-2xl font-black text-white print-text-black uppercase">
+                    {reportType === 'FINANCIAL_SUMMARY' ? t("reports.reportTitle.financialSummary") : 
+                     reportType === 'CONTRACTS' ? t("reports.reportTitle.contracts") :
+                     reportType === 'CLIENT_CONTRACTS' ? t("reports.reportTitle.clientContracts") :
+                     reportType === 'SUBCONTRACTOR_CONTRACTS' ? t("reports.reportTitle.subcontractorContracts") :
+                     reportType === 'BOQ_PROGRESS' ? t("reports.reportTitle.boqProgress") :
+                     reportType === 'ACHIEVEMENT_RECORDS' ? t("reports.reportTitle.achievementRecords") :
+                     reportType === 'CLIENT_ACHIEVEMENT_RECORDS' ? t("reports.reportTitle.clientAchievementRecords") :
+                     reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS' ? t("reports.reportTitle.subcontractorAchievementRecords") :
+                     reportType === 'CONTACTS' ? t("reports.reportTitle.contacts") :
+                     reportType === 'CLIENT_CONTACTS' ? t("reports.reportTitle.clientContacts") :
+                     reportType === 'SUPPLIER_CONTACTS' ? t("reports.reportTitle.supplierContacts") :
+                     reportType === 'PURCHASES' ? t("reports.reportTitle.purchases") :
+                     t("reports.reportTitle.purchases")}
+                  </h2>
                  <p className="text-slate-400 print:text-slate-600 mt-2 text-sm">
-                   المشروع المحدد: <span className="font-bold text-white print-text-black">{projectId === 'all' ? 'كافة المشاريع النشطة' : projects.find(p=>p.id === projectId)?.name}</span>
+                    {t("reports.selectedProject")}: <span className="font-bold text-white print-text-black">{projectId === 'all' ? t("reports.allActiveProjects") : projects.find(p=>p.id === projectId)?.name}</span>
                  </p>
                  {(dateRange.start || dateRange.end) && (
                    <p className="text-xs text-indigo-400 print:text-black mt-1">
-                     الفترة الزمنية للتقرير: {dateRange.start ? `من ${dateRange.start}` : ''} {dateRange.end ? `إلى ${dateRange.end}` : ''}
+                      {t("reports.reportPeriod")}: {dateRange.start ? `${t("reports.from")} ${dateRange.start}` : ''} {dateRange.end ? `${t("reports.to")} ${dateRange.end}` : ''}
                    </p>
                  )}
                </div>
                <div className="text-center md:text-left text-xs text-slate-500 print-text-black font-mono">
-                 <p>تاريخ إصدار التقرير</p>
+                  <p>{t("reports.reportIssueDate")}</p>
                  <p className="font-mono text-sm text-slate-300 print-text-black mt-1">{new Date().toLocaleString('ar-SA')}</p>
                </div>
             </div>
@@ -886,19 +888,19 @@ export default function ReportsPage() {
                {reportType === 'FINANCIAL_SUMMARY' && (
                  <>
                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white shadow-lg">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي الإيرادات (مستخلصات الملاك المعتمدة)</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalRevenue")}</p>
                      <p className="text-xl font-mono font-black text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </motion.div>
                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white shadow-lg">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي التكاليف (شراء + مقاولين + نثريات)</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalCostsLabel")}</p>
                      <p className="text-xl font-mono font-black text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalCosts || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </motion.div>
                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className={`p-5 bg-gradient-to-br rounded-2xl border border-white/5 print-border print:bg-white shadow-lg ${reportData.summary?.profit >= 0 ? 'from-emerald-950/20 to-slate-900' : 'from-rose-950/20 to-slate-900'}`}>
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">صافي الأرباح التشغيلية</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.netOperatingProfit")}</p>
                      <p className={`text-xl font-mono font-black ${reportData.summary?.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'} print-text-black`}>SAR {Number(reportData.summary?.profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                    </motion.div>
                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="p-5 bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-2xl border border-white/5 print-border print:bg-white shadow-lg">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">هامش الربح الإجمالي (%)</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.grossProfitMargin")}</p>
                      <p className="text-xl font-mono font-black text-indigo-400 print-text-black">{Number(reportData.summary?.margin || 0).toFixed(2)}%</p>
                    </motion.div>
                  </>
@@ -907,20 +909,20 @@ export default function ReportsPage() {
                {reportType === 'CLIENT_CONTRACTS' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي قيمة عقود الملاك</p>
-                     <p className="text-lg font-mono font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalValue || 0).toLocaleString()}</p>
-                     <span className="text-[9px] text-slate-500">العدد: {reportData.summary?.totalContracts || 0}</span>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalClientContractsValue")}</p>
+                      <p className="text-lg font-mono font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalValue || 0).toLocaleString()}</p>
+                      <span className="text-[9px] text-slate-500">{t("reports.count")}: {reportData.summary?.totalContracts || 0}</span>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المستخلصات المعتمدة الصادرة</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.certifiedInvoicesIssued")}</p>
                      <p className="text-lg font-mono font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalInvoiced || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المحصل فعلياً</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.actuallyCollected")}</p>
                      <p className="text-lg font-mono font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalPaid || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المتبقي للتحصيل</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.remainingForCollection")}</p>
                      <p className="text-lg font-mono font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.remaining || 0).toLocaleString()}</p>
                    </div>
                  </>
@@ -929,20 +931,20 @@ export default function ReportsPage() {
                {reportType === 'SUBCONTRACTOR_CONTRACTS' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي عقود مقاولي الباطن</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalSubcontractorContracts")}</p>
                      <p className="text-lg font-mono font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalValue || 0).toLocaleString()}</p>
-                     <span className="text-[9px] text-slate-500">العدد: {reportData.summary?.totalContracts || 0}</span>
-                   </div>
-                   <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المستخلصات المعتمدة للمقاولين</p>
+                      <span className="text-[9px] text-slate-500">{t("reports.count")}: {reportData.summary?.totalContracts || 0}</span>
+                    </div>
+                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.contractorCertifiedInvoices")}</p>
                      <p className="text-lg font-mono font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalInvoiced || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المسدد فعلياً للمقاولين</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.actuallyPaidToContractors")}</p>
                      <p className="text-lg font-mono font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalPaid || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">المتبقي للدفع للمقاولين</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.remainingToPayContractors")}</p>
                      <p className="text-lg font-mono font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.remaining || 0).toLocaleString()}</p>
                    </div>
                  </>
@@ -951,19 +953,19 @@ export default function ReportsPage() {
                {reportType === 'BOQ_PROGRESS' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">القيمة المخططة الإجمالية</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalPlannedValue")}</p>
                      <p className="text-lg font-mono font-bold text-blue-400 print-text-black">SAR {Number(reportData.summary?.totalPlannedValue || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">قيمة الأعمال المنفذة فعلياً</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.actualExecutedValue")}</p>
                      <p className="text-lg font-mono font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalExecutedValue || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">القيمة المتبقية كمياً</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.remainingQuantityValue")}</p>
                      <p className="text-lg font-mono font-bold text-amber-400 print-text-black">SAR {Number(reportData.summary?.remainingValue || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">نسبة إنجاز المشروع الكلية</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.overallProjectCompletion")}</p>
                      <p className="text-lg font-mono font-bold text-white print-text-black">{reportData.summary?.overallProgress || 0}%</p>
                    </div>
                  </>
@@ -972,18 +974,18 @@ export default function ReportsPage() {
                {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">عدد محاضر الإنجاز المعتمدة</p>
-                     <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalRecords || 0} محضر</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.certifiedRecordsCount")}</p>
+                      <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalRecords || 0} {t("reports.record")}</p>
                      {reportType === 'ACHIEVEMENT_RECORDS' && (
-                       <span className="text-[9px] text-slate-500">ملاك: {reportData.summary?.mainContractsRecordsCount || 0} | مقاولين: {reportData.summary?.subcontractsRecordsCount || 0}</span>
+                        <span className="text-[9px] text-slate-500">{t("reports.owners")}: {reportData.summary?.mainContractsRecordsCount || 0} | {t("reports.contractorsLabel")}: {reportData.summary?.subcontractsRecordsCount || 0}</span>
                      )}
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">القيمة المعتمدة الكلية</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalCertifiedValue")}</p>
                      <p className="text-lg font-mono font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalCertifiedGross || 0).toLocaleString()}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">صافي المستحقات المعتمدة</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.netCertifiedDues")}</p>
                      <p className="text-lg font-mono font-bold text-white print-text-black">SAR {Number(reportData.summary?.totalCertifiedNet || 0).toLocaleString()}</p>
                    </div>
                  </>
@@ -992,21 +994,21 @@ export default function ReportsPage() {
                {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي عدد جهات الاتصال</p>
-                     <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContacts || 0} جهة</p>
-                     {reportType === 'CONTACTS' && (
-                       <span className="text-[9px] text-slate-500">عملاء: {reportData.summary?.clientsCount || 0} | موردين: {reportData.summary?.suppliersCount || 0}</span>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalContactsCount")}</p>
+                      <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalContacts || 0} {t("reports.entity")}</p>
+                      {reportType === 'CONTACTS' && (
+                        <span className="text-[9px] text-slate-500">{t("reports.clients")}: {reportData.summary?.clientsCount || 0} | {t("reports.suppliersLabel")}: {reportData.summary?.suppliersCount || 0}</span>
                      )}
                    </div>
                    {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS') && (
                      <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                       <p className="text-[10px] text-slate-400 print:text-black mb-1">حجم تعاملات العملاء والمبيعات</p>
+                        <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.clientSalesVolume")}</p>
                        <p className="text-lg font-mono font-bold text-emerald-400 print-text-black">SAR {Number(reportData.summary?.totalClientVolume || 0).toLocaleString()}</p>
                      </div>
                    )}
                    {(reportType === 'CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                      <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                       <p className="text-[10px] text-slate-400 print:text-black mb-1">حجم تعاملات الموردين والمقاولين</p>
+                        <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.supplierContractorVolume")}</p>
                        <p className="text-lg font-mono font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSupplierVolume || 0).toLocaleString()}</p>
                      </div>
                    )}
@@ -1016,11 +1018,11 @@ export default function ReportsPage() {
                {reportType === 'PURCHASES' && (
                  <>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">عدد أوامر الشراء</p>
-                     <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalOrders || 0} أمر</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.purchaseOrdersCount")}</p>
+                      <p className="text-lg font-mono font-bold text-indigo-400 print-text-black">{reportData.summary?.totalOrders || 0} {t("reports.order")}</p>
                    </div>
                    <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 print-border print:bg-white">
-                     <p className="text-[10px] text-slate-400 print:text-black mb-1">إجمالي نفقات المشتريات</p>
+                      <p className="text-[10px] text-slate-400 print:text-black mb-1">{t("reports.totalPurchaseExpenses")}</p>
                      <p className="text-lg font-mono font-bold text-rose-400 print-text-black">SAR {Number(reportData.summary?.totalSpent || 0).toLocaleString()}</p>
                    </div>
                  </>
@@ -1034,34 +1036,34 @@ export default function ReportsPage() {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
                       <h4 className="text-[11px] font-black text-slate-800 mb-4 flex items-center gap-2">
-                        تحليل الإيرادات والتكاليف (SAR)
+                        {t("reports.printRevenueAnalysis")}
                       </h4>
-                      <FinancialBarChart data={getFinancialChartData()} />
+                      <FinancialBarChart data={getFinancialChartData()} t={t} />
                     </div>
                     <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
                       <h4 className="text-[11px] font-black text-slate-800 mb-4 flex items-center gap-2">
-                        تحليل توزيع النفقات (%)
+                        {t("reports.printExpenseAnalysis")}
                       </h4>
-                      <ExpensesDonutChart data={getCostBreakdown()} />
+                  <ExpensesDonutChart data={getCostBreakdown()} t={t} />
                     </div>
                   </div>
                 )}
 
                 {reportType === 'BOQ_PROGRESS' && (
                   <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
-                    <BoqProgressChart summary={reportData.summary} items={reportData.data || []} />
+              <BoqProgressChart summary={reportData.summary} items={reportData.data || []} t={t} />
                   </div>
                 )}
 
                 {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
                   <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
-                    <ContractsStackedBar summary={reportData.summary} />
+              <ContractsStackedBar summary={reportData.summary} t={t} />
                   </div>
                 )}
 
                 {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                   <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50">
-                    <TopContactsChart data={reportData.data || []} />
+              <TopContactsChart data={reportData.data || []} t={t} />
                   </div>
                 )}
               </div>
@@ -1075,12 +1077,12 @@ export default function ReportsPage() {
                   type="text" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="ابحث في الجدول (رقم، بند، جهة، مشروع)..."
+                  placeholder={t("reports.searchPlaceholder")}
                   className="w-full bg-slate-950/90 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 rounded-xl pr-9 pl-4 py-2 text-xs text-white outline-none transition-all placeholder-slate-500"
                 />
               </div>
               <div className="text-[11px] text-slate-400 font-mono">
-                يظهر {filteredAndSortedData.length} من أصل {reportData.data?.length || 0} سجل متاح
+                {t("reports.showing")} {filteredAndSortedData.length} {t("reports.ofTotal")} {reportData.data?.length || 0} {t("reports.recordsAvailable")}
               </div>
             </div>
 
@@ -1091,73 +1093,73 @@ export default function ReportsPage() {
                   <tr className="bg-slate-900/60 print:bg-slate-100 text-slate-300 print:text-black border-b border-white/10 print:border-black">
                     {reportType === 'FINANCIAL_SUMMARY' && (
                        <>
-                         {renderSortHeader('date', 'التاريخ')}
-                         {renderSortHeader('project', 'المشروع')}
-                         {renderSortHeader('type', 'العملية المالية')}
-                         {renderSortHeader('amount', 'المبلغ التدفق (SAR)')}
+                          {renderSortHeader('date', t("reports.date"))}
+                          {renderSortHeader('project', t("reports.project"))}
+                          {renderSortHeader('type', t("reports.transactionType"))}
+                          {renderSortHeader('amount', t("reports.flowAmount"))}
                        </>
                     )}
  
                     {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
                        <>
-                         {renderSortHeader('referenceNumber', 'رقم العقد/المرجع')}
-                         {renderSortHeader('type', 'نوع العقد')}
-                         {renderSortHeader('project', 'المشروع')}
-                         {renderSortHeader('partyName', reportType === 'CLIENT_CONTRACTS' ? 'العميل (المالك)' : reportType === 'SUBCONTRACTOR_CONTRACTS' ? 'المقاول الباطن' : 'الطرف الثاني')}
-                         {renderSortHeader('totalValue', 'قيمة العقد (SAR)')}
-                         {renderSortHeader('totalInvoiced', 'المستخلصات المعتمدة')}
-                         {renderSortHeader('totalPaid', 'المسدد فعلياً')}
-                         {renderSortHeader('remaining', 'المتبقي')}
+                          {renderSortHeader('referenceNumber', t("reports.contractRef"))}
+                          {renderSortHeader('type', t("reports.contractType"))}
+                          {renderSortHeader('project', t("reports.project"))}
+                          {renderSortHeader('partyName', reportType === 'CLIENT_CONTRACTS' ? t("reports.clientOwner") : reportType === 'SUBCONTRACTOR_CONTRACTS' ? t("reports.subcontractorLabel") : t("reports.secondParty"))}
+                          {renderSortHeader('totalValue', t("reports.contractValue"))}
+                          {renderSortHeader('totalInvoiced', t("reports.certifiedInvoicesLabel"))}
+                          {renderSortHeader('totalPaid', t("reports.actuallyPaid"))}
+                          {renderSortHeader('remaining', t("reports.remaining"))}
                        </>
                     )}
  
                     {reportType === 'BOQ_PROGRESS' && (
                        <>
-                         {renderSortHeader('description', 'بند الأعمال / الكود')}
-                         {renderSortHeader('project', 'المشروع')}
-                         {renderSortHeader('unitPrice', 'سعر الوحدة')}
-                         {renderSortHeader('plannedQty', 'الكمية المقدرة')}
-                         {renderSortHeader('executedQty', 'المنفذ الفعلي')}
-                         {renderSortHeader('remainingQty', 'الكمية المتبقية')}
-                         {renderSortHeader('executedValue', 'قيمة الإنجاز المالي')}
-                         {renderSortHeader('completionPercentage', 'نسبة التقدم')}
+                          {renderSortHeader('description', t("reports.boqItem"))}
+                          {renderSortHeader('project', t("reports.project"))}
+                          {renderSortHeader('unitPrice', t("reports.unitPrice"))}
+                          {renderSortHeader('plannedQty', t("reports.plannedQty"))}
+                          {renderSortHeader('executedQty', t("reports.executedQty"))}
+                          {renderSortHeader('remainingQty', t("reports.remainingQty"))}
+                          {renderSortHeader('executedValue', t("reports.executedValue"))}
+                          {renderSortHeader('completionPercentage', t("reports.completionPercent"))}
                        </>
                     )}
  
                     {(reportType === 'ACHIEVEMENT_RECORDS' || reportType === 'CLIENT_ACHIEVEMENT_RECORDS' || reportType === 'SUBCONTRACTOR_ACHIEVEMENT_RECORDS') && (
                        <>
                          <th className="px-2 py-3.5 font-bold print-hide"></th>
-                         {renderSortHeader('invoiceNumber', 'رقم المحضر')}
-                         {renderSortHeader('project', 'المشروع')}
-                         {renderSortHeader('contractType', 'نوع العقد')}
-                         {renderSortHeader('partyName', 'الطرف الثاني')}
-                         {renderSortHeader('approvedAt', 'تاريخ الاعتماد')}
-                         {renderSortHeader('approvedBy', 'المعتمد')}
-                         {renderSortHeader('grossAmount', 'القيمة الإجمالية')}
-                         {renderSortHeader('netAmount', 'صافي المستحق')}
+                          {renderSortHeader('invoiceNumber', t("reports.recordNumber"))}
+                          {renderSortHeader('project', t("reports.project"))}
+                          {renderSortHeader('contractType', t("reports.contractType"))}
+                          {renderSortHeader('partyName', t("reports.secondParty"))}
+                          {renderSortHeader('approvedAt', t("reports.approvalDate"))}
+                          {renderSortHeader('approvedBy', t("reports.approvedBy"))}
+                          {renderSortHeader('grossAmount', t("reports.grossAmount"))}
+                          {renderSortHeader('netAmount', t("reports.netAmount"))}
                        </>
                     )}
  
                     {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
                        <>
-                         {renderSortHeader('name', 'الجهة')}
-                         {renderSortHeader('commercialName', 'السجل التجاري')}
-                         {reportType === 'CONTACTS' && renderSortHeader('type', 'نوع جهة الاتصال')}
-                         <th className="px-4 py-3.5 font-bold text-center">الهاتف والبريد</th>
-                         {renderSortHeader('projectsCount', 'المشاريع')}
-                         {renderSortHeader('contractsCount', 'التعاقدات/أوامر الشراء')}
-                         {renderSortHeader('volume', 'إجمالي حجم التعامل (SAR)')}
+                          {renderSortHeader('name', t("reports.entityName"))}
+                          {renderSortHeader('commercialName', t("reports.commercialReg"))}
+                          {reportType === 'CONTACTS' && renderSortHeader('type', t("reports.contactType"))}
+                          <th className="px-4 py-3.5 font-bold text-center">{t("reports.phoneEmail")}</th>
+                          {renderSortHeader('projectsCount', t("reports.projects"))}
+                          {renderSortHeader('contractsCount', t("reports.contractsOrders"))}
+                          {renderSortHeader('volume', t("reports.totalVolume"))}
                        </>
                     )}
  
                     {reportType === 'PURCHASES' && (
                        <>
-                         {renderSortHeader('date', 'التاريخ')}
-                         {renderSortHeader('poNumber', 'رقم الـ PO')}
-                         {renderSortHeader('project', 'المشروع')}
-                         {renderSortHeader('supplier', 'المورد')}
-                         {renderSortHeader('taxAmount', 'قيمة الضريبة')}
-                         {renderSortHeader('total', 'التكلفة الإجمالية (SAR)')}
+                          {renderSortHeader('date', t("reports.date"))}
+                          {renderSortHeader('poNumber', t("reports.poNumber"))}
+                          {renderSortHeader('project', t("reports.project"))}
+                          {renderSortHeader('supplier', t("reports.supplier"))}
+                          {renderSortHeader('taxAmount', t("reports.taxAmount"))}
+                          {renderSortHeader('total', t("reports.totalCostSar"))}
                        </>
                     )}
                   </tr>
@@ -1169,8 +1171,8 @@ export default function ReportsPage() {
                       {reportType === 'FINANCIAL_SUMMARY' && (
                         <>
                           <td className="px-4 py-3.5 font-mono text-[11px]">{new Date(row.date).toLocaleDateString('ar-SA')}</td>
-                          <td className="px-4 py-3.5 font-bold text-white print-text-black">{row.project || 'عام'}</td>
-                          <td className="px-4 py-3.5 text-slate-400 print-text-black">{row.type}</td>
+                           <td className="px-4 py-3.5 font-bold text-white print-text-black">{row.project || t("reports.general")}</td>
+                           <td className="px-4 py-3.5 text-slate-400 print-text-black">{row.type}</td>
                           <td className={`px-4 py-3.5 font-mono font-black text-left ${row.amount > 0 ? 'text-emerald-400 print-text-black' : 'text-rose-400 print-text-black'}`}>
                             {row.amount > 0 ? '+' : ''}{Number(row.amount).toLocaleString(undefined, {minimumFractionDigits: 2})}
                           </td>
@@ -1182,7 +1184,7 @@ export default function ReportsPage() {
                           <td className="px-4 py-3.5 font-mono font-bold text-xs text-white print-text-black">{row.referenceNumber}</td>
                           <td className="px-4 py-3.5 text-[10px]">
                             <span className={`px-2 py-0.5 rounded font-bold ${row.type === 'MAIN_CONTRACT' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
-                              {row.type === 'MAIN_CONTRACT' ? 'عقد مالك' : 'عقد باطن'}
+                              {row.type === 'MAIN_CONTRACT' ? t("reports.mainContract") : t("reports.subContract")}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 font-bold text-slate-400 print-text-black">{row.project}</td>
@@ -1231,7 +1233,7 @@ export default function ReportsPage() {
                           <td className="px-4 py-3.5 font-bold text-slate-400 print-text-black">{row.project}</td>
                           <td className="px-4 py-3.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.contractType === 'MAIN_CONTRACT' ? 'bg-blue-500/10 text-blue-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                              {row.contractType === 'MAIN_CONTRACT' ? 'عقد المالك' : 'عقد باطن'}
+                              {row.contractType === 'MAIN_CONTRACT' ? t("reports.ownerContract") : t("reports.subContract")}
                             </span>
                           </td>
                           <td className="px-4 py-3.5 font-bold text-white print-text-black">{row.partyName}</td>
@@ -1246,13 +1248,13 @@ export default function ReportsPage() {
                         <>
                           <td className="px-4 py-3.5">
                             <div className="font-bold text-white print-text-black">{row.name}</div>
-                            <div className="text-[10px] text-slate-500">{row.contactPerson !== '-' ? `مسؤول: ${row.contactPerson}` : ''}</div>
+                            <div className="text-[10px] text-slate-500">{row.contactPerson !== '-' ? `${t("reports.contactPerson")}: ${row.contactPerson}` : ''}</div>
                           </td>
                           <td className="px-4 py-3.5 font-mono text-[11px]">{row.commercialName}</td>
                           {reportType === 'CONTACTS' && (
                             <td className="px-4 py-3.5">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.type === 'CLIENT' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                                {row.type === 'CLIENT' ? 'عميل' : 'مورد / مقاول'}
+                                {row.type === 'CLIENT' ? t("reports.clientType") : t("reports.supplierType")}
                               </span>
                             </td>
                           )}
@@ -1270,8 +1272,8 @@ export default function ReportsPage() {
                         <>
                           <td className="px-4 py-3.5 font-mono text-[11px]">{new Date(row.date).toLocaleDateString('ar-SA')}</td>
                           <td className="px-4 py-3.5 font-mono font-bold text-white print-text-black">{row.poNumber}</td>
-                          <td className="px-4 py-3.5 font-bold text-slate-400 print-text-black">{row.project || 'عام'}</td>
-                          <td className="px-4 py-3.5 text-white print-text-black">{row.supplier}</td>
+                           <td className="px-4 py-3.5 font-bold text-slate-400 print-text-black">{row.project || t("reports.general")}</td>
+                           <td className="px-4 py-3.5 text-white print-text-black">{row.supplier}</td>
                           <td className="px-4 py-3.5 font-mono text-slate-500">{Number(row.taxAmount).toLocaleString()}</td>
                           <td className="px-4 py-3.5 font-mono font-bold text-rose-400 print-text-black">{Number(row.total).toLocaleString()}</td>
                         </>
@@ -1279,7 +1281,7 @@ export default function ReportsPage() {
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500 print:text-black">لا توجد سجلات مطابقة لمعايير البحث</td>
+                      <td colSpan={12} className="px-4 py-12 text-center text-slate-500 print:text-black">{t("reports.noMatchingRecords")}</td>
                     </tr>
                   )}
                 </tbody>
@@ -1302,19 +1304,19 @@ export default function ReportsPage() {
                     return (
                       <div className="space-y-4">
                         <h4 className="text-xs font-black text-indigo-400 print-text-black flex items-center gap-2 font-bold">
-                          <Award size={14} /> تفاصيل البنود والكميات المنجزة في المستخلص ({selectedRow.invoiceNumber}):
+                          <Award size={14} /> {t("reports.itemsQuantitiesDetails")} ({selectedRow.invoiceNumber}):
                         </h4>
                         <div className="overflow-x-auto">
                           <table className="w-full text-right text-[11px] bg-slate-900/40 print:bg-white rounded-xl overflow-hidden border border-white/5 print:border-black/10">
                             <thead>
                               <tr className="bg-slate-900/80 print:bg-slate-200 text-slate-400 print:text-black font-bold">
-                                <th className="px-3 py-2.5">البند / الكود</th>
-                                <th className="px-3 py-2.5 text-center">الوحدة</th>
-                                <th className="px-3 py-2.5 text-center">سعر الفئة</th>
-                                <th className="px-3 py-2.5 text-center">كمية سابق</th>
-                                <th className="px-3 py-2.5 text-center text-indigo-400 print-text-black">كمية حالي</th>
-                                <th className="px-3 py-2.5 text-center">كمية إجمالي</th>
-                                <th className="px-3 py-2.5 text-left">القيمة الحالية (SAR)</th>
+                                <th className="px-3 py-2.5">{t("reports.boqCode")}</th>
+                                <th className="px-3 py-2.5 text-center">{t("reports.unit")}</th>
+                                <th className="px-3 py-2.5 text-center">{t("reports.categoryPrice")}</th>
+                                <th className="px-3 py-2.5 text-center">{t("reports.prevQty")}</th>
+                                <th className="px-3 py-2.5 text-center text-indigo-400 print-text-black">{t("reports.currentQty")}</th>
+                                <th className="px-3 py-2.5 text-center">{t("reports.totalQty")}</th>
+                                <th className="px-3 py-2.5 text-left">{t("reports.currentValueSar")}</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5 print:divide-black/10 text-slate-300 print-text-black">
@@ -1334,7 +1336,7 @@ export default function ReportsPage() {
                               ))}
                               {selectedRow.details.length === 0 && (
                                 <tr>
-                                  <td colSpan={7} className="px-3 py-6 text-center text-slate-500">لا توجد تفاصيل بنود تعاقدية مسجلة في هذا المحضر.</td>
+                                  <td colSpan={7} className="px-3 py-6 text-center text-slate-500">{t("reports.noDetailsRecorded")}</td>
                                 </tr>
                               )}
                             </tbody>
@@ -1349,10 +1351,10 @@ export default function ReportsPage() {
             
             {/* Signature & Certified blocks at the bottom of the printed report */}
             <div className="mt-12 pt-8 border-t border-dashed border-white/20 print:border-black/20 flex flex-col sm:flex-row justify-between items-center gap-6 print-text-black">
-              <p className="text-[10px] text-slate-500 print-text-black">تم إصدار هذا التقرير آلياً من نظام إدارة المشاريع والتعاقدات {company?.nameAr || 'PMS Contracting'}</p>
+              <p className="text-[10px] text-slate-500 print-text-black">{t("reports.reportGeneratedBy")} {company?.nameAr || 'PMS Contracting'}</p>
               <div className="flex gap-12 text-xs font-bold text-slate-400 print-text-black">
-                <span>إعداد القسم المالي: _________________</span>
-                <span>اعتماد مدير المشروع والمؤسسة: _________________</span>
+                <span>{t("reports.preparedByFinance")}</span>
+                <span>{t("reports.approvedByPM")}</span>
               </div>
             </div>
           </>

@@ -17,8 +17,10 @@ import {
 import axios from "axios";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function QuotationsPage() {
+  const { t } = useLanguage();
   const [quotations, setQuotations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -87,9 +89,9 @@ export default function QuotationsPage() {
   };
 
   const statusMap: Record<string, { label: string, color: string, icon: any }> = {
-    DRAFT: { label: "مسودة عرض", color: "text-slate-400 bg-slate-500/10 border-slate-500/20", icon: FileText },
-    SUBMITTED: { label: "مقدم للعميل", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock },
-    APPROVED: { label: "معتمد (قيد التنفيذ)", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: CheckCircle2 },
+    DRAFT: { label: t("quotations.status.draft"), color: "text-slate-400 bg-slate-500/10 border-slate-500/20", icon: FileText },
+    SUBMITTED: { label: t("quotations.status.submitted"), color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock },
+    APPROVED: { label: t("quotations.status.approved"), color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: CheckCircle2 },
   };
 
   return (
@@ -98,16 +100,16 @@ export default function QuotationsPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <FileCheck2 className="text-pink-500" size={28} />
-            عروض الأسعار (Quotations)
+            {t("nav.quotations")}
           </h1>
-          <p className="text-slate-400 text-sm">إرسال التسعيرات وتحويل العرض المعتمد إلى مشروع تنفيذي وجداول كميات تلقائياً.</p>
+          <p className="text-slate-400 text-sm">{t("quotations.subtitle")}</p>
         </div>
         
         <div className="flex items-center gap-3">
           {hasPermission('QUOTATION_CREATE') && (
             <Link href="/dashboard/quotations/create" className="flex items-center gap-2 font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] group bg-pink-600 hover:bg-pink-500 text-white">
               <PlusCircle size={18} className="group-hover:rotate-90 transition-transform" />
-              <span>تسعير جديد</span>
+              <span>{t("quotations.createNew")}</span>
             </Link>
           )}
         </div>
@@ -118,7 +120,7 @@ export default function QuotationsPage() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-pink-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="بحث بالرقم (Q-)..."
+            placeholder={t("quotations.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pr-12 pl-4 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
@@ -131,12 +133,12 @@ export default function QuotationsPage() {
           <table className="w-full text-right text-sm">
             <thead className="bg-slate-900/50 text-slate-400 border-b border-white/5 uppercase font-medium">
               <tr>
-                <th className="px-6 py-4">المرجع</th>
-                <th className="px-6 py-4">وصف العرض</th>
-                <th className="px-6 py-4">الجهة المالكة (العميل)</th>
-                <th className="px-6 py-4 text-pink-400">إجمالي السعر (SAR)</th>
-                <th className="px-6 py-4 text-center">الحالة</th>
-                <th className="px-6 py-4 text-center">ترسية واعتماد</th>
+                <th className="px-6 py-4">{t("quotations.reference")}</th>
+                <th className="px-6 py-4">{t("quotations.tableDescription")}</th>
+                <th className="px-6 py-4">{t("quotations.client")}</th>
+                <th className="px-6 py-4 text-pink-400">{t("quotations.totalPrice")}</th>
+                <th className="px-6 py-4 text-center">{t("common.status")}</th>
+                <th className="px-6 py-4 text-center">{t("quotations.approveAndConvert")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -146,7 +148,7 @@ export default function QuotationsPage() {
                 </tr>
               ) : quotations.length === 0 ? (
                 <tr>
-                   <td colSpan={6} className="px-6 py-12 text-center text-slate-400 glass">لا توجد عروض أسعار حتى الآن.</td>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 glass">{t("common.noData")}</td>
                 </tr>
               ) : (
                 quotations.filter(q => q.quotationNumber.includes(search)).map((quote, i) => (
@@ -187,7 +189,7 @@ export default function QuotationsPage() {
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleConvert(quote.id); }}
                                 className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all font-bold border border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(52,211,153,0.4)]"
-                                title="اعتماد وتحويل لمشروع"
+                                title={t("quotations.approveTitle")}
                               >
                                 <CheckCircle2 size={16} />
                               </button>
@@ -196,7 +198,7 @@ export default function QuotationsPage() {
                               <button 
                                 className="flex items-center justify-center gap-1 px-3 py-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all font-bold border border-rose-500/20 hover:border-rose-500 hover:shadow-[0_0_15px_rgba(244,63,94,0.4)]"
                                 onClick={(e) => handleDelete(e, quote.id)}
-                                title="حذف العرض"
+                                title={t("quotations.deleteTitle")}
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -204,7 +206,7 @@ export default function QuotationsPage() {
                           </>
                         ) : (
                           <span className="text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 mx-auto w-max shadow-sm">
-                            متصل بمشروع <ArrowUpRight size={14} />
+                            {t("quotations.linkedToProject")} <ArrowUpRight size={14} />
                           </span>
                         )}
                       </div>

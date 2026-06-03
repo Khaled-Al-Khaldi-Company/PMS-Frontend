@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Shield, Key, Check, Save } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function RolesMatrixPage() {
   const [roles, setRoles] = useState<any[]>([]);
@@ -11,6 +12,7 @@ export default function RolesMatrixPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
   const [savedRoleId, setSavedRoleId] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const fetchData = async () => {
     try {
@@ -55,12 +57,12 @@ export default function RolesMatrixPage() {
       setSavedRoleId(role.id);
       setTimeout(() => setSavedRoleId(null), 2500);
     } catch {
-      alert("فشل الحفظ");
+      alert(t("settings.rolesPage.saveFail"));
     }
     setSavingRoleId(null);
   };
 
-  if (isLoading) return <div className="p-12 text-center text-slate-400">جاري التحميل...</div>;
+  if (isLoading) return <div className="p-12 text-center text-slate-400">{t("settings.rolesPage.loading")}</div>;
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-6 pb-28">
@@ -71,10 +73,10 @@ export default function RolesMatrixPage() {
           <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/20">
             <Shield className="text-indigo-400" size={24} />
           </div>
-          مصفوفة الصلاحيات (Roles Matrix)
+          {t("settings.rolesPage.title")}
         </h1>
         <p className="text-slate-400 text-sm mt-2 mr-15">
-          حدد الصلاحيات لكل دور — ثم اضغط <strong className="text-indigo-400">حفظ</strong> من الشريط السفلي لتطبيق التغييرات.
+          {t("settings.rolesPage.subtitle")}
         </p>
       </div>
 
@@ -84,7 +86,7 @@ export default function RolesMatrixPage() {
           <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur shadow-md">
             <tr>
               <th className="px-5 py-4 text-slate-400 font-black text-xs uppercase min-w-[220px] border-b border-white/5">
-                الصلاحية / الدالة
+                {t("settings.rolesPage.colPermission")}
               </th>
               {roles.map(r => (
                 <th key={r.id} className="px-4 py-4 text-center border-b border-white/5 min-w-[130px]">
@@ -139,7 +141,7 @@ export default function RolesMatrixPage() {
         <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
           <span className="text-slate-400 text-sm flex items-center gap-2">
             <Key size={14} className="text-indigo-400" />
-            احفظ صلاحيات كل دور بشكل منفصل بعد التعديل
+            {t("settings.rolesPage.saveBar")}
           </span>
           <div className="flex flex-wrap gap-2">
             {roles.map(role => (
@@ -154,11 +156,11 @@ export default function RolesMatrixPage() {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Save size={14} />
-                {savingRoleId === role.id
-                  ? 'جاري الحفظ...'
-                  : savedRoleId === role.id
-                  ? '✓ تم الحفظ'
-                  : `حفظ ${role.name}`}
+{savingRoleId === role.id
+                    ? t("settings.rolesPage.saving")
+                    : savedRoleId === role.id
+                    ? t("settings.rolesPage.saved")
+                    : t("settings.rolesPage.saveRole") + role.name}
               </button>
             ))}
           </div>

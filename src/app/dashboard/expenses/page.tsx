@@ -18,9 +18,11 @@ import {
 import { exportToCsv } from "@/lib/exportUtils";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import { useCompany } from "@/context/CompanyContext";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function ExpensesPage() {
   const { company } = useCompany();
+  const { t } = useLanguage();
   const { pdfRef, downloadPdf } = useDownloadPdf();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
@@ -128,7 +130,7 @@ export default function ExpensesPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/60 p-6 rounded-3xl border border-white/5 shadow-2xl">
         <div>
           <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center gap-3">
-            <Banknote size={32} className="text-emerald-500" /> إدارة العهد والمصروفات
+            <Banknote size={32} className="text-emerald-500" /> {t("expense.title")}
           </h1>
           <p className="text-slate-400 mt-2 text-sm">تسجيل المصاريف النثرية للمواقع ومتابعة العهد.</p>
         </div>
@@ -167,7 +169,7 @@ export default function ExpensesPage() {
               onClick={() => setIsFormOpen(true)}
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all"
             >
-              <PlusCircle size={20} /> تسجيل مصروف / عهدة
+               <PlusCircle size={20} /> {t("expense.create")}
             </button>
           )}
         </div>
@@ -189,17 +191,17 @@ export default function ExpensesPage() {
                </select>
              </div>
              <div className="space-y-2">
-               <label className="text-sm text-slate-400 font-bold">التصنيف</label>
-               <select 
-                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none"
-                 value={form.category}
-                 onChange={e => setForm({...form, category: e.target.value})}
-               >
-                 {Object.entries(categoryMap).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-               </select>
+                <label className="text-sm text-slate-400 font-bold">{t("expense.category")}</label>
+                <select 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none"
+                  value={form.category}
+                  onChange={e => setForm({...form, category: e.target.value})}
+                >
+                  {Object.entries(categoryMap).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
              </div>
              <div className="space-y-2">
-               <label className="text-sm text-slate-400 font-bold">المبلغ (SAR)</label>
+                <label className="text-sm text-slate-400 font-bold">{t("expense.amount")} (SAR)</label>
                <input 
                  required type="number" 
                  min="0.1" step="0.1"
@@ -219,9 +221,9 @@ export default function ExpensesPage() {
              </div>
              
              <div className="md:col-span-2 pt-4 flex justify-end gap-3 border-t border-white/5">
-                <button type="button" onClick={() => setIsFormOpen(false)} className="px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-colors">إلغاء</button>
+                 <button type="button" onClick={() => setIsFormOpen(false)} className="px-6 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-colors">{t("common.cancel")}</button>
                 <button type="submit" className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold hover:brightness-110 shadow-lg flex items-center gap-2">
-                   حفظ المصروف
+                   {t("common.save")}
                 </button>
              </div>
           </form>
@@ -235,12 +237,12 @@ export default function ExpensesPage() {
             <thead className="bg-slate-900/80 text-slate-400 border-b border-white/5 uppercase font-medium">
               <tr>
                 <th className="px-6 py-4">المرجع</th>
-                <th className="px-6 py-4">التاريخ</th>
-                <th className="px-6 py-4">المشروع</th>
-                <th className="px-6 py-4">التصنيف</th>
+                <th className="px-6 py-4">{t("expense.date")}</th>
+                <th className="px-6 py-4">{t("common.project")}</th>
+                <th className="px-6 py-4">{t("expense.category")}</th>
                 <th className="px-6 py-4">البيان</th>
-                <th className="px-6 py-4 text-left">المبلغ (SAR)</th>
-                <th className="px-6 py-4 text-center print:hidden">الإجراءات</th>
+                <th className="px-6 py-4 text-left">{t("expense.amount")} (SAR)</th>
+                <th className="px-6 py-4 text-center print:hidden">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -267,7 +269,7 @@ export default function ExpensesPage() {
                     <td className="px-6 py-4 font-mono font-black text-rose-400 text-left" dir="ltr">- {Number(exp.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                     <td className="px-6 py-4 text-center print:hidden">
                        {hasPermission('EXPENSE_APPROVE') && (
-                         <button onClick={() => handleDelete(exp.id)} title="حذف" className="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-lg transition-colors border border-rose-500/20 shadow-sm mx-auto flex items-center justify-center">
+                                                   <button onClick={() => handleDelete(exp.id)} title={t("common.delete")} className="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-lg transition-colors border border-rose-500/20 shadow-sm mx-auto flex items-center justify-center">
                            <Trash2 size={16} />
                          </button>
                        )}
@@ -301,11 +303,11 @@ export default function ExpensesPage() {
         <thead>
           <tr className="bg-slate-900 border-2 border-slate-900 text-white font-black text-xs uppercase">
             <th className="p-3 border border-slate-900 w-12 text-center text-slate-200">م</th>
-            <th className="p-3 border border-slate-900 text-slate-200">التاريخ</th>
-            <th className="p-3 border border-slate-900 text-slate-200">المشروع</th>
-            <th className="p-3 border border-slate-900 text-slate-200">التصنيف</th>
+            <th className="p-3 border border-slate-900 text-slate-200">{t("expense.date")}</th>
+            <th className="p-3 border border-slate-900 text-slate-200">{t("common.project")}</th>
+            <th className="p-3 border border-slate-900 text-slate-200">{t("expense.category")}</th>
             <th className="p-3 border border-slate-900 w-1/3 text-slate-200">البيان والتفاصيل</th>
-            <th className="p-3 border border-slate-900 text-left text-slate-200">المبلغ (SAR)</th>
+            <th className="p-3 border border-slate-900 text-left text-slate-200">{t("expense.amount")} (SAR)</th>
           </tr>
         </thead>
         <tbody>

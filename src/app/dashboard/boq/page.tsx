@@ -24,8 +24,10 @@ import { formatNumber, inferBillingModeFromUnit, resolveBillingMode } from "@/li
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function BoqPage() {
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [boqItems, setBoqItems] = useState<any[]>([]);
@@ -106,7 +108,7 @@ export default function BoqPage() {
       closeModal();
       fetchBoqItems(selectedProjectId); // Refresh list
     } catch (err) {
-      alert(getApiErrorMessage(err, "حدث خطأ أثناء حفظ البند. تأكد من صحة البيانات."));
+      alert(getApiErrorMessage(err, t("boq.saveError")));
     }
   };
 
@@ -133,7 +135,7 @@ export default function BoqPage() {
 
     if (invoiceNums.length > 0) {
       setEditNotice(
-        `لا يمكن تعديل الكمية أو السعر — البند مرتبط بمستخلصات: ${invoiceNums.join("، ")}. يمكنك تعديل الوصف، الوحدة، أو طريقة الاحتساب.`,
+        t("boq.editNoticeLocked") + " " + invoiceNums.join("، ") + ". " + t("boq.editNoticeLockedHint"),
       );
       setLockQtyPrice(true);
     } else if ((item.contractItems || []).length > 0) {
@@ -142,7 +144,7 @@ export default function BoqPage() {
         .filter(Boolean)
         .join("، ");
       setEditNotice(
-        `البند مرتبط بعقد (${refs}) — التعديل مسموح لأنه لا توجد مستخلصات على هذا البند.`,
+        t("boq.editNoticeWithContract") + " (" + refs + ") — " + t("boq.editNoticeAllowed"),
       );
       setLockQtyPrice(false);
     } else {
@@ -155,7 +157,7 @@ export default function BoqPage() {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا البند؟")) return;
+    if (!window.confirm(t("boq.deleteConfirm"))) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_BASE_URL}/v1/projects/${selectedProjectId}/boq/${id}`, {
@@ -163,7 +165,7 @@ export default function BoqPage() {
       });
       fetchBoqItems(selectedProjectId);
     } catch (err) {
-      alert(getApiErrorMessage(err, "خطأ أثناء حذف البند"));
+      alert(getApiErrorMessage(err, t("boq.deleteError")));
     }
   };
 
@@ -188,7 +190,7 @@ export default function BoqPage() {
         const cols = r.split('\t').map(c => c.trim());
         return {
           itemCode: cols[0] || `B-${Math.floor(Math.random()*10000)}`,
-          description: cols[1] || 'بند مستورد',
+          description: cols[1] || t("boq.defaultImportDesc"),
           unit: cols[2] || 'م٢',
           quantity: parseFloat(cols[3]) || 1,
           unitPrice: parseFloat(cols[4]) || 0,
@@ -201,12 +203,12 @@ export default function BoqPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      alert(`🎉 تم استيراد ${items.length} بنود بنجاح!`);
+      alert(`${t("boq.importSuccess")} ${items.length} ${t("boq.items")}!`);
       setIsImporting(false);
       setImportText("");
       fetchBoqItems(selectedProjectId);
     } catch (err) {
-      alert("خطأ أثناء الاستيراد. تأكد من صحة البيانات المنسوخة.");
+      alert(t("boq.importError"));
     } finally {
       setIsLoading(false);
     }
@@ -222,9 +224,9 @@ export default function BoqPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <FileSpreadsheet className="text-indigo-500" size={28} />
-            جداول الكميات المشروطة (BOQ)
+            {t("nav.boq")}
           </h1>
-          <p className="text-slate-400 text-sm">استيراد بنود المقايسة، ومراقبة تسعير وتطور الكميات.</p>
+          <p className="text-slate-400 text-sm">{t("boq.subtitle")}</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -239,7 +241,7 @@ export default function BoqPage() {
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2.5 px-4 rounded-xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UploadCloud size={18} className="text-indigo-400 group-hover:-translate-y-1 transition-transform" />
-              <span>استيراد ذكي (Excel)</span>
+              <span>{t("boq.smartImport")}</span>
             </button>
             
             <button 
@@ -248,7 +250,7 @@ export default function BoqPage() {
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.4)] group disabled:opacity-50"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-              <span>إضافة بند جديد</span>
+              <span>{t("boq.addItem")}</span>
             </button>
             </>
           )}
@@ -260,9 +262,9 @@ export default function BoqPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <div className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
-               <Wallet size={16} /> إجمالي قيمة المقايسة (العقد الأساسي)
-             </div>
+              <div className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
+                <Wallet size={16} /> {t("boq.totalValue")}
+              </div>
              <p className="text-3xl font-black text-white font-mono" suppressHydrationWarning>
                {formatNumber(totalValue)} <span className="text-sm text-slate-500">SAR</span>
              </p>
@@ -276,7 +278,7 @@ export default function BoqPage() {
            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div className="w-full">
              <div className="text-emerald-400 font-bold mb-1 flex items-center justify-between gap-2 w-full">
-               <span className="flex items-center gap-2"><Activity size={16} /> الإنجاز المالي والمنفذ</span>
+                <span className="flex items-center gap-2"><Activity size={16} /> {t("boq.financialProgress")}</span>
                <span className="font-mono text-xl" suppressHydrationWarning>
                  {formatNumber(completionPercentage, 1)}%
                </span>
@@ -295,9 +297,9 @@ export default function BoqPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900/40 to-slate-900 border border-amber-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <div className="text-amber-400 font-bold mb-1 flex items-center gap-2">
-               <TrendingUp size={16} /> المتبقي لتسليم المشروع
-             </div>
+              <div className="text-amber-400 font-bold mb-1 flex items-center gap-2">
+                <TrendingUp size={16} /> {t("boq.remainingForDelivery")}
+              </div>
              <p className="text-3xl font-black text-white font-mono" suppressHydrationWarning>
                {formatNumber(totalValue - totalExecutedValue)} <span className="text-sm text-slate-500">SAR</span>
              </p>
@@ -313,20 +315,20 @@ export default function BoqPage() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="بحث في بنود هذا المشروع..."
+            placeholder={t("boq.searchPlaceholder")}
             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pr-12 pl-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
           />
         </div>
         
         <div className="flex items-center gap-3">
-          <label className="text-slate-400 text-sm font-medium">المشروع المحدد:</label>
+          <label className="text-slate-400 text-sm font-medium">{t("boq.selectedProject")}</label>
           <div className="flex items-center border border-white/10 bg-slate-900/80 rounded-xl px-2">
             <select 
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
               className="bg-transparent text-white text-sm font-medium outline-none px-3 py-2 cursor-pointer w-48 appearance-none"
             >
-              <option value="" disabled className="bg-slate-900">-- اختر مشروعاً --</option>
+              <option value="" disabled className="bg-slate-900">{t("boq.selectProject")}</option>
               {projects.map(p => (
                 <option key={p.id} value={p.id} className="bg-slate-900">{p.name} ({p.code})</option>
               ))}
@@ -340,15 +342,15 @@ export default function BoqPage() {
           <table className="w-full text-right text-sm">
             <thead className="bg-slate-900/50 text-slate-400 border-b border-white/5 uppercase font-medium">
               <tr>
-                <th className="px-6 py-4">الرمز (Code)</th>
-                <th className="px-6 py-4">وصف البند</th>
-                <th className="px-6 py-4">الوحدة</th>
-                <th className="px-6 py-4">الكمية المقدرة</th>
-                <th className="px-6 py-4">الإفرادي للمالك (SAR)</th>
-                <th className="px-6 py-4">استراتيجية التنفيذ</th>
-                <th className="px-6 py-4 text-emerald-400">الكمية المنفذة</th>
-                <th className="px-6 py-4 text-amber-400">الإجمالي للمالك</th>
-                {userRole !== "Viewer" && <th className="px-6 py-4">إجراءات</th>}
+                <th className="px-6 py-4">{t("boq.code")}</th>
+                <th className="px-6 py-4">{t("boq.description")}</th>
+                <th className="px-6 py-4">{t("common.unit")}</th>
+                <th className="px-6 py-4">{t("boq.estimatedQty")}</th>
+                <th className="px-6 py-4">{t("boq.unitPrice")}</th>
+                <th className="px-6 py-4">{t("boq.executionStrategy")}</th>
+                <th className="px-6 py-4 text-emerald-400">{t("boq.executedQty")}</th>
+                <th className="px-6 py-4 text-amber-400">{t("boq.totalForOwner")}</th>
+                {userRole !== "Viewer" && <th className="px-6 py-4">{t("common.actions")}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -358,7 +360,7 @@ export default function BoqPage() {
                 </tr>
               ) : boqItems.length === 0 ? (
                 <tr>
-                   <td colSpan={8} className="px-6 py-12 text-center text-slate-400">لا توجد بنود مضافة في هذا المشروع.</td>
+                   <td colSpan={8} className="px-6 py-12 text-center text-slate-400">{t("boq.noItems")}</td>
                 </tr>
               ) : (
                 boqItems.map((item, i) => (
@@ -374,21 +376,21 @@ export default function BoqPage() {
                     <td className="px-6 py-5 text-slate-400 font-medium">
                       {item.unit}
                       {resolveBillingMode(item) === 'LUMP_SUM_PROGRESS' && (
-                        <span className="mr-2 text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">مقطوعية</span>
+                        <span className="mr-2 text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded">{t("boq.lumpSum")}</span>
                       )}
                     </td>
                     <td className="px-6 py-5 font-mono text-slate-300">{formatNumber(Number(item.quantity))}</td>
                     <td className="px-6 py-5 font-mono text-slate-300">{formatNumber(Number(item.unitPrice))}</td>
                     <td className="px-6 py-5">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-inner ${item.executionType === 'SUBCONTRACT' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                        {item.executionType === 'SUBCONTRACT' ? 'مقاول باطن' : 'تنفيذ ذاتي'}
+                        {item.executionType === 'SUBCONTRACT' ? t("boq.subcontractor") : t("boq.selfExecute")}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-mono font-bold text-white bg-slate-900/40">
                       <div className="flex flex-col gap-2 w-32">
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-emerald-400 font-black">{formatNumber(Number(item.executedQty || 0))}</span>
-                          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">متبقي: {Number(item.quantity) - Number(item.executedQty || 0)}</span>
+                          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">{t("boq.remaining")}: {Number(item.quantity) - Number(item.executedQty || 0)}</span>
                         </div>
                         <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-white/5">
                           <div 
@@ -407,14 +409,14 @@ export default function BoqPage() {
                           <button 
                             onClick={() => handleEditClick(item)}
                             className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
-                            title="تعديل"
+                            title={t("common.edit")}
                           >
                             <Edit size={16} />
                           </button>
                           <button 
                             onClick={() => handleDeleteItem(item.id)}
                             className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                            title="حذف"
+                            title={t("common.delete")}
                           >
                             <Trash2 size={16} />
                           </button>
@@ -443,7 +445,7 @@ export default function BoqPage() {
               className="relative w-full max-w-lg bg-slate-900 border border-white/10 shadow-2xl rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">{isEditing ? "تعديل البند" : "إضافة بند جديد (BOQ)"}</h3>
+                <h3 className="text-xl font-bold text-white">{isEditing ? t("boq.editItem") : t("boq.addItemTitle")}</h3>
                 <button onClick={closeModal} className="text-slate-400 hover:text-white"><X size={20} /></button>
               </div>
 
@@ -455,11 +457,11 @@ export default function BoqPage() {
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">كود البند</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.itemCode")}</label>
                     <input type="text" required value={newItem.itemCode} onChange={e=>setNewItem({...newItem, itemCode: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder="EX: STR-01" dir="ltr" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">الوحدة القياسية</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.unit")}</label>
                     <input type="text" required value={newItem.unit} onChange={e=>{
                       const unit = e.target.value;
                       setNewItem({
@@ -467,50 +469,50 @@ export default function BoqPage() {
                         unit,
                         billingMode: inferBillingModeFromUnit(unit),
                       });
-                    }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder="م٢ / م٣ / مقطوعية" />
+                    }} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder={t("boq.unitPlaceholder")} />
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <label className="text-xs font-medium text-slate-400">بيان الأعمال / المواصفات</label>
-                    <textarea required value={newItem.description} onChange={e=>setNewItem({...newItem, description: e.target.value})} rows={2} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder="توريد وتركيب..." />
+                    <label className="text-xs font-medium text-slate-400">{t("boq.descriptionLabel")}</label>
+                    <textarea required value={newItem.description} onChange={e=>setNewItem({...newItem, description: e.target.value})} rows={2} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none" placeholder={t("boq.descriptionPlaceholder")} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">الكمية المقدرة</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.estimatedQty")}</label>
                     <input type="number" required min="1" step="any" disabled={lockQtyPrice} value={newItem.quantity || ''} onChange={e=>setNewItem({...newItem, quantity: parseFloat(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none disabled:opacity-50" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">سعر الوحدة للمالك (بيع)</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.unitPriceLabel")}</label>
                     <input type="number" required min="0" step="any" disabled={lockQtyPrice} value={newItem.unitPrice || ''} onChange={e=>setNewItem({...newItem, unitPrice: parseFloat(e.target.value) || 0})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none disabled:opacity-50" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">طريقة احتساب المستخلص</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.billingMode")}</label>
                     <select
                       value={newItem.billingMode}
                       onChange={e=>setNewItem({...newItem, billingMode: e.target.value as "QUANTITY" | "LUMP_SUM_PROGRESS"})}
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none cursor-pointer"
                     >
-                      <option value="QUANTITY">كميات منفذة (افتراضي)</option>
-                      <option value="LUMP_SUM_PROGRESS">مقطوعية (نسبة / قيمة)</option>
+                      <option value="QUANTITY">{t("boq.quantityBilling")}</option>
+                      <option value="LUMP_SUM_PROGRESS">{t("boq.lumpSumBilling")}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-400">طريقة التنفيذ</label>
+                    <label className="text-xs font-medium text-slate-400">{t("boq.executionType")}</label>
                     <select required value={newItem.executionType} onChange={e=>setNewItem({...newItem, executionType: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 outline-none cursor-pointer">
-                      <option value="SELF">تنفيذ ذاتي (كوادرنا)</option>
-                      <option value="SUBCONTRACT">مقاول باطن</option>
+                      <option value="SELF">{t("boq.selfExecute")}</option>
+                      <option value="SUBCONTRACT">{t("boq.subcontractor")}</option>
                     </select>
                   </div>
                   {newItem.executionType === 'SUBCONTRACT' && (
                     <div className="space-y-2">
-                      <label className="text-xs font-medium text-amber-400">تكلفة الباطن (شراء)</label>
-                      <input type="number" required min="0" step="any" value={newItem.subcontractorPrice} onChange={e=>setNewItem({...newItem, subcontractorPrice: parseFloat(e.target.value)})} className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400 focus:border-amber-500 outline-none placeholder-amber-500/30" placeholder="عقد الباطن لهذا البند..." />
+                      <label className="text-xs font-medium text-amber-400">{t("boq.subcontractorCost")}</label>
+                      <input type="number" required min="0" step="any" value={newItem.subcontractorPrice} onChange={e=>setNewItem({...newItem, subcontractorPrice: parseFloat(e.target.value)})} className="w-full bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400 focus:border-amber-500 outline-none placeholder-amber-500/30" placeholder={t("boq.subcontractorPlaceholder")} />
                     </div>
                   )}
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 border-t border-white/5 pt-4">
-                  <button type="button" onClick={closeModal} className="px-4 py-2 text-sm text-slate-300 hover:text-white">إلغاء</button>
+                  <button type="button" onClick={closeModal} className="px-4 py-2 text-sm text-slate-300 hover:text-white">{t("common.cancel")}</button>
                   <button type="submit" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium flex items-center gap-2 transition-colors">
-                    <Save size={16} /> اعتماد البند الحسابي
+                    <Save size={16} /> {isEditing ? t("boq.saveEdit") : t("boq.saveItem")}
                   </button>
                 </div>
               </form>
@@ -534,9 +536,9 @@ export default function BoqPage() {
                 <div>
                   <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400 flex items-center gap-2">
                     <UploadCloud size={24} className="text-indigo-400" />
-                    استيراد المقايسة السريع من (Excel)
+                    {t("boq.importTitle")}
                   </h3>
-                  <p className="text-sm text-slate-400 font-medium mt-1">لا حاجة لتصدير ملفات، فقط انسخ الخلايا من إكسيل (Copy) والصقها هنا (Paste)!</p>
+                  <p className="text-sm text-slate-400 font-medium mt-1">{t("boq.importSubtitle")}</p>
                 </div>
                 <button onClick={() => setIsImporting(false)} className="text-slate-400 hover:text-white bg-white/5 p-2 rounded-xl"><X size={20} /></button>
               </div>
@@ -544,8 +546,8 @@ export default function BoqPage() {
               <form onSubmit={handleBatchImport} className="space-y-4">
                 <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl mb-4">
                   <p className="text-xs font-bold text-amber-500/90 leading-relaxed">
-                    يجب أن تكون الأعمدة المنسوخة بالترتيب التالي للحصول على أفضل نتيجة:<br/>
-                    (كود البند) | (بيان الأعمال) | (الوحدة) | (الكمية المقدرة) | (سعر הוحدة للمالك)
+                    {t("boq.importInstructions")}<br/>
+                    {t("boq.importColumnOrder")}
                   </p>
                 </div>
 
@@ -560,9 +562,9 @@ export default function BoqPage() {
                 />
 
                 <div className="flex justify-end gap-3 border-t border-white/5 pt-4 mt-2">
-                  <button type="button" disabled={isLoading} onClick={() => setIsImporting(false)} className="px-5 py-2.5 text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">إلغاء</button>
+                  <button type="button" disabled={isLoading} onClick={() => setIsImporting(false)} className="px-5 py-2.5 text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all">{t("common.cancel")}</button>
                   <button type="submit" disabled={isLoading || importText.trim().length === 0} className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-white rounded-xl text-sm font-black flex items-center gap-2 transition-all disabled:opacity-50 disabled:grayscale">
-                    {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} تحليل واستيراد البيانات
+                    {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {t("boq.importButton")}
                   </button>
                 </div>
               </form>
@@ -575,35 +577,35 @@ export default function BoqPage() {
       <div ref={pdfRef} className="hidden print:block print-on-letterhead text-black font-sans bg-white" dir="rtl">
         <PrintLetterhead />
         <div className="pt-20 mb-6">
-          <h1 className="text-2xl font-black text-slate-900">جداول الكميات (BOQ)</h1>
+          <h1 className="text-2xl font-black text-slate-900">{t("boq.printTitle")}</h1>
           <p className="text-sm text-slate-500 font-bold">
-            المشروع: {projects.find(p => p.id === selectedProjectId)?.name || '-'} ({projects.find(p => p.id === selectedProjectId)?.code || '-'})
+            {t("boq.printProject")}: {projects.find(p => p.id === selectedProjectId)?.name || '-'} ({projects.find(p => p.id === selectedProjectId)?.code || '-'})
           </p>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
           <div className="bg-slate-50 p-3 rounded border border-slate-200">
-            <span className="font-bold text-slate-500">القيمة المخططة: </span>
+            <span className="font-bold text-slate-500">{t("boq.printPlannedValue")}: </span>
             <span className="font-mono font-black">{totalValue.toLocaleString()} SAR</span>
           </div>
           <div className="bg-slate-50 p-3 rounded border border-slate-200">
-            <span className="font-bold text-slate-500">المنفذ: </span>
+            <span className="font-bold text-slate-500">{t("boq.printExecuted")}: </span>
             <span className="font-mono font-black">{totalExecutedValue.toLocaleString()} SAR</span>
           </div>
           <div className="bg-slate-50 p-3 rounded border border-slate-200">
-            <span className="font-bold text-slate-500">نسبة الإنجاز: </span>
+            <span className="font-bold text-slate-500">{t("boq.printCompletion")}: </span>
             <span className="font-mono font-black">{completionPercentage.toFixed(1)}%</span>
           </div>
         </div>
         <table className="w-full text-right text-sm border-collapse">
           <thead>
             <tr className="bg-slate-900 text-white">
-              <th className="p-2 border border-slate-900">الكود</th>
-              <th className="p-2 border border-slate-900">البيان</th>
-              <th className="p-2 border border-slate-900 text-center w-16">الوحدة</th>
-              <th className="p-2 border border-slate-900 text-center w-20">الكمية</th>
-              <th className="p-2 border border-slate-900 text-center w-24">سعر الوحدة</th>
-              <th className="p-2 border border-slate-900 text-center w-20">المنفذ</th>
-              <th className="p-2 border border-slate-900 text-center w-24">الإجمالي</th>
+              <th className="p-2 border border-slate-900">{t("boq.printCode")}</th>
+              <th className="p-2 border border-slate-900">{t("boq.printDescription")}</th>
+              <th className="p-2 border border-slate-900 text-center w-16">{t("boq.printUnit")}</th>
+              <th className="p-2 border border-slate-900 text-center w-20">{t("boq.printQty")}</th>
+              <th className="p-2 border border-slate-900 text-center w-24">{t("boq.printUnitPrice")}</th>
+              <th className="p-2 border border-slate-900 text-center w-20">{t("boq.printExecutedQty")}</th>
+              <th className="p-2 border border-slate-900 text-center w-24">{t("boq.printTotal")}</th>
               <th className="p-2 border border-slate-900 text-center w-16">%</th>
             </tr>
           </thead>
@@ -628,7 +630,7 @@ export default function BoqPage() {
           </tbody>
           <tfoot>
             <tr className="bg-slate-900 text-white font-bold">
-              <td colSpan={3} className="p-2 border border-slate-900 text-left">الإجمالي</td>
+              <td colSpan={3} className="p-2 border border-slate-900 text-left">{t("boq.printGrandTotal")}</td>
               <td className="p-2 border border-slate-900 text-center">{boqItems.reduce((s, i) => s + Number(i.quantity), 0)}</td>
               <td className="p-2 border border-slate-900"></td>
               <td className="p-2 border border-slate-900 text-center">{boqItems.reduce((s, i) => s + Number(i.executedQty || 0), 0)}</td>

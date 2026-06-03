@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { motion } from "framer-motion";
@@ -31,6 +32,7 @@ export default function DashboardPage() {
     recentActivities: [] as { id: string; title: string; subtitle: string; status: string; type: string }[]
   });
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchStats() {
@@ -60,7 +62,7 @@ export default function DashboardPage() {
   }, []);
 
   const stats = [
-    { title: "إجمالي المشاريع النشطة", value: data.totalProjects.toString() || "0", trend: "+12%", up: true, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", glow: "from-blue-500/20 to-transparent" },
+    { title: t("dashboard.totalProjects"), value: data.totalProjects.toString() || "0", trend: "+12%", up: true, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", glow: "from-blue-500/20 to-transparent" },
     { title: "إجمالي الإيرادات (المعتمدة)", value: `SAR ${(data.certifiedValue / 1000).toFixed(1)}K`, trend: "+8.3%", up: true, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "from-emerald-500/20 to-transparent" },
     { title: "إجمالي التكاليف (مشتريات وباطن)", value: `SAR ${(data.totalCosts / 1000).toFixed(1)}K`, trend: "-2%", up: false, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "from-rose-500/20 to-transparent" },
     { title: "هامش الربح (Profit Margin)", value: `${data.profitMargin?.toFixed(1)}%`, trend: data.profitMargin > 0 ? "إيجابي" : "سلبي", up: data.profitMargin > 0, icon: Activity, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", glow: "from-indigo-500/20 to-transparent" }
@@ -73,7 +75,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
-          <p className="text-slate-400 text-sm animate-pulse">جاري تحميل لوحة المؤشرات المتقدمة...</p>
+          <p className="text-slate-400 text-sm animate-pulse">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -91,11 +93,11 @@ export default function DashboardPage() {
           </div>
           <div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-              المركز المالي للشركة (Command Center)
+              {t("dashboard.title")}
             </h1>
             <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
                <Activity size={14} className="text-emerald-500" />
-               مراقبة حية للأرباح، التكاليف، والإيرادات مع دفترة.
+               {t("dashboard.welcome")}
             </p>
           </div>
         </div>
@@ -191,7 +193,7 @@ export default function DashboardPage() {
               );
             }) : (
               <div className="w-full flex items-center justify-center text-slate-500 text-sm h-full pb-10">
-                لا توجد بيانات للأشهر الستة الماضية.
+                {t("common.noData")}
               </div>
             )}
           </div>
@@ -237,7 +239,7 @@ export default function DashboardPage() {
             )) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm min-h-[200px] text-center px-4">
                 <LayoutTemplate className="mb-4 opacity-50" size={40} />
-                <p>لا توجد تحركات مالية بعد في النظام.</p>
+                <p>{t("common.noData")}</p>
               </div>
             )}
           </div>

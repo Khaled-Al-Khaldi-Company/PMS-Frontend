@@ -25,8 +25,10 @@ import {
 import axios from "axios";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function PurchasesPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,16 +68,16 @@ export default function PurchasesPage() {
 
   const statusBadge = (ord: any) => {
     if (ord.status === 'PENDING') {
-      return { label: "قيد المراجعة", color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock };
+      return { label: t("purchase.status.pendingReview"), color: "text-amber-500 bg-amber-500/10 border-amber-500/20", icon: Clock };
     }
     if (ord.status === 'APPROVED' && !ord.daftraId) {
-      return { label: "معتمد (لم يُرحل)", color: "text-blue-500 bg-blue-500/10 border-blue-500/20", icon: BadgeCheck };
+      return { label: t("purchase.status.approvedNotPosted"), color: "text-blue-500 bg-blue-500/10 border-blue-500/20", icon: BadgeCheck };
     }
     if (ord.status === 'APPROVED' && ord.daftraId) {
-      return { label: "مرحّل إلى دفترة", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: Upload };
+      return { label: t("purchase.status.postedToDaftra"), color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20", icon: Upload };
     }
     if (ord.status === 'DELIVERED') {
-      return { label: "تم الاستلام", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]", icon: Package };
+      return { label: t("purchase.status.deliveredFull"), color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]", icon: Package };
     }
     return { label: ord.status, color: "text-slate-500 bg-slate-500/10 border-slate-500/20", icon: Clock };
   };
@@ -90,9 +92,9 @@ export default function PurchasesPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <ShoppingCart className="text-indigo-400" size={28} />
-            إدارة المشتريات والمواد (PO)
+            {t("purchase.title")}
           </h1>
-          <p className="text-slate-400 text-sm">تتبع طلبات الاستعاضة للمواد وربط التكاليف ببند التنفيذ الذاتي.</p>
+          <p className="text-slate-400 text-sm">{t("purchase.subtitle")}</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -100,7 +102,7 @@ export default function PurchasesPage() {
             <Link href="/dashboard/purchases/create" className="relative flex items-center gap-2 font-black py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] group bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white overflow-hidden hover:-translate-y-1">
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <PlusCircle size={20} className="group-hover:rotate-90 transition-transform relative z-10" />
-              <span className="relative z-10 text-sm">إنشاء طلب شراء (PO)</span>
+              <span className="relative z-10 text-sm">{t("purchase.create")}</span>
             </Link>
           )}
         </div>
@@ -111,9 +113,9 @@ export default function PurchasesPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <p className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
-               <Wallet size={16} /> إجمالي المشتريات المعتمدة
-             </p>
+              <p className="text-indigo-400 font-bold mb-1 flex items-center gap-2">
+                <Wallet size={16} /> {t("purchase.approvedTotal")}
+              </p>
              <h2 className="text-3xl font-black text-white font-mono">{totalSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-sm text-slate-500">SAR</span></h2>
            </div>
            <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30 shadow-inner group-hover:scale-110 transition-transform">
@@ -124,10 +126,10 @@ export default function PurchasesPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900/40 to-slate-900 border border-amber-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <p className="text-amber-400 font-bold mb-1 flex items-center gap-2">
-               <Clock size={16} /> طلبات قيد المراجعة
-             </p>
-             <h2 className="text-3xl font-black text-white font-mono">{pendingCount} <span className="text-sm text-slate-500">طلبات شراء</span></h2>
+              <p className="text-amber-400 font-bold mb-1 flex items-center gap-2">
+                <Clock size={16} /> {t("purchase.pendingOrders")}
+              </p>
+              <h2 className="text-3xl font-black text-white font-mono">{pendingCount} <span className="text-sm text-slate-500">{t("purchase.purchaseOrders")}</span></h2>
            </div>
            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 border border-amber-500/30 shadow-inner group-hover:scale-110 transition-transform">
              <Activity size={28} />
@@ -137,10 +139,10 @@ export default function PurchasesPage() {
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900/40 to-slate-900 border border-emerald-500/20 p-6 flex items-center justify-between group shadow-xl">
            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
            <div>
-             <p className="text-emerald-400 font-bold mb-1 flex items-center gap-2">
-               <CheckCircle2 size={16} /> طلبات مكتملة وموردة
-             </p>
-             <h2 className="text-3xl font-black text-white font-mono">{approvedCount} <span className="text-sm text-slate-500">طلبات شراء</span></h2>
+              <p className="text-emerald-400 font-bold mb-1 flex items-center gap-2">
+                <CheckCircle2 size={16} /> {t("purchase.completedOrders")}
+              </p>
+              <h2 className="text-3xl font-black text-white font-mono">{approvedCount} <span className="text-sm text-slate-500">{t("purchase.purchaseOrders")}</span></h2>
            </div>
            <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30 shadow-inner group-hover:scale-110 transition-transform">
              <FileBox size={28} />
@@ -153,7 +155,7 @@ export default function PurchasesPage() {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="بحث برقم الطلب (PO)..."
+            placeholder={t("purchase.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pr-12 pl-4 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
@@ -166,13 +168,13 @@ export default function PurchasesPage() {
           <table className="w-full text-right text-sm">
             <thead className="bg-slate-900/50 text-slate-400 border-b border-white/5 uppercase font-medium">
               <tr>
-                <th className="px-6 py-4">رقم الـ PO</th>
-                <th className="px-6 py-4">المشروع</th>
-                <th className="px-6 py-4">المورد / المورد المحتمل</th>
-                <th className="px-6 py-4 text-indigo-400">الإجمالي (SAR)</th>
-                <th className="px-6 py-4">تاريخ الطلب</th>
-                <th className="px-6 py-4 text-center">حالة الطلب</th>
-                <th className="px-6 py-4 text-center">الإجراءات</th>
+                <th className="px-6 py-4">{t("purchase.poNumber")}</th>
+                <th className="px-6 py-4">{t("common.project")}</th>
+                <th className="px-6 py-4">{t("purchase.supplierWithPotential")}</th>
+                <th className="px-6 py-4 text-indigo-400">{t("purchase.total")}</th>
+                <th className="px-6 py-4">{t("purchase.columnDate")}</th>
+                <th className="px-6 py-4 text-center">{t("purchase.columnStatus")}</th>
+                <th className="px-6 py-4 text-center">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -182,7 +184,7 @@ export default function PurchasesPage() {
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                   <td colSpan={7} className="px-6 py-12 text-center text-slate-400 glass">لا توجد طلبات شراء مسجلة بعد.</td>
+                   <td colSpan={7} className="px-6 py-12 text-center text-slate-400 glass">{t("purchase.noOrders")}</td>
                 </tr>
               ) : (
                 orders.filter(o => o.poNumber.includes(search)).map((ord, i) => (
@@ -195,13 +197,13 @@ export default function PurchasesPage() {
                     className="hover:bg-indigo-500/[0.03] transition-colors cursor-pointer group border-b border-white/5 active:bg-indigo-500/10"
                   >
                     <td className="px-6 py-5 font-mono font-bold text-white"><span className="text-indigo-400">#</span>{ord.poNumber}</td>
-                    <td className="px-6 py-5 font-bold text-white">{ord.project?.name || "عام (بدون مشروع)"}</td>
+                     <td className="px-6 py-5 font-bold text-white">{ord.project?.name || t("purchase.noProject")}</td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-700 font-bold text-xs shadow-inner">
                            {ord.supplier?.name?.charAt(0) || '?'}
                         </div> 
-                        <span className="font-semibold text-slate-300">{ord.supplier?.name || "مورد غير محدد"}</span>
+                        <span className="font-semibold text-slate-300">{ord.supplier?.name || t("purchase.supplierNotSet")}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5 font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500 text-lg border-x border-white/5 bg-slate-900/40">
@@ -237,7 +239,7 @@ export default function PurchasesPage() {
                                   alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
                                 }
                               }}
-                              title="اعتماد طلب الشراء"
+                              title={t("purchase.approve")}
                               className="p-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm"
                             >
                               <CheckCircle2 size={18} />
@@ -251,7 +253,7 @@ export default function PurchasesPage() {
                                   e.stopPropagation();
                                   alert('شاشة التعديل قيد التطوير وستتوفر قريباً!');
                                 }}
-                                title="تعديل طلب الشراء"
+                                title={t("purchase.editOrder")}
                                 className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
                               >
                                 <Edit size={18} />
@@ -270,7 +272,7 @@ export default function PurchasesPage() {
                                     alert("فشل الحذف. قد يكون الطلب معتمداً مسبقاً.");
                                   }
                                 }}
-                                title="إلغاء وحذف الطلب"
+                                title={t("purchase.deleteOrder")}
                                 className="p-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm"
                               >
                                 <Trash2 size={18} />
@@ -295,7 +297,7 @@ export default function PurchasesPage() {
                                   alert(typeof errData === 'object' ? JSON.stringify(errData, null, 2) : errData);
                                 }
                               }}
-                              title="ترحيل إلى دفترة"
+                              title={t("purchase.postToDaftra")}
                               className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
                             >
                               <Upload size={18} />
@@ -307,7 +309,7 @@ export default function PurchasesPage() {
                                 e.stopPropagation();
                                 router.push(`/dashboard/purchases/edit/${ord.id}`);
                               }}
-                              title="تعديل طلب الشراء"
+                              title={t("purchase.editOrder")}
                               className="p-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm"
                             >
                               <Edit size={18} />
@@ -316,7 +318,7 @@ export default function PurchasesPage() {
                         </div>
                       ) : (
                         <div className="flex justify-center">
-                           <span className="text-slate-500 text-xs font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 shadow-inner opacity-50">مكتمل ✅</span>
+                           <span className="text-slate-500 text-xs font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 shadow-inner opacity-50">{t("purchase.completed")}</span>
                         </div>
                       )}
                     </td>

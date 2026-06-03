@@ -16,8 +16,10 @@ import {
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function InventoryDashboard() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("STOCKS"); // STOCKS, TRANSACTIONS, WAREHOUSES
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -127,8 +129,8 @@ export default function InventoryDashboard() {
       setShowGrnModal(false);
       fetchTransactions();
       if (selectedWarehouse) fetchStock(selectedWarehouse);
-      alert("تم تسجيل سند الاستلام بنجاح!");
-    } catch (e: any) { alert("حدث خطأ في التسجيل"); }
+      alert(t("inventory.grnSuccess"));
+    } catch (e: any) { alert(t("inventory.grnError")); }
   };
 
   const handleMisSubmit = async (e: React.FormEvent) => {
@@ -146,8 +148,8 @@ export default function InventoryDashboard() {
       setShowMisModal(false);
       fetchTransactions();
       if (selectedWarehouse) fetchStock(selectedWarehouse);
-      alert("تم تسجيل صرف المواد بنجاح!");
-    } catch (e: any) { alert(e.response?.data?.message || "حدث خطأ في الصرف.. تأكد من وجود رصيد كافٍ!"); }
+      alert(t("inventory.issueSuccess"));
+    } catch (e: any) { alert(e.response?.data?.message || t("inventory.issueError")); }
   };
 
   const handleWarehouseSubmit = async (e: React.FormEvent) => {
@@ -159,9 +161,9 @@ export default function InventoryDashboard() {
       });
       setShowWarehouseModal(false);
       fetchWarehouses();
-      alert("تمت إضافة المستودع بنجاح!");
+      alert(t("inventory.warehouseAdded"));
     } catch (e: any) { 
-      const msg = e.response?.data?.message || e.message || 'حدث خطأ في إضافة المستودع';
+      const msg = e.response?.data?.message || e.message || t("inventory.warehouseAddError");
       alert(msg);
     }
   };
@@ -169,7 +171,7 @@ export default function InventoryDashboard() {
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <Boxes className="animate-bounce text-indigo-500 mb-4" size={48} />
-      <p className="text-slate-400 font-bold">جاري تجهيز إدارة المستودعات...</p>
+      <p className="text-slate-400 font-bold">{t("inventory.loading")}</p>
     </div>
   );
 
@@ -186,20 +188,20 @@ export default function InventoryDashboard() {
             <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
               <Warehouse className="text-indigo-400" size={28} />
             </div>
-            إدارة مستودعات الموقع
+            {t("nav.inventory")}
           </h1>
-          <p className="text-slate-400 text-lg mt-3 font-medium">نظام متكامل لتتبع وإدارة الأرصدة، تسجيل الاستلامات، وإصدار سندات الصرف.</p>
+          <p className="text-slate-400 text-lg mt-3 font-medium">{t("inventory.subtitle")}</p>
         </div>
         
         <div className="relative z-10 flex flex-wrap gap-3 w-full lg:w-auto">
           <button onClick={() => setShowWarehouseModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-white font-bold transition-all shadow-lg hover:-translate-y-1">
-            <Plus size={18} /> إضافة مستودع
+            <Plus size={18} /> {t("inventory.addWarehouse")}
           </button>
           <button onClick={() => setShowGrnModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] hover:-translate-y-1">
-            <ArrowDownToLine size={18} /> سند استلام (GRN)
+            <ArrowDownToLine size={18} /> {t("inventory.grnButton")}
           </button>
           <button onClick={() => setShowMisModal(true)} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold transition-all shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:shadow-[0_0_25px_rgba(244,63,94,0.3)] hover:-translate-y-1">
-            <ArrowUpFromLine size={18} /> سند صرف مواد
+            <ArrowUpFromLine size={18} /> {t("inventory.misButton")}
           </button>
         </div>
       </div>
@@ -210,13 +212,13 @@ export default function InventoryDashboard() {
           onClick={() => setActiveTab("STOCKS")}
           className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 ${activeTab === 'STOCKS' ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
-          <PackageSearch size={20} /> الأرصدة الحالية والمخزون
+          <PackageSearch size={20} /> {t("inventory.tabStocks")}
         </button>
         <button 
           onClick={() => setActiveTab("TRANSACTIONS")}
           className={`flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 ${activeTab === 'TRANSACTIONS' ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
-          <ArrowRightLeft size={20} /> سجل حركات المواد الدقيق
+          <ArrowRightLeft size={20} /> {t("inventory.tabTransactions")}
         </button>
       </div>
 
@@ -230,7 +232,7 @@ export default function InventoryDashboard() {
                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                  <Building2 className="text-blue-400" size={20} />
                </div>
-               <span className="text-white font-black text-lg">عرض أرصدة مستودع:</span>
+               <span className="text-white font-black text-lg">{t("inventory.viewStockFor")}</span>
             </div>
             <select 
               className="bg-slate-950 border border-slate-800 text-white px-5 py-3 rounded-xl outline-none min-w-[250px] focus:border-indigo-500 transition-colors shadow-inner font-bold"
@@ -238,7 +240,7 @@ export default function InventoryDashboard() {
               onChange={(e) => setSelectedWarehouse(e.target.value)}
             >
               {warehouses.map(w => (
-                <option key={w.id} value={w.id}>{w.name} {w.project ? `(موقع: ${w.project.name})` : '(مستودع رئيسي)'}</option>
+                <option key={w.id} value={w.id}>{w.name} {w.project ? `(${t("inventory.site")}: ${w.project.name})` : `(${t("inventory.mainWarehouse")})`}</option>
               ))}
             </select>
           </div>
@@ -250,15 +252,15 @@ export default function InventoryDashboard() {
             <table className="w-full text-right border-separate border-spacing-y-2 px-4 pb-4">
               <thead>
                 <tr className="text-slate-400 text-xs font-black uppercase tracking-wider">
-                  <th className="px-6 py-4">كود المادة</th>
-                  <th className="px-6 py-4">اسم المادة</th>
-                  <th className="px-6 py-4">الوحدة</th>
-                  <th className="px-6 py-4 text-left">الرصيد الفعلي المتوفر</th>
+                  <th className="px-6 py-4">{t("common.code")}</th>
+                  <th className="px-6 py-4">{t("inventory.materialName")}</th>
+                  <th className="px-6 py-4">{t("common.unit")}</th>
+                  <th className="px-6 py-4 text-left">{t("inventory.availableStock")}</th>
                 </tr>
               </thead>
               <tbody>
                 {stocks.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">لا يوجد أرصدة في هذا المستودع حالياً</td></tr>
+                  <tr><td colSpan={4} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">{t("inventory.noStock")}</td></tr>
                 ) : (
                   stocks.map((stock) => (
                     <motion.tr initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} key={stock.id} className="bg-slate-900/40 hover:bg-slate-800/60 transition-colors group">
@@ -283,18 +285,18 @@ export default function InventoryDashboard() {
             <table className="w-full text-right border-separate border-spacing-y-2 px-4 pb-4">
               <thead>
                 <tr className="text-slate-400 text-xs font-black uppercase tracking-wider">
-                  <th className="px-6 py-4">التاريخ</th>
-                  <th className="px-6 py-4">الرقم المرجعي</th>
-                  <th className="px-6 py-4">نوع الحركة</th>
-                  <th className="px-6 py-4">المستودع</th>
-                  <th className="px-6 py-4">المادة</th>
-                  <th className="px-6 py-4 text-left">الكمية</th>
-                  <th className="px-6 py-4 text-left">مرجع (PO/BOQ)</th>
+                  <th className="px-6 py-4">{t("common.date")}</th>
+                  <th className="px-6 py-4">{t("inventory.referenceNo")}</th>
+                  <th className="px-6 py-4">{t("inventory.transactionType")}</th>
+                  <th className="px-6 py-4">{t("inventory.warehouse")}</th>
+                  <th className="px-6 py-4">{t("inventory.materialName")}</th>
+                  <th className="px-6 py-4 text-left">{t("common.quantity")}</th>
+                  <th className="px-6 py-4 text-left">{t("inventory.reference")}</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">لا توجد حركات مسجلة حتى الآن</td></tr>
+                  <tr><td colSpan={7} className="text-center py-16 text-slate-500 font-bold bg-slate-900/20 rounded-2xl">{t("inventory.noTransactions")}</td></tr>
                 ) : (
                   transactions.map((trx) => (
                     <motion.tr initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} key={trx.id} className="bg-slate-900/40 hover:bg-slate-800/60 transition-colors group">
@@ -304,8 +306,8 @@ export default function InventoryDashboard() {
                       </td>
                       <td className="px-6 py-4 border-y border-white/5 group-hover:border-indigo-500/30">
                         {trx.type === 'RECEIPT' 
-                          ? <span className="flex items-center gap-1.5 w-max bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/20"><ArrowDownToLine size={14}/> استلام وارد</span>
-                          : <span className="flex items-center gap-1.5 w-max bg-rose-500/10 text-rose-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-rose-500/20"><ArrowUpFromLine size={14}/> صرف لموقع</span>
+                          ? <span className="flex items-center gap-1.5 w-max bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/20"><ArrowDownToLine size={14}/> {t("inventory.receipt")}</span>
+                          : <span className="flex items-center gap-1.5 w-max bg-rose-500/10 text-rose-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-rose-500/20"><ArrowUpFromLine size={14}/> {t("inventory.issue")}</span>
                         }
                       </td>
                       <td className="px-6 py-4 text-slate-300 font-bold text-sm border-y border-white/5 group-hover:border-indigo-500/30">{trx.warehouse.name}</td>
@@ -316,7 +318,7 @@ export default function InventoryDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 rounded-l-2xl text-left border-y border-l border-white/5 group-hover:border-indigo-500/30 text-xs text-slate-500 font-mono">
-                        {trx.po?.poNumber || trx.boqItem?.description || 'صرف/استلام حر'}
+                        {trx.po?.poNumber || trx.boqItem?.description || t("inventory.freeTransaction")}
                       </td>
                     </motion.tr>
                   ))
@@ -334,43 +336,43 @@ export default function InventoryDashboard() {
             <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-xl shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
-                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowDownToLine className="text-emerald-400" size={28}/> سند استلام مواد (GRN)</h2>
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowDownToLine className="text-emerald-400" size={28}/> {t("inventory.grnModalTitle")}</h2>
                 <button onClick={() => setShowGrnModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
               </div>
               <form onSubmit={handleGrnSubmit} className="space-y-5 relative z-10">
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">لصالح مستودع</label>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.forWarehouse")}</label>
                    <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, warehouseId: e.target.value})}>
-                     <option value="">-- اختر المستودع --</option>
+                     <option value="">{t("inventory.selectWarehouse")}</option>
                      {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                    </select>
                 </div>
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">مربوط بأمر شراء (اختياري)</label>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.linkedToPO")}</label>
                    <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, poId: e.target.value})}>
-                     <option value="">-- استلام حر بدون أمر شراء --</option>
+                     <option value="">{t("inventory.freeReceipt")}</option>
                      {purchaseOrders.map(p => <option key={p.id} value={p.id}>{p.poNumber}</option>)}
                    </select>
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                    <div>
-                     <label className="text-sm font-bold text-slate-400 mb-2 block">المادة المستلمة</label>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.receivedMaterial")}</label>
                      <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, materialId: e.target.value})}>
-                       <option value="">-- اختر --</option>
+                       <option value="">{t("common.select")}</option>
                        {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                      </select>
                    </div>
                    <div>
-                     <label className="text-sm font-bold text-slate-400 mb-2 block">الكمية المستلمة</label>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.receivedQuantity")}</label>
                      <input required type="number" step="0.01" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors font-mono text-lg" onChange={e => setGrnForm({...grnForm, quantity: e.target.value})} />
                    </div>
                 </div>
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">ملاحظات الفحص</label>
-                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, remarks: e.target.value})} placeholder="حالة المواد عند الاستلام..." />
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.inspectionNotes")}</label>
+                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-emerald-500/50 transition-colors" onChange={e => setGrnForm({...grnForm, remarks: e.target.value})} placeholder={t("inventory.inspectionPlaceholder")} />
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-1">
-                  <Save size={22} /> ترحيل السند وإضافة المواذ للرصيد
+                  <Save size={22} /> {t("inventory.postGrn")}
                 </button>
               </form>
             </motion.div>
@@ -382,39 +384,39 @@ export default function InventoryDashboard() {
             <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-xl shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
-                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowUpFromLine className="text-rose-400" size={28}/> سند صرف مواد (MIS)</h2>
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><ArrowUpFromLine className="text-rose-400" size={28}/> {t("inventory.misModalTitle")}</h2>
                 <button onClick={() => setShowMisModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
               </div>
               <form onSubmit={handleMisSubmit} className="space-y-5 relative z-10">
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">من مستودع</label>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.fromWarehouse")}</label>
                    <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, warehouseId: e.target.value})}>
-                     <option value="">-- اختر المستودع --</option>
+                     <option value="">{t("inventory.selectWarehouse")}</option>
                      {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                    </select>
                 </div>
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">لصالح مشروع (اختياري)</label>
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.forProject")}</label>
                    <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, projectId: e.target.value})}>
-                     <option value="">-- صرف حر بدون تحديد مشروع --</option>
+                     <option value="">{t("inventory.freeIssue")}</option>
                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                    </select>
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                    <div>
-                     <label className="text-sm font-bold text-slate-400 mb-2 block">المادة المُراد صرفها</label>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.materialToIssue")}</label>
                      <select required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-rose-500/50 transition-colors" onChange={e => setMisForm({...misForm, materialId: e.target.value})}>
-                       <option value="">-- اختر --</option>
+                       <option value="">{t("common.select")}</option>
                        {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                      </select>
                    </div>
                    <div>
-                     <label className="text-sm font-bold text-slate-400 mb-2 block">الكمية المصروفة</label>
+                     <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.issuedQuantity")}</label>
                      <input required type="number" step="0.01" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-rose-400 outline-none focus:border-rose-500/50 transition-colors font-mono text-lg font-black" onChange={e => setMisForm({...misForm, quantity: e.target.value})} />
                    </div>
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all hover:-translate-y-1">
-                  <ArrowUpFromLine size={22} /> صرف وخصم من الرصيد
+                  <ArrowUpFromLine size={22} /> {t("inventory.postMis")}
                 </button>
               </form>
             </motion.div>
@@ -426,20 +428,20 @@ export default function InventoryDashboard() {
             <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="bg-slate-900 border border-white/10 rounded-[2rem] p-8 w-full max-w-lg shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
               <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-5 relative z-10">
-                <h2 className="text-2xl font-black text-white flex items-center gap-3"><Building2 className="text-indigo-400" size={28}/> إضافة مستودع جديد</h2>
+                <h2 className="text-2xl font-black text-white flex items-center gap-3"><Building2 className="text-indigo-400" size={28}/> {t("inventory.addWarehouseModal")}</h2>
                 <button onClick={() => setShowWarehouseModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><X size={20}/></button>
               </div>
               <form onSubmit={handleWarehouseSubmit} className="space-y-5 relative z-10">
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">اسم المستودع</label>
-                   <input required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder="مثال: المستودع الرئيسي" onChange={e => setWarehouseForm({...warehouseForm, name: e.target.value})} />
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.warehouseName")}</label>
+                   <input required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder={t("inventory.warehouseNamePlaceholder")} onChange={e => setWarehouseForm({...warehouseForm, name: e.target.value})} />
                 </div>
                 <div>
-                   <label className="text-sm font-bold text-slate-400 mb-2 block">موقع المستودع</label>
-                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder="العنوان أو المربع..." onChange={e => setWarehouseForm({...warehouseForm, location: e.target.value})} />
+                   <label className="text-sm font-bold text-slate-400 mb-2 block">{t("inventory.warehouseLocation")}</label>
+                   <input className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white outline-none focus:border-indigo-500/50 transition-colors" placeholder={t("inventory.warehouseLocationPlaceholder")} onChange={e => setWarehouseForm({...warehouseForm, location: e.target.value})} />
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 mt-6 shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-1">
-                  <Plus size={22} /> إضافة واعتماد المستودع
+                  <Plus size={22} /> {t("inventory.addWarehouseConfirm")}
                 </button>
               </form>
             </motion.div>

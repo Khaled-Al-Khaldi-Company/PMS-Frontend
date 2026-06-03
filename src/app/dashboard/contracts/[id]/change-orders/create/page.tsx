@@ -8,11 +8,13 @@ import {
   FileSignature, Save, ArrowRight, Loader2, Plus, Trash2, ShieldQuestion, Wallet
 } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function CreateChangeOrderPage() {
   const router = useRouter();
   const params = useParams();
   const contractId = params.id as string;
+  const { t } = useLanguage();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -132,10 +134,10 @@ export default function CreateChangeOrderPage() {
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <FileSignature className="text-emerald-400" size={24} />
-              تصميم ملحق عقد (أمر تغييري)
+              {t("changeOrder.title")}
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              إضافة تغيرات مالية أو كميات على العقد رقم: <span className="font-mono text-white">[{contract?.referenceNumber}]</span>
+              {t("changeOrder.subtitle")} <span className="font-mono text-white">[{contract?.referenceNumber}]</span>
             </p>
           </div>
         </div>
@@ -153,7 +155,7 @@ export default function CreateChangeOrderPage() {
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                عنوان الملحق / الغرض المستحدث
+                {t("changeOrder.titleLabel")}
               </label>
               <input
                 type="text"
@@ -177,7 +179,7 @@ export default function CreateChangeOrderPage() {
                 <div className={`p-2 rounded-full ${formData.type === 'ADDITION' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40' : 'bg-slate-800 text-slate-400 group-hover:text-white'}`}>
                   <Plus size={20} />
                 </div>
-                <span className={`font-bold ${formData.type === 'ADDITION' ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-300'}`}>ملحق إضافة / زيادة</span>
+                <span className={`font-bold ${formData.type === 'ADDITION' ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-300'}`}>{t("changeOrder.addition")}</span>
               </div>
               
               <div
@@ -191,7 +193,7 @@ export default function CreateChangeOrderPage() {
                 <div className={`p-2 rounded-full ${formData.type === 'DEDUCTION' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/40' : 'bg-slate-800 text-slate-400 group-hover:text-white'}`}>
                   <ShieldQuestion size={20} />
                 </div>
-                <span className={`font-bold ${formData.type === 'DEDUCTION' ? 'text-rose-400' : 'text-slate-400 group-hover:text-slate-300'}`}>ملحق تنزيل / استبعاد</span>
+                <span className={`font-bold ${formData.type === 'DEDUCTION' ? 'text-rose-400' : 'text-slate-400 group-hover:text-slate-300'}`}>{t("changeOrder.deduction")}</span>
               </div>
             </div>
 
@@ -200,14 +202,14 @@ export default function CreateChangeOrderPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Wallet size={18} className="text-emerald-400" />
-                  بنود الملحق التفصيلية
+                  {t("changeOrder.items")}
                 </h3>
                 <button
                   type="button"
                   onClick={addItem}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5 border border-emerald-500/20"
                 >
-                  <Plus size={14} /> إضافة بند
+                  <Plus size={14} /> {t("changeOrder.addItem")}
                 </button>
               </div>
 
@@ -222,7 +224,7 @@ export default function CreateChangeOrderPage() {
                       className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row gap-4 relative group"
                     >
                       <div className="flex-1 space-y-2">
-                        <label className="text-xs text-slate-400">وصف البند التغييري</label>
+                        <label className="text-xs text-slate-400">{t("changeOrder.description")}</label>
                         <input
                           type="text"
                           required
@@ -233,7 +235,7 @@ export default function CreateChangeOrderPage() {
                         />
                       </div>
                       <div className="w-full sm:w-24 space-y-2">
-                        <label className="text-xs text-slate-400">الكمية</label>
+                        <label className="text-xs text-slate-400">{t("changeOrder.quantity")}</label>
                         <input
                           type="number"
                           required
@@ -245,7 +247,7 @@ export default function CreateChangeOrderPage() {
                         />
                       </div>
                       <div className="w-full sm:w-32 space-y-2">
-                        <label className="text-xs text-slate-400">سعر الوحدة (SAR)</label>
+                        <label className="text-xs text-slate-400">{t("changeOrder.unitPrice")}</label>
                         <input
                           type="number"
                           required
@@ -289,23 +291,23 @@ export default function CreateChangeOrderPage() {
           <div className="glass-dark border border-white/5 rounded-3xl p-6 relative overflow-hidden">
             <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full blur-[40px] opacity-20 pointer-events-none ${formData.type === 'ADDITION' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
             
-            <h3 className="text-lg font-bold text-white mb-6">ملخص الملحق المالي</h3>
+            <h3 className="text-lg font-bold text-white mb-6">{t("changeOrder.summary")}</h3>
             
             <div className="space-y-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">الطرف المعني</span>
+                <span className="text-slate-400">{t("changeOrder.party")}</span>
                 <span className="font-bold text-white max-w-[140px] truncate" title={partyName}>{partyName}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">نوع الملحق</span>
+                <span className="text-slate-400">{t("changeOrder.type")}</span>
                 <span className={`font-bold ${formData.type === 'ADDITION' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {formData.type === 'ADDITION' ? 'زيادة بالمبلغ' : 'استقطاع / تنزيل'}
+                  {formData.type === 'ADDITION' ? t("changeOrder.increase") : t("changeOrder.decrease")}
                 </span>
               </div>
               
               <div className="pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-slate-400">إجمالي الملحق (SAR)</span>
+                  <span className="text-slate-400">{t("changeOrder.total")}</span>
                   <span className={`font-mono text-xl font-black ${formData.type === 'ADDITION' ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {formData.type === 'DEDUCTION' && totalAmount > 0 ? '-' : ''}{totalAmount.toLocaleString('en-US')}
                   </span>
@@ -324,10 +326,10 @@ export default function CreateChangeOrderPage() {
               }`}
             >
               {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              اعتماد وإنشاء الملحق
+              {t("changeOrder.submit")}
             </button>
             <p className="text-center text-xs text-slate-500 mt-4 leading-relaxed">
-              بموجب الاعتماد، سيتم {formData.type === 'ADDITION' ? 'زيادة' : 'خصم'} هذه القيمة لإجمالي العمليات.
+              {t("changeOrder.noteIntro")} {formData.type === 'ADDITION' ? t("changeOrder.increaseVerb") : t("changeOrder.decreaseVerb")} {t("changeOrder.noteOutro")}
             </p>
           </div>
         </motion.div>

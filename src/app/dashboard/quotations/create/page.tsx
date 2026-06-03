@@ -25,8 +25,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function CreateQuotationPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -249,20 +251,20 @@ export default function CreateQuotationPage() {
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/10 flex items-center justify-center border border-pink-500/20 shadow-lg">
                   <FileText className="text-pink-400" size={24} />
                 </div>
-                تسعير احترافي (عروض الأسعار)
+                {t("quotations.createTitle")}
               </h1>
               <p className="text-slate-400 text-sm mt-2 font-medium flex items-center gap-2">
-                قم بتسجيل البنود وتكلفتها لإنشاء عرض سعر يمكنك طباعته أو حفظه كـ PDF للعميل.
+                {t("quotations.createSubtitle")}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button type="button" onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold transition-all shadow-lg text-sm">
-              <Printer size={18} /> معاينة وطباعة PDF
+              <Printer size={18} /> {t("quotations.pdfPreview")}
             </button>
             <button onClick={handleSubmit} disabled={isLoading} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-all hover:-translate-y-1 text-sm disabled:opacity-50">
-              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} حفظ في النظام
+              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} {t("quotations.saveInSystem")}
             </button>
           </div>
         </div>
@@ -277,7 +279,7 @@ export default function CreateQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Building2 size={14} className="text-pink-400" />
-                  العميل / الجهة المالكة المستهدفة
+                  {t("quotations.clientLabel")}
                 </label>
 
                 {/* Smart Client Combobox */}
@@ -292,7 +294,7 @@ export default function CreateQuotationPage() {
                       onChange={e => handleClientInputChange(e.target.value)}
                       onFocus={() => setShowClientDropdown(true)}
                       className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 pr-10 pl-10 text-white text-base placeholder-slate-600 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all shadow-inner"
-                      placeholder="ابحث أو اكتب اسم العميل..."
+                      placeholder={t("quotations.clientPlaceholder")}
                       autoComplete="off"
                     />
                     <button
@@ -317,7 +319,7 @@ export default function CreateQuotationPage() {
                         {/* Header */}
                         <div className="px-4 py-2.5 border-b border-white/5 flex items-center justify-between">
                           <span className="text-xs text-slate-500 font-bold">
-                            {filteredClients.length} عميل مسجل
+                            {filteredClients.length} {t("contacts.clientList")}
                           </span>
                           {clientSearch && (
                             <span className="text-xs text-pink-400 font-bold">
@@ -354,14 +356,14 @@ export default function CreateQuotationPage() {
                           ) : clients.length === 0 ? (
                             <div className="px-4 py-6 text-center text-slate-500 text-sm">
                               <Building2 size={24} className="mx-auto mb-2 text-slate-700" />
-                              لا يوجد عملاء مسجلين بعد
+                              {t("quotations.noClients")}
                             </div>
                           ) : (
                             <div className="px-4 py-4 flex items-center gap-3 text-sm">
                               <UserPlus size={18} className="text-pink-400 shrink-0" />
                               <div>
-                                <p className="text-white font-bold">سيتم استخدام: &ldquo;{clientSearch}&rdquo;</p>
-                                <p className="text-slate-500 text-xs mt-0.5">لا يوجد عميل مطابق – سيُحفظ كاسم جديد</p>
+                                <p className="text-white font-bold">{t("quotations.willUse")} &ldquo;{clientSearch}&rdquo;</p>
+                                <p className="text-slate-500 text-xs mt-0.5">{t("quotations.noMatchHint")}</p>
                               </div>
                             </div>
                           )}
@@ -370,7 +372,7 @@ export default function CreateQuotationPage() {
                         {/* Footer hint */}
                         <div className="px-4 py-3 border-t border-white/5 bg-slate-950/50 flex items-center justify-between">
                           <p className="text-[10px] text-slate-500">
-                            يمكنك اختيار عميل أو كتابة اسم مباشرة
+                            {t("quotations.footerHint")}
                           </p>
                           <button
                             type="button"
@@ -381,7 +383,7 @@ export default function CreateQuotationPage() {
                             }}
                             className="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition-all"
                           >
-                            <Plus size={14} /> تسجيل عميل جديد
+                            <Plus size={14} /> {t("quotations.newClient")}
                           </button>
                         </div>
                       </motion.div>
@@ -393,7 +395,7 @@ export default function CreateQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileSignature size={14} className="text-pink-400" />
-                  وصف المشروع أو عنوان عرض السعر
+                  {t("quotations.titleLabel")}
                 </label>
                 <input 
                   type="text" 
@@ -401,7 +403,7 @@ export default function CreateQuotationPage() {
                   value={formData.title} 
                   onChange={e => setFormData({...formData, title: e.target.value})} 
                   className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-base placeholder-slate-600 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all shadow-inner" 
-                  placeholder="مثال: توريد وتركيب أعمال التشطيبات للفرع الرئيسي" 
+                  placeholder={t("quotations.titlePlaceholder")} 
                 />
               </div>
               
@@ -413,7 +415,7 @@ export default function CreateQuotationPage() {
                     onChange={e => setFormData({...formData, hasVat: e.target.checked})}
                     className="w-5 h-5 rounded accent-pink-500 border-slate-700" 
                   />
-                  <span className="font-bold text-white text-sm">تطبيق ضريبة القيمة المضافة 15% 🇸🇦</span>
+                  <span className="font-bold text-white text-sm">{t("quotations.vatLabel")}</span>
                 </label>
               </div>
             </div>
@@ -428,7 +430,7 @@ export default function CreateQuotationPage() {
                       className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-indigo-400 text-xs font-bold transition-all shadow-lg"
                     >
                       <LayoutTemplate size={14} />
-                      {showTemplates ? 'إغلاق القوالب' : 'إدراج من قالب جاهز'}
+                      {showTemplates ? t("quotations.templateClose") : t("quotations.insertTemplate")}
                     </button>
 
                     <AnimatePresence>
@@ -440,11 +442,11 @@ export default function CreateQuotationPage() {
                           className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl z-50 p-2 overflow-hidden"
                         >
                            <div className="p-3 border-b border-white/5 mb-1">
-                              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">اختر قالباً للتعبئة التلقائية</h4>
+                              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t("quotations.templateSelectorTitle")}</h4>
                            </div>
                            <div className="max-h-64 overflow-y-auto custom-scrollbar">
                               {templates.length === 0 ? (
-                                <p className="p-4 text-xs text-slate-600 text-center italic">لا توجد قوالب مضافة بعد</p>
+                                <p className="p-4 text-xs text-slate-600 text-center italic">{t("quotations.noTemplates")}</p>
                               ) : (
                                 templates.map(t => (
                                   <button
@@ -468,7 +470,7 @@ export default function CreateQuotationPage() {
                            </div>
                            <div className="p-2 border-t border-white/5 mt-1">
                               <Link href="/dashboard/settings/templates" className="block w-full text-center py-2 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
-                                إدارة القوالب ⚙️
+                                {t("quotations.manageTemplates")}
                               </Link>
                            </div>
                         </motion.div>
@@ -480,28 +482,28 @@ export default function CreateQuotationPage() {
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <FileText size={14} className="text-pink-400" />
-                  العرض الفني / نطاق العمل
+                  {t("quotations.technicalOffer")}
                 </label>
                 <textarea 
                   rows={4}
                   value={formData.technicalOffer} 
                   onChange={e => setFormData({...formData, technicalOffer: e.target.value})} 
                   className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all shadow-inner resize-y min-h-[120px]" 
-                  placeholder="مثال: يختص هذا العرض بتوريد وتركيب الأنظمة الموضحة بالجدول بموجب المواصفات العالمية المعتمدة..." 
+                  placeholder={t("quotations.technicalOfferPlaceholder")} 
                 />
               </div>
 
               <div className="space-y-3">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <ScrollText size={14} className="text-pink-400" />
-                  الشروط والأحكام / شروط العقد
+                  {t("quotations.termsConditions")}
                 </label>
                 <textarea 
                   rows={4}
                   value={formData.termsConditions} 
                   onChange={e => setFormData({...formData, termsConditions: e.target.value})} 
                   className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all shadow-inner resize-y min-h-[120px]" 
-                  placeholder="مثال: مدة التنفيذ 45 يوماً من تاريخ استلام الدفعة المقدمة. الدفعة المقدمة 50%..." 
+                  placeholder={t("quotations.termsConditionsPlaceholder")} 
                 />
               </div>
             </div>
@@ -511,22 +513,22 @@ export default function CreateQuotationPage() {
               <div className="flex items-center justify-between border-b border-white/5 pb-4">
                 <h3 className="font-extrabold text-xl text-white flex items-center gap-2 drop-shadow-sm">
                   <ListOrdered className="text-pink-400" size={24} />
-                  جداول التكلفة التفصيلية
+                  {t("quotations.itemsTitle")}
                 </h3>
                 <button type="button" onClick={handleAddItem} className="flex items-center gap-2 text-sm font-bold text-pink-400 hover:text-white bg-pink-500/10 hover:bg-pink-500 border border-pink-500/20 hover:border-pink-500 px-4 py-2 rounded-xl transition-all shadow-lg hover:shadow-[0_0_15px_rgba(236,72,153,0.5)]">
-                  <Plus size={18} /> إدراج بند جديد
+                  <Plus size={18} /> {t("quotations.addItem")}
                 </button>
               </div>
 
               {/* Header Row for large screens */}
               <div className="hidden lg:grid grid-cols-12 gap-4 px-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-wider text-center flex items-center">
-                <div className="col-span-1">بند رقم</div>
-                <div className="col-span-3 text-right">وصف تفصيلي للأعمال</div>
-                <div className="col-span-1">الوحدة</div>
-                <div className="col-span-1 text-emerald-400">الكمية</div>
-                <div className="col-span-2 text-amber-500">التكلفة المتوقعة (للإدارة)</div>
-                <div className="col-span-2 text-rose-300">سعر الإفراد البيع (للعميل)</div>
-                <div className="col-span-2 text-left">القيمة الإجمالية (SAR)</div>
+                <div className="col-span-1">{t("quotations.colItemNo")}</div>
+                <div className="col-span-3 text-right">{t("quotations.colDescription")}</div>
+                <div className="col-span-1">{t("quotations.colUnit")}</div>
+                <div className="col-span-1 text-emerald-400">{t("quotations.colQuantity")}</div>
+                <div className="col-span-2 text-amber-500">{t("quotations.colEstCost")}</div>
+                <div className="col-span-2 text-rose-300">{t("quotations.colUnitPrice")}</div>
+                <div className="col-span-2 text-left">{t("quotations.colTotal")}</div>
               </div>
 
               <div className="space-y-3">
@@ -541,10 +543,10 @@ export default function CreateQuotationPage() {
                        <input type="text" value={item.itemCode} onChange={e => handleItemChange(index, "itemCode", e.target.value)} className="w-full bg-slate-900/80 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-500 font-mono font-bold" readOnly />
                     </div>
                     <div className="col-span-1 lg:col-span-3">
-                       <input type="text" required value={item.description} onChange={e => handleItemChange(index, "description", e.target.value)} placeholder="اكتب تفاصيل البند هنا..." className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all font-medium" />
+                       <input type="text" required value={item.description} onChange={e => handleItemChange(index, "description", e.target.value)} placeholder={t("quotations.itemPlaceholder")} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all font-medium" />
                     </div>
                     <div className="col-span-1">
-                       <input type="text" required list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder="مثال: م٢, مقطوعية" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
+                       <input type="text" required list={`units-list-${index}`} value={item.unit} onChange={e => handleItemChange(index, "unit", e.target.value)} placeholder={t("quotations.unitPlaceholder")} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-slate-300 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
                        <datalist id={`units-list-${index}`}>
                          <option value="م٢" />
                          <option value="م.ط" />
@@ -561,19 +563,19 @@ export default function CreateQuotationPage() {
                        </datalist>
                     </div>
                     <div className="col-span-1">
-                       <input type="number" required min="1" step="any" value={item.quantity || ''} onChange={e => handleItemChange(index, "quantity", Number(e.target.value))} placeholder="الكمية" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-2 text-sm text-center text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all" />
+                       <input type="number" required min="1" step="any" value={item.quantity || ''} onChange={e => handleItemChange(index, "quantity", Number(e.target.value))} placeholder={t("common.quantity")} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-2 text-sm text-center text-emerald-300 font-mono font-bold focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all" />
                     </div>
                     <div className="col-span-1 lg:col-span-2">
-                       <input type="number" required min="0" step="any" value={item.estimatedUnitCost || ''} onChange={e => handleItemChange(index, "estimatedUnitCost", Number(e.target.value))} placeholder="التكلفة 0.00" title="التكلفة التقديرية المتوقعة (لن تظهر للعميل)" className="w-full bg-slate-900/50 border border-amber-500/30 hover:border-amber-500/50 rounded-lg py-2.5 px-3 text-sm text-center text-amber-500 font-mono font-bold focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/60 transition-all" />
+                       <input type="number" required min="0" step="any" value={item.estimatedUnitCost || ''} onChange={e => handleItemChange(index, "estimatedUnitCost", Number(e.target.value))} placeholder={t("quotations.estCostPlaceholder")} title={t("quotations.colEstCostTitle")} className="w-full bg-slate-900/50 border border-amber-500/30 hover:border-amber-500/50 rounded-lg py-2.5 px-3 text-sm text-center text-amber-500 font-mono font-bold focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/60 transition-all" />
                     </div>
                     <div className="col-span-1 lg:col-span-2">
-                       <input type="number" required min="0" step="any" value={item.unitPrice || ''} onChange={e => handleItemChange(index, "unitPrice", Number(e.target.value))} placeholder="سعر البيع 0.00" title="سعر البيع المعروض للعميل" className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-rose-300 font-mono font-bold focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
+                       <input type="number" required min="0" step="any" value={item.unitPrice || ''} onChange={e => handleItemChange(index, "unitPrice", Number(e.target.value))} placeholder={t("quotations.unitPricePlaceholder")} title={t("quotations.colUnitPriceTitle")} className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg py-2.5 px-3 text-sm text-center text-rose-300 font-mono font-bold focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all" />
                     </div>
                     <div className="col-span-1 lg:col-span-2 flex items-center gap-2">
                       <div className="flex-1 bg-slate-900/80 py-2.5 px-3 rounded-lg text-left font-black text-white font-mono text-sm border border-slate-700/50 shadow-inner group-hover:bg-slate-800 transition-colors">
                         {(item.quantity * item.unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
-                      <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title="حذف البند">
+                      <button type="button" onClick={() => handleRemoveItem(index)} className="p-2.5 text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title={t("quotations.deleteItemTitle")}>
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -586,19 +588,19 @@ export default function CreateQuotationPage() {
             <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 md:px-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden space-y-4">
                <div className="absolute inset-0 bg-pink-500/5 mix-blend-overlay" />
                <div className="relative z-10 flex justify-between items-center border-b border-white/5 pb-4">
-                 <span className="text-slate-400 font-bold">المجموع الفرعي (Subtotal)</span>
+                 <span className="text-slate-400 font-bold">{t("quotations.subtotal")}</span>
                  <span className="font-mono text-xl text-white">{calculateSubTotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR</span>
                </div>
                {formData.hasVat && (
                  <div className="relative z-10 flex justify-between items-center border-b border-white/5 pb-4">
-                   <span className="text-slate-400 font-bold text-pink-400">ضريبة القيمة المضافة (VAT 15%)</span>
+                   <span className="text-slate-400 font-bold text-pink-400">{t("quotations.vatDisplay")}</span>
                    <span className="font-mono text-xl text-pink-400">{calculateVat().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR</span>
                  </div>
                )}
                <div className="relative z-10 flex justify-between items-center flex-col md:flex-row gap-4 pt-2">
                  <div>
-                   <h4 className="text-xl font-bold text-white mb-1">المبلغ الإجمالي المستحق</h4>
-                   <p className="text-sm text-slate-400">Net Total Amount</p>
+<h4 className="text-xl font-bold text-white mb-1">{t("quotations.totalAmount")}</h4>
+                    <p className="text-sm text-slate-400">{t("quotations.netTotal")}</p>
                  </div>
                  <div className="flex items-baseline gap-2">
                    <span className="text-slate-400 font-bold tracking-widest text-sm">SAR</span>
@@ -743,7 +745,7 @@ export default function CreateQuotationPage() {
           <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Plus size={20} className="text-indigo-400" /> إضافة عميل جديد
+                <Plus size={20} className="text-indigo-400" /> {t("contacts.newClient")}
               </h2>
               <button type="button" onClick={() => setShowClientModal(false)} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
                 <X size={20} />
@@ -753,45 +755,45 @@ export default function CreateQuotationPage() {
             <form onSubmit={submitNewClient} className="p-6 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">* الاسم المختصر (اساسي)</label>
-                  <input required value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="مثال: الراجحي" />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.shortName")}</label>
+                  <input required value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder={t("contacts.shortNamePlaceholder")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">الاسم التجاري الكامل</label>
-                  <input value={newClient.commercialName} onChange={e => setNewClient({...newClient, commercialName: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="مثال: شركة الراجحي بمحدودة" />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.commercialName")}</label>
+                  <input value={newClient.commercialName} onChange={e => setNewClient({...newClient, commercialName: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.commercialNamePlaceholder")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">الرقم الضريبي VAT</label>
-                  <input value={newClient.taxNumber} onChange={e => setNewClient({...newClient, taxNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="3000..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.taxNumber")}</label>
+                  <input value={newClient.taxNumber} onChange={e => setNewClient({...newClient, taxNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.taxNumber")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">رقم السجل التجاري CR</label>
-                  <input value={newClient.crNumber} onChange={e => setNewClient({...newClient, crNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="1010..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.crNumber")}</label>
+                  <input value={newClient.crNumber} onChange={e => setNewClient({...newClient, crNumber: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.crNumber")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">رقم الهاتف التواصل</label>
-                  <input value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="05xxxxxxxx" />
+                  <label className="text-sm font-semibold text-slate-300">{t("common.phone")}</label>
+                  <input value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("common.phone")} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">البريد الإلكتروني</label>
-                  <input type="email" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="info@example.com" />
+                  <label className="text-sm font-semibold text-slate-300">{t("common.email")}</label>
+                  <input type="email" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("common.email")} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-300">العنوان أو المقر</label>
-                  <input value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="الرياض، حي السلي..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.addressLabel")}</label>
+                  <input value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder={t("contacts.addressPlaceholder")} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-300">ملاحظات داخلية / أرقام تواصل أخرى</label>
-                  <textarea rows={2} value={newClient.notes} onChange={e => setNewClient({...newClient, notes: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder="اكتب أي معلومات إضافية..." />
+                  <label className="text-sm font-semibold text-slate-300">{t("contacts.notes")}</label>
+                  <textarea rows={2} value={newClient.notes} onChange={e => setNewClient({...newClient, notes: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder={t("contacts.notesPlaceholder")} />
                 </div>
               </div>
               <div className="mt-8 pt-6 border-t border-slate-800 flex gap-4">
                 <button type="submit" disabled={isSubmittingClient || !newClient.name} className="flex-1 bg-indigo-600 disabled:opacity-50 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2">
                   {isSubmittingClient && <Loader2 size={18} className="animate-spin" />}
-                  إضافة واستخدام
+                  {t("contacts.addToArchive")}
                 </button>
                 <button type="button" onClick={() => setShowClientModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors">
-                  إلغاء
+                  {t("common.cancel")}
                 </button>
               </div>
             </form>

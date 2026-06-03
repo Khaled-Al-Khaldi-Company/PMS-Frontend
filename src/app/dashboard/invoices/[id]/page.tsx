@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import { exportToCsv } from "@/lib/exportUtils";
 import { resolveBillingMode, qtyToProgressPercent } from "@/lib/billingMode";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import { useLanguage } from "@/lib/i18n/context";
 
 function getLineContractQty(detail: any, invoice: any) {
   if (!detail.boqItemId) return 1;
@@ -62,6 +63,7 @@ export default function InvoiceViewPage() {
   const [userPerms, setUserPerms] = useState<string[]>([]);
   const [userRole, setUserRole] = useState("");
   const { pdfRef, downloadPdf } = useDownloadPdf();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -119,7 +121,7 @@ export default function InvoiceViewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="animate-spin text-emerald-500 mb-4" size={48} />
-        <p className="text-slate-400">جاري تحميل بيانات المستخلص...</p>
+        <p className="text-slate-400">{t("common.loading")}</p>
       </div>
     );
   }
@@ -128,16 +130,16 @@ export default function InvoiceViewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <AlertCircle className="text-rose-500 mb-4" size={48} />
-        <p className="text-slate-400">عذراً، المستخلص غير موجود أو حدث خطأ.</p>
-        <button onClick={() => router.back()} className="mt-4 text-emerald-500 hover:underline">العودة للسابق</button>
+        <p className="text-slate-400">{t("common.noData")}</p>
+        <button onClick={() => router.back()} className="mt-4 text-emerald-500 hover:underline">{t("common.back")}</button>
       </div>
     );
   }
 
   const statusMap: Record<string, { label: string, color: string, bg: string, icon: any }> = {
-    DRAFT: { label: "مسودة غير معتمدة", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: Clock },
-    CERTIFIED: { label: "مستخلص معتمد", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", icon: FileText },
-    PAID: { label: "تم دفع المستخلص", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
+    DRAFT: { label: t("invoice.status.draft"), color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: Clock },
+    CERTIFIED: { label: t("invoice.status.certified"), color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", icon: FileText },
+    PAID: { label: t("invoice.status.paid"), color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
   };
 
   const statusInfo = statusMap[invoice.status] || statusMap['DRAFT'];
@@ -275,10 +277,10 @@ export default function InvoiceViewPage() {
              <FileSpreadsheet size={18} className="group-hover:scale-110 transition-transform" /> Excel
           </button>
           <button onClick={() => downloadPdf(`Invoice_${invoice?.invoiceNumber || 'draft'}.pdf`)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl transition-colors border border-rose-700 shadow-lg font-medium">
-            <Printer size={18} /> PDF
+            <Printer size={18} /> {t("common.pdf")}
           </button>
           <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors border border-slate-700 shadow-lg font-medium">
-            <Printer size={18} /> طباعة رسمية
+            <Printer size={18} /> {t("common.print")}
           </button>
         </div>
       </div>
@@ -290,7 +292,7 @@ export default function InvoiceViewPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
             
             <h3 className="text-lg font-bold text-white mb-6 border-b border-white/5 pb-4 flex items-center gap-2">
-              <Building className="text-emerald-400" size={20} /> بيانات المشروع والعقد
+              <Building className="text-emerald-400" size={20} /> {t("invoice.projectDetails")}
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -323,12 +325,12 @@ export default function InvoiceViewPage() {
               <table className="w-full text-right text-sm">
                 <thead className="bg-slate-900/60 text-slate-400 border-b border-white/10">
                   <tr>
-                    <th className="px-4 py-3 font-medium">البند</th>
-                    <th className="px-4 py-3 font-medium text-center">السابق</th>
-                    <th className="px-4 py-3 font-medium text-center text-emerald-400">الحالي</th>
-                    <th className="px-4 py-3 font-medium text-center">الإجمالي</th>
-                    <th className="px-4 py-3 font-medium text-center">الفئة</th>
-                    <th className="px-4 py-3 font-medium text-center">القيمة الحالية (SAR)</th>
+                    <th className="px-4 py-3 font-medium">{t("invoice.boqTable.item")}</th>
+                    <th className="px-4 py-3 font-medium text-center">{t("invoice.boqTable.previous")}</th>
+                    <th className="px-4 py-3 font-medium text-center text-emerald-400">{t("invoice.boqTable.current")}</th>
+                    <th className="px-4 py-3 font-medium text-center">{t("invoice.boqTable.total")}</th>
+                    <th className="px-4 py-3 font-medium text-center">{t("invoice.boqTable.category")}</th>
+                    <th className="px-4 py-3 font-medium text-center">{t("invoice.boqTable.currentValue")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-300">
@@ -360,13 +362,13 @@ export default function InvoiceViewPage() {
              
              <div className="space-y-5 mb-8">
                <div className="flex justify-between items-center text-base">
-                 <span className="text-slate-300">إجمالي الأعمال الحالية</span>
+                  <span className="text-slate-300">{t("invoice.financialSummary.gross")}</span>
                  <span className="font-mono text-white font-bold">SAR {Number(invoice.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                </div>
                
                <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/50 space-y-3">
                  <div className="flex justify-between items-center text-sm">
-                   <span className="text-rose-400 flex items-center gap-1.5"><ShieldAlert size={14} /> محتجز ({invoice.retentionPercent}%)</span>
+                    <span className="text-rose-400 flex items-center gap-1.5"><ShieldAlert size={14} /> {t("invoice.financialSummary.retention", { percent: invoice.retentionPercent })}</span>
                    <span className="font-mono text-rose-400">- {Number(invoice.retentionAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                  </div>
                  
@@ -386,7 +388,7 @@ export default function InvoiceViewPage() {
 
                  {Number(invoice.otherDeductions) > 0 && (
                    <div className="flex justify-between items-center text-sm">
-                     <span className="text-slate-400 flex items-center gap-1.5"><Percent size={14} /> خصومات أخرى</span>
+                      <span className="text-slate-400 flex items-center gap-1.5"><Percent size={14} /> {t("invoice.financialSummary.otherDeductions")}</span>
                      <span className="font-mono text-slate-400">- {Number(invoice.otherDeductions).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                    </div>
                  )}
@@ -398,12 +400,12 @@ export default function InvoiceViewPage() {
                </div>
 
                <div className="flex justify-between items-center text-sm py-3 border-y border-white/5">
-                 <span className="text-blue-400 flex items-center gap-2"><Percent size={16} /> ضريبة القيمة المضافة ({invoice.taxPercent}%)</span>
+                  <span className="text-blue-400 flex items-center gap-2"><Percent size={16} /> {t("invoice.financialSummary.tax", { percent: invoice.taxPercent })}</span>
                  <span className="font-mono text-blue-400 font-bold">+ {Number(invoice.taxAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                </div>
 
                <div className="pt-4 flex flex-col gap-2">
-                 <span className="text-emerald-400 font-black text-lg text-center bg-emerald-500/10 py-1 rounded-xl">المبلغ الصافي المستحق</span>
+                  <span className="text-emerald-400 font-black text-lg text-center bg-emerald-500/10 py-1 rounded-xl">{t("invoice.financialSummary.net")}</span>
                  <span className="font-mono text-emerald-400 font-black text-3xl text-center">SAR {Number(invoice.netAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                </div>
              </div>
@@ -488,24 +490,24 @@ export default function InvoiceViewPage() {
       {/* ===== البيانات فوق الورقة ===== */}
          <div>
           <div className="mb-6 flex justify-between items-start">
-            <h1 className="text-xl font-black text-slate-900">شهادة إنجاز ومستخلص — Payment Certificate</h1>
+            <h1 className="text-xl font-black text-slate-900">{t("invoice.certificate")}</h1>
             <div className="inline-block bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
-              <p className="text-xs font-bold text-slate-800">رقم المستخلص (No): <span className="font-mono text-emerald-700">#{invoice.invoiceNumber}</span></p>
-              <p className="text-xs font-bold text-slate-800 mt-1">تاريخ الإصدار (Date): <span className="font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
+              <p className="text-xs font-bold text-slate-800">{t("invoice.number")}: <span className="font-mono text-emerald-700">#{invoice.invoiceNumber}</span></p>
+              <p className="text-xs font-bold text-slate-800 mt-1">{t("invoice.issueDate")}: <span className="font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
            </div>
          </div>
 
       {/* Meta Info */}
       <div className="grid grid-cols-2 gap-6 mb-6 text-xs">
         <div className="bg-white p-3 border-2 border-slate-200 rounded-lg">
-          <p className="text-slate-500 font-bold mb-1 uppercase text-[10px] tracking-wider border-b border-slate-100 pb-1">بيانات المشروع (Project Details):</p>
+          <p className="text-slate-500 font-bold mb-1 uppercase text-[10px] tracking-wider border-b border-slate-100 pb-1">{t("invoice.projectDetails")}:</p>
           <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">المشروع:</span> <span className="font-bold text-sm font-mono text-emerald-700">{invoice.project?.code}</span> | <span className="font-bold">{invoice.project?.name}</span></p>
-          <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">تاريخ المستخلص:</span> <span className="font-bold font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
+          <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">{t("invoice.invoiceDate")}:</span> <span className="font-bold font-mono">{new Date(invoice.issueDate).toLocaleDateString('en-GB')}</span></p>
         </div>
         <div className="bg-white p-3 border-2 border-slate-200 rounded-lg">
-          <p className="text-slate-500 font-bold mb-1 uppercase text-[10px] tracking-wider border-b border-slate-100 pb-1">المقاول/الجهة (Contractor/Client Details):</p>
+          <p className="text-slate-500 font-bold mb-1 uppercase text-[10px] tracking-wider border-b border-slate-100 pb-1">{t("invoice.contractorDetails")}:</p>
           <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">الاسم:</span> <span className="font-black text-sm text-slate-900">{invoice.contract?.type === 'MAIN_CONTRACT' ? invoice.project?.client?.name : invoice.contract?.subcontractor?.name}</span></p>
-          <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">رقم العقد (Ref):</span> <span className="font-bold font-mono text-indigo-700">{invoice.contract?.referenceNumber}</span></p>
+          <p className="mb-1"><span className="font-bold text-slate-500 w-28 inline-block">{t("invoice.contractRef")}:</span> <span className="font-bold font-mono text-indigo-700">{invoice.contract?.referenceNumber}</span></p>
         </div>
       </div>
 
@@ -513,12 +515,12 @@ export default function InvoiceViewPage() {
       <table className="w-full text-right border-collapse mb-6 print:w-full break-inside-auto">
         <thead>
           <tr className="bg-slate-100 border-2 border-slate-800 text-black">
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px]">البند ومواصفات الأعمال</th>
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">سابق</th>
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">حالي</th>
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">إجمالي</th>
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-20">الفئة</th>
-            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-28">القيمة الحالية (SAR)</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px]">{t("invoice.boqTable.item")}</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">{t("invoice.boqTable.previous")}</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">{t("invoice.boqTable.current")}</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-14">{t("invoice.boqTable.total")}</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-20">{t("invoice.boqTable.category")}</th>
+            <th className="p-1.5 border-2 border-slate-800 text-center font-bold text-[10px] w-28">{t("invoice.boqTable.currentValue")}</th>
           </tr>
         </thead>
         <tbody>
@@ -541,27 +543,27 @@ export default function InvoiceViewPage() {
           <table className="w-full text-right border-collapse">
             <tbody>
               <tr className="border-b border-slate-200">
-                 <td className="p-2 text-[11px] font-bold bg-slate-50 text-slate-700">إجمالي الأعمال الحالية (Gross Amount):</td>
+                 <td className="p-2 text-[11px] font-bold bg-slate-50 text-slate-700">{t("invoice.financialSummary.gross")}:</td>
                  <td className="p-2 text-[11px] font-mono font-black text-left">{Number(invoice.grossAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
               {Number(invoice.retentionAmount) > 0 && (
                 <tr className="border-b border-slate-200 text-black">
-                   <td className="p-2 text-[11px] font-bold text-slate-600">يخصم محتجز ضمان ({invoice.retentionPercent}%):</td>
+                   <td className="p-2 text-[11px] font-bold text-slate-600">{t("invoice.financialSummary.retention", { percent: invoice.retentionPercent })}:</td>
                    <td className="p-2 text-[11px] font-mono font-bold text-left text-rose-700">- {Number(invoice.retentionAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 </tr>
               )}
               {totalDeductions > Number(invoice.retentionAmount) && (
                 <tr className="border-b border-slate-200 text-black">
-                   <td className="p-2 text-[11px] font-bold text-slate-600">خصومات واعتمادات أخرى (Other Deductions):</td>
+                   <td className="p-2 text-[11px] font-bold text-slate-600">{t("invoice.financialSummary.otherDeductions")}:</td>
                    <td className="p-2 text-[11px] font-mono font-bold text-left text-rose-700">- {(totalDeductions - Number(invoice.retentionAmount)).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                 </tr>
               )}
               <tr className="border-b border-slate-200 text-black">
-                 <td className="p-2 text-[11px] font-bold bg-slate-50 text-slate-700">يضاف ضريبة القيمة المضافة ({invoice.taxPercent}%):</td>
+                 <td className="p-2 text-[11px] font-bold bg-slate-50 text-slate-700">{t("invoice.financialSummary.tax", { percent: invoice.taxPercent })}:</td>
                  <td className="p-2 text-[11px] font-mono font-black text-left text-indigo-700">+ {Number(invoice.taxAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="bg-slate-900 text-white text-sm">
-                 <td className="p-3 font-black">الصافي المعتمـد للصرف (Net Total):</td>
+                 <td className="p-3 font-black">{t("invoice.financialSummary.net")}:</td>
                  <td className="p-3 font-mono font-black text-left text-base">SAR {Number(invoice.netAmount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
               </tr>
             </tbody>
@@ -573,31 +575,31 @@ export default function InvoiceViewPage() {
 
       {/* Signatures */}
       <div className="mt-8 pt-4 break-inside-avoid border-t-2 border-slate-100 text-black">
-        <h3 className="font-black text-sm mb-6 border-b-2 border-slate-800 pb-1 w-max text-slate-800 uppercase tracking-widest">الاعتمادات والموافقات (Approvals):</h3>
+        <h3 className="font-black text-sm mb-6 border-b-2 border-slate-800 pb-1 w-max text-slate-800 uppercase tracking-widest">{t("invoice.approvals")}:</h3>
         <div className="grid grid-cols-4 gap-4 text-center text-[10px]">
           <div className="flex flex-col items-center">
-            <p className="font-bold text-slate-800 mb-12 uppercase tracking-widest text-[10px]">المقاول المـُنفذ (Contractor)</p>
+            <p className="font-bold text-slate-800 mb-12 uppercase tracking-widest text-[10px]">{t("invoice.contractor")}</p>
             <p className="text-slate-400 w-full border-b border-dashed border-slate-400 mt-auto"></p>
           </div>
           <div className="flex flex-col items-center">
-            <p className="font-bold text-slate-800 mb-2 uppercase tracking-widest text-[10px]">مهندس الموقع (Site Engineer)</p>
+            <p className="font-bold text-slate-800 mb-2 uppercase tracking-widest text-[10px]">{t("invoice.siteEngineer")}</p>
             <div className="border border-slate-200 bg-slate-50 text-slate-700 px-2 py-1.5 rounded-lg inline-block text-center w-36">
               <div className="absolute inset-0 bg-slate-100 opacity-50"></div>
-              <p className="text-[8px] font-bold uppercase tracking-widest mb-0.5 border-b border-slate-200 pb-0.5">مُسجل إلكترونياً (E-Prepared)</p>
+               <p className="text-[8px] font-bold uppercase tracking-widest mb-0.5 border-b border-slate-200 pb-0.5">{t("invoice.ePrepared")}</p>
               <p className="text-[10px] font-black mt-0.5">{invoice.createdBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'مهندس المشروع'}</p>
               <p className="text-[7px] font-mono mt-0.5">{new Date(invoice.createdAt).toLocaleDateString('en-GB')}</p>
             </div>
           </div>
           <div className="flex flex-col items-center">
-             <p className="font-bold text-slate-800 mb-12 uppercase tracking-widest text-[10px]">مدير المشروع (Project Manager)</p>
+             <p className="font-bold text-slate-800 mb-12 uppercase tracking-widest text-[10px]">{t("invoice.projectManager")}</p>
              <p className="text-slate-400 w-full border-b border-dashed border-slate-400 mt-auto"></p>
           </div>
           <div className="flex flex-col items-center">
-            <p className="font-bold text-slate-800 mb-2 uppercase tracking-widest text-[10px]">الاعتماد المالي (Finance Approval)</p>
+            <p className="font-bold text-slate-800 mb-2 uppercase tracking-widest text-[10px]">{t("invoice.financeApproval")}</p>
             {invoice.status === 'CERTIFIED' || invoice.paymentStatus === 'PAID' ? (
               <div className="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 px-2 py-1.5 rounded-lg inline-block text-center w-44 relative overflow-hidden transform -rotate-2 mt-1">
                 <div className="absolute inset-0 bg-emerald-500 opacity-5"></div>
-                <p className="text-[8px] font-black uppercase tracking-widest mb-0.5 border-b border-emerald-200 pb-0.5 text-emerald-600">مُعتمد إلكترونياً (E-Approved)</p>
+                <p className="text-[8px] font-black uppercase tracking-widest mb-0.5 border-b border-emerald-200 pb-0.5 text-emerald-600">{t("invoice.eApproved")}</p>
                 <p className="text-[10px] font-black mt-0.5">{invoice.approvedBy || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name : '') || 'المدير المالي'}</p>
                 <p className="text-[7px] font-mono mt-0.5">{invoice.approvedAt ? new Date(invoice.approvedAt).toLocaleString('en-GB') : new Date(invoice.updatedAt).toLocaleString('en-GB')}</p>
               </div>

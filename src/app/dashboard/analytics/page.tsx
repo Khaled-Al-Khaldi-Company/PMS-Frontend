@@ -9,10 +9,12 @@ import {
   PieChart, Activity, AlertTriangle, CheckCircle2, FileSpreadsheet, Loader2, Building2
 } from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function ProfitabilityAnalytics() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchDashboard();
@@ -52,12 +54,12 @@ export default function ProfitabilityAnalytics() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh]">
          <Loader2 className="animate-spin text-indigo-500 mb-4" size={48} />
-         <p className="text-slate-400 font-bold">جاري تجميع البيانات المالية للمشاريع...</p>
+         <p className="text-slate-400 font-bold">{t("common.loading")}</p>
       </div>
     );
   }
 
-  if (!data) return <div className="p-8 text-center text-rose-500 font-bold">فشل في تحميل البيانات</div>;
+  if (!data) return <div className="p-8 text-center text-rose-500 font-bold">{t("common.noData")}</div>;
 
   const { overview, costBreakdown, projects } = data;
 
@@ -68,13 +70,13 @@ export default function ProfitabilityAnalytics() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
         <div className="relative z-10">
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-emerald-400 flex items-center gap-4">
-            <PieChart size={36} className="text-indigo-500" /> تحليلات الأرباح والخسائر (P&L)
+            <PieChart size={36} className="text-indigo-500" /> {t("nav.analytics")}
           </h1>
-          <p className="text-slate-400 mt-3 text-lg">نظرة شاملة لربحية المشاريع ومقارنة التكاليف الفعلية بالإيرادات.</p>
+          <p className="text-slate-400 mt-3 text-lg">{t("reports.subtitle")}</p>
         </div>
         <div className="relative z-10 flex gap-3">
            <button onClick={handleExport} className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-6 py-3 rounded-xl font-bold transition-all border border-emerald-500/30">
-              <FileSpreadsheet size={20} /> تصدير التقرير Excel
+              <FileSpreadsheet size={20} /> {t("reports.exportExcel")}
            </button>
         </div>
       </div>
@@ -83,19 +85,19 @@ export default function ProfitabilityAnalytics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} transition={{delay: 0.1}} className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><DollarSign size={80}/></div>
-           <p className="text-slate-400 font-bold mb-2">إجمالي الإيرادات الفعلية (المستخلصات)</p>
+           <p className="text-slate-400 font-bold mb-2">{t("reports.totalRevenue")}</p>
            <h3 className="text-3xl font-black text-white font-mono">SAR {overview.totalActualRevenue.toLocaleString(undefined, {minimumFractionDigits:2})}</h3>
         </motion.div>
 
         <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} transition={{delay: 0.2}} className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-rose-500"><TrendingDown size={80}/></div>
-           <p className="text-slate-400 font-bold mb-2">إجمالي التكاليف الفعلية</p>
+           <p className="text-slate-400 font-bold mb-2">{t("dashboard.totalExpenses")}</p>
            <h3 className="text-3xl font-black text-rose-400 font-mono">SAR {overview.totalActualCost.toLocaleString(undefined, {minimumFractionDigits:2})}</h3>
         </motion.div>
 
         <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} transition={{delay: 0.3}} className={`p-6 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group ${overview.grossProfit >= 0 ? 'bg-gradient-to-br from-emerald-900/40 to-slate-900' : 'bg-gradient-to-br from-rose-900/40 to-slate-900'}`}>
            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-emerald-500"><TrendingUp size={80}/></div>
-           <p className="text-slate-300 font-bold mb-2">إجمالي الربح / الخسارة</p>
+           <p className="text-slate-300 font-bold mb-2">{t("reports.profitLoss")}</p>
            <h3 className={`text-3xl font-black font-mono ${overview.grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
              {overview.grossProfit >= 0 ? '+' : ''}SAR {overview.grossProfit.toLocaleString(undefined, {minimumFractionDigits:2})}
            </h3>
@@ -103,7 +105,7 @@ export default function ProfitabilityAnalytics() {
 
         <motion.div initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} transition={{delay: 0.4}} className="bg-gradient-to-br from-indigo-900/40 to-slate-900 p-6 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-indigo-500"><Activity size={80}/></div>
-           <p className="text-slate-300 font-bold mb-2">متوسط هامش الربح الإجمالي</p>
+           <p className="text-slate-300 font-bold mb-2">{t("reports.grossProfitMargin")}</p>
            <h3 className="text-3xl font-black text-indigo-400 font-mono">
              {overview.overallMargin.toFixed(2)} %
            </h3>
@@ -112,7 +114,7 @@ export default function ProfitabilityAnalytics() {
 
       {/* Projects List */}
       <h2 className="text-2xl font-black text-white mt-12 mb-6 flex items-center gap-3">
-        <Building2 className="text-indigo-500" /> تحليل أداء المشاريع
+        <Building2 className="text-indigo-500" /> {t("nav.analytics")}
       </h2>
       
       <div className="grid grid-cols-1 gap-6">
@@ -138,13 +140,13 @@ export default function ProfitabilityAnalytics() {
                  </div>
                  <div className="flex gap-8">
                     <div className="text-center">
-                       <p className="text-slate-500 text-xs font-bold uppercase mb-1">الربح الصافي</p>
+                       <p className="text-slate-500 text-xs font-bold uppercase mb-1">{t("reports.netOperatingProfit")}</p>
                        <p className={`text-xl font-black font-mono ${isProfitable ? 'text-emerald-400' : 'text-rose-400'}`}>
                          {isProfitable ? '+' : ''}{(p.actualRevenue - p.actualCost).toLocaleString(undefined, {minimumFractionDigits: 0})}
                        </p>
                     </div>
                     <div className="text-center">
-                       <p className="text-slate-500 text-xs font-bold uppercase mb-1">هامش الربح</p>
+                       <p className="text-slate-500 text-xs font-bold uppercase mb-1">{t("reports.grossProfitMargin")}</p>
                        <p className={`text-xl font-black font-mono ${isProfitable ? 'text-emerald-400' : 'text-rose-400'}`}>
                          {p.profitMargin.toFixed(1)}%
                        </p>
@@ -157,7 +159,7 @@ export default function ProfitabilityAnalytics() {
                  {/* Revenue Bar */}
                  <div>
                    <div className="flex justify-between text-sm font-bold mb-2">
-                     <span className="text-slate-300">الإيراد الفعلي (المستخلصات) مقابل المستهدف</span>
+                     <span className="text-slate-300">{t("reports.totalRevenue")}</span>
                      <span className="font-mono text-indigo-400">{p.actualRevenue.toLocaleString()} / {p.targetRevenue.toLocaleString()} SAR</span>
                    </div>
                    <div className="w-full bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800">
@@ -171,7 +173,7 @@ export default function ProfitabilityAnalytics() {
                  {/* Cost Bar */}
                  <div>
                    <div className="flex justify-between text-sm font-bold mb-2">
-                     <span className="text-slate-300">التكلفة الفعلية (المصروفات + المشتريات) مقابل الميزانية</span>
+                     <span className="text-slate-300">{t("reports.totalCost")}</span>
                      <span className="font-mono text-rose-400">{p.actualCost.toLocaleString()} / {p.estimatedBudget.toLocaleString()} SAR</span>
                    </div>
                    <div className="w-full bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800">
@@ -186,7 +188,7 @@ export default function ProfitabilityAnalytics() {
           );
         })}
         {projects.length === 0 && (
-          <div className="text-center py-20 text-slate-500 font-bold">لا يوجد مشاريع لعرض تحليلاتها</div>
+          <div className="text-center py-20 text-slate-500 font-bold">{t("common.noData")}</div>
         )}
       </div>
     </div>

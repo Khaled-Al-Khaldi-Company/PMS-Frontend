@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 import Link from "next/link";
 
 export default function QuotationTemplatesPage() {
@@ -34,6 +35,7 @@ export default function QuotationTemplatesPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchTemplates();
@@ -64,19 +66,19 @@ export default function QuotationTemplatesPage() {
         await axios.patch(`${API_BASE_URL}/v1/quotation-templates/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setMessage({type: 'success', text: 'تم تحديث القالب بنجاح'});
+        setMessage({type: 'success', text: t("settings.templatesPage.savedUpdate")});
       } else {
         await axios.post(`${API_BASE_URL}/v1/quotation-templates`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setMessage({type: 'success', text: 'تم إنشاء القالب بنجاح'});
+        setMessage({type: 'success', text: t("settings.templatesPage.savedCreate")});
       }
       setFormData({ name: "", technicalOffer: "", termsConditions: "" });
       setIsFormOpen(false);
       setEditingId(null);
       fetchTemplates();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'فشل الحفظ';
+      const errorMsg = err.response?.data?.message || err.message || t("settings.templatesPage.saveFail");
       setMessage({type: 'error', text: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg});
     } finally {
       setIsSaving(false);
@@ -94,7 +96,7 @@ export default function QuotationTemplatesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا القالب؟')) return;
+    if (!confirm(t("settings.templatesPage.deleteConfirm"))) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_BASE_URL}/v1/quotation-templates/${id}`, {
@@ -102,7 +104,7 @@ export default function QuotationTemplatesPage() {
       });
       fetchTemplates();
     } catch (err) {
-      alert('فشل الحذف');
+      alert(t("settings.templatesPage.deleteFail"));
     }
   };
 
@@ -119,10 +121,10 @@ export default function QuotationTemplatesPage() {
               <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-lg">
                 <LayoutTemplate className="text-indigo-400" size={28} />
               </div>
-              قوالب عروض الأسعار
+              {t("settings.templatesPage.title")}
             </h1>
           </div>
-          <p className="text-slate-400 font-medium mr-12">أدر القوالب الجاهزة للمواصفات والشروط لسرعة إنشاء عروض الأسعار.</p>
+          <p className="text-slate-400 font-medium mr-12">{t("settings.templatesPage.subtitle")}</p>
         </div>
 
         <button 
@@ -134,7 +136,7 @@ export default function QuotationTemplatesPage() {
           className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:scale-95"
         >
           <Plus size={20} />
-          إنشاء قالب جديد
+          {t("settings.templatesPage.createBtn")}
         </button>
       </div>
 
@@ -156,7 +158,7 @@ export default function QuotationTemplatesPage() {
         {isLoading ? (
           <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4 text-slate-500">
             <Loader2 size={40} className="animate-spin text-indigo-500" />
-            <p className="font-bold tracking-widest uppercase text-xs">جارٍ تحميل القوالب...</p>
+            <p className="font-bold tracking-widest uppercase text-xs">{t("settings.templatesPage.loading")}</p>
           </div>
         ) : templates.length === 0 ? (
           <div className="col-span-full glass-dark border border-white/5 rounded-3xl p-12 text-center space-y-4">
@@ -164,8 +166,8 @@ export default function QuotationTemplatesPage() {
                <LayoutTemplate size={40} />
              </div>
              <div className="space-y-1">
-               <h3 className="text-xl font-bold text-white">لا توجد قوالب حالياً</h3>
-               <p className="text-slate-500">ابدأ بإنشاء أول قالب لتسهيل عمل فريق المبيعات.</p>
+<h3 className="text-xl font-bold text-white">{t("settings.templatesPage.noTemplatesTitle")}</h3>
+                <p className="text-slate-500">{t("settings.templatesPage.noTemplatesDesc")}</p>
              </div>
           </div>
         ) : (
@@ -183,10 +185,10 @@ export default function QuotationTemplatesPage() {
                   <p className="text-xs text-slate-500 font-mono">ID: {template.id.slice(0,8)}</p>
                 </div>
                 <div className="flex gap-1">
-                   <button onClick={() => handleEdit(template)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all" title="تعديل">
+                   <button onClick={() => handleEdit(template)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all" title={t("settings.templatesPage.editTitle")}>
                      <Edit3 size={18} />
                    </button>
-                   <button onClick={() => handleDelete(template.id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all" title="حذف">
+                   <button onClick={() => handleDelete(template.id)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all" title={t("settings.templatesPage.deleteTitle")}>
                      <Trash2 size={18} />
                    </button>
                 </div>
@@ -194,19 +196,19 @@ export default function QuotationTemplatesPage() {
 
               <div className="space-y-3 mt-2 flex-1">
                 <div className="p-3 bg-slate-900/50 rounded-xl border border-white/5 space-y-1">
-                   <div className="flex items-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                     <FileText size={10} /> العرض الفني
-                   </div>
-                   <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                     {template.technicalOffer || 'لا يوجد نص'}
+<div className="flex items-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                      <FileText size={10} /> {t("settings.templatesPage.technicalOfferSection")}
+                    </div>
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                      {template.technicalOffer || t("settings.templatesPage.noText")}
                    </p>
                 </div>
                 <div className="p-3 bg-slate-900/50 rounded-xl border border-white/5 space-y-1">
-                   <div className="flex items-center gap-2 text-[10px] font-black text-blue-400 uppercase tracking-widest">
-                     <ScrollText size={10} /> الشروط والأحكام
-                   </div>
-                   <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                     {template.termsConditions || 'لا يوجد نص'}
+<div className="flex items-center gap-2 text-[10px] font-black text-blue-400 uppercase tracking-widest">
+                      <ScrollText size={10} /> {t("settings.templatesPage.termsSection")}
+                    </div>
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                      {template.termsConditions || t("settings.templatesPage.noText")}
                    </p>
                 </div>
               </div>
@@ -230,9 +232,9 @@ export default function QuotationTemplatesPage() {
                   <div className="space-y-1">
                     <h2 className="text-2xl font-black text-white flex items-center gap-3">
                       {editingId ? <Edit3 className="text-indigo-400" /> : <Plus className="text-indigo-400" />}
-                      {editingId ? 'تعديل قالب' : 'إنشاء قالب جديد'}
+                      {editingId ? t("settings.templatesPage.formTitleEdit") : t("settings.templatesPage.formTitleCreate")}
                     </h2>
-                    <p className="text-slate-400 text-sm">أدخل البيانات الأساسية للقالب لاستخدامها لاحقاً.</p>
+                    <p className="text-slate-400 text-sm">{t("settings.templatesPage.formSubtitle")}</p>
                   </div>
                   <button onClick={() => setIsFormOpen(false)} className="p-3 bg-slate-900 text-slate-400 hover:text-white rounded-2xl border border-white/5 transition-all">
                     <X size={20} />
@@ -241,11 +243,11 @@ export default function QuotationTemplatesPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">اسم القالب</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">{t("settings.templatesPage.nameLabel")}</label>
                     <input 
                       type="text" 
                       required
-                      placeholder="مثل: قالب أعمال الواجهات، قالب السباكة..."
+                      placeholder={t("settings.templatesPage.namePlaceholder")}
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       className="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-4 px-6 text-white text-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
@@ -255,26 +257,26 @@ export default function QuotationTemplatesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2 flex items-center gap-2">
-                        <FileText size={14} className="text-indigo-400" /> نص العرض الفني / المواصفات
+                        <FileText size={14} className="text-indigo-400" /> {t("settings.templatesPage.technicalOfferLabel")}
                       </label>
                       <textarea 
                         rows={8}
                         value={formData.technicalOffer}
                         onChange={e => setFormData({...formData, technicalOffer: e.target.value})}
                         className="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm focus:outline-none focus:border-indigo-500 transition-all shadow-inner resize-none"
-                        placeholder="أدخل المواصفات الفنية الافتراضية هنا..."
+                        placeholder={t("settings.templatesPage.technicalOfferPlaceholder")}
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2 flex items-center gap-2">
-                        <ScrollText size={14} className="text-blue-400" /> نص الشروط والأحكام
+                        <ScrollText size={14} className="text-blue-400" /> {t("settings.templatesPage.termsLabel")}
                       </label>
                       <textarea 
                         rows={8}
                         value={formData.termsConditions}
                         onChange={e => setFormData({...formData, termsConditions: e.target.value})}
                         className="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm focus:outline-none focus:border-indigo-500 transition-all shadow-inner resize-none"
-                        placeholder="أدخل الشروط والأحكام الافتراضية هنا..."
+                        placeholder={t("settings.templatesPage.termsPlaceholder")}
                       />
                     </div>
                   </div>
@@ -285,7 +287,7 @@ export default function QuotationTemplatesPage() {
                       onClick={() => setIsFormOpen(false)}
                       className="flex-1 py-4 bg-slate-900 text-slate-300 font-bold rounded-2xl border border-white/5 hover:bg-slate-800 transition-all"
                     >
-                      إلغاء
+                      {t("settings.templatesPage.cancel")}
                     </button>
                     <button 
                       type="submit" 
@@ -293,7 +295,7 @@ export default function QuotationTemplatesPage() {
                       className="flex-[2] py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                     >
                       {isSaving ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-                      <span>{editingId ? 'تحديث القالب' : 'حفظ القالب الجديد'}</span>
+                      <span>{editingId ? t("settings.templatesPage.update") : t("settings.templatesPage.saveNew")}</span>
                     </button>
                   </div>
                 </form>

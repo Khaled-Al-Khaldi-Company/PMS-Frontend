@@ -19,10 +19,12 @@ import {
   Printer
 } from "lucide-react";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function EditDPRPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const projectId = params.id as string;
   const reportId = params.reportId as string;
 
@@ -133,12 +135,12 @@ export default function EditDPRPage() {
           <div>
             <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-l from-amber-400 to-orange-300 flex items-center gap-3 drop-shadow-sm">
               <FileText className="text-amber-500" size={28} />
-              تعديل التقرير اليومي (DPR)
+              {t("dpr.edit")}
             </h1>
-            <p className="text-slate-400 text-sm mt-1.5 font-medium">عرض وتعديل التقرير — يمكنك تغيير التاريخ وجميع البيانات</p>
+            <p className="text-slate-400 text-sm mt-1.5 font-medium">{t("dpr.subtitleEdit")}</p>
           </div>
           <button type="button" onClick={() => downloadPdf(`DPR_${reportDate}.pdf`)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-800 hover:bg-rose-700 text-rose-300 rounded-xl transition-colors border border-rose-700 shadow-lg font-medium">
-            <Printer size={18} /> PDF
+            <Printer size={18} /> {t("common.pdf")}
           </button>
         </div>
       </div>
@@ -146,11 +148,11 @@ export default function EditDPRPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="glass-dark border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden bg-slate-900/60">
            <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-white/5 pb-4">
-             <Sun className="text-amber-500" size={20} /> بيانات التقرير والطقس
+             <Sun className="text-amber-500" size={20} /> {t("dpr.reportData")}
            </h2>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div className="space-y-2">
-               <label className="text-xs font-bold uppercase tracking-wider text-slate-400">تاريخ التقرير</label>
+               <label className="text-xs font-bold uppercase tracking-wider text-slate-400">{t("dpr.date")}</label>
                <input 
                  type="date" required 
                  value={reportDate} onChange={e => setReportDate(e.target.value)} 
@@ -158,19 +160,19 @@ export default function EditDPRPage() {
                />
              </div>
              <div className="space-y-2">
-               <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><Cloud size={14}/> حالة الطقس</label>
+               <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><Cloud size={14}/> {t("dpr.weather")}</label>
                <select 
                  value={weather} onChange={e => setWeather(e.target.value)} 
                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 appearance-none"
                >
-                 <option value="مشمس">مشمس (Sunny)</option>
-                 <option value="غائم">غائم (Cloudy)</option>
-                 <option value="ممطر">ممطر (Rainy)</option>
-                 <option value="غبار">عاصفة رملية/غبار (Dust Storm)</option>
+                 <option value="مشمس">{t("dpr.weatherSunny")}</option>
+                 <option value="غائم">{t("dpr.weatherCloudy")}</option>
+                 <option value="ممطر">{t("dpr.weatherRainy")}</option>
+                 <option value="غبار">{t("dpr.weatherDust")}</option>
                </select>
              </div>
              <div className="space-y-2">
-               <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><ThermometerSun size={14}/> درجة الحرارة (مئوية)</label>
+               <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><ThermometerSun size={14}/> {t("dpr.temperature")}</label>
                <input 
                  type="number" required 
                  value={temperature} onChange={e => setTemperature(Number(e.target.value))} 
@@ -185,10 +187,10 @@ export default function EditDPRPage() {
           <div className="glass-dark border border-white/10 rounded-3xl p-6 shadow-xl bg-slate-900/60">
              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                 <User className="text-blue-400" size={18} /> العمالة الميدانية والقوى العاملة
+                 <User className="text-blue-400" size={18} /> {t("dpr.labors")}
                </h2>
                <button type="button" onClick={handleAddLabor} className="text-xs font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500/20 transition-colors flex items-center gap-1">
-                 <Plus size={14} /> إضافة عامل/فئة
+                 <Plus size={14} /> {t("dpr.addLabor")}
                </button>
              </div>
              
@@ -196,17 +198,17 @@ export default function EditDPRPage() {
                {labors.map((labor, index) => (
                  <div key={index} className="grid grid-cols-12 gap-3 items-center bg-slate-950/50 p-3 rounded-xl border border-white/5 relative group">
                    <div className="col-span-4">
-                     <input type="text" required placeholder="المهنة (نجار، حداد...)" value={labor.trade} onChange={e => {
+                     <input type="text" required placeholder={t("dpr.trade")} value={labor.trade} onChange={e => {
                        const newLabors = [...labors]; newLabors[index].trade = e.target.value; setLabors(newLabors);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" />
                    </div>
                    <div className="col-span-3">
-                     <input type="number" required min="1" placeholder="العدد" value={labor.count} onChange={e => {
+                     <input type="number" required min="1" placeholder={t("dpr.count")} value={labor.count} onChange={e => {
                        const newLabors = [...labors]; newLabors[index].count = parseInt(e.target.value); setLabors(newLabors);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-center font-mono text-white focus:outline-none focus:border-blue-500" />
                    </div>
                    <div className="col-span-3">
-                     <input type="number" required min="1" step="0.5" placeholder="ساعات" value={labor.hours} onChange={e => {
+                     <input type="number" required min="1" step="0.5" placeholder={t("dpr.hours")} value={labor.hours} onChange={e => {
                        const newLabors = [...labors]; newLabors[index].hours = parseFloat(e.target.value); setLabors(newLabors);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-center font-mono text-white focus:outline-none focus:border-blue-500" />
                    </div>
@@ -217,7 +219,7 @@ export default function EditDPRPage() {
                    </div>
                  </div>
                ))}
-               {labors.length === 0 && <p className="text-xs text-center text-slate-500 py-4">لم يتم إضافة عمالة بعد.</p>}
+               {labors.length === 0 && <p className="text-xs text-center text-slate-500 py-4">{t("dpr.noLabors")}</p>}
              </div>
           </div>
 
@@ -225,10 +227,10 @@ export default function EditDPRPage() {
           <div className="glass-dark border border-white/10 rounded-3xl p-6 shadow-xl bg-slate-900/60">
              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                 <HardHat className="text-amber-500" size={18} /> المعدات والآليات (المملوكة/المستأجرة)
+                 <HardHat className="text-amber-500" size={18} /> {t("dpr.equipments")}
                </h2>
                <button type="button" onClick={handleAddEquipment} className="text-xs font-bold bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white px-3 py-1.5 rounded-lg border border-amber-500/20 transition-colors flex items-center gap-1">
-                 <Plus size={14} /> إضافة معدة
+                 <Plus size={14} /> {t("dpr.addEquipment")}
                </button>
              </div>
              
@@ -236,17 +238,17 @@ export default function EditDPRPage() {
                {equipments.map((equip, index) => (
                  <div key={index} className="grid grid-cols-12 gap-3 items-center bg-slate-950/50 p-3 rounded-xl border border-white/5 relative group">
                    <div className="col-span-4">
-                     <input type="text" required placeholder="نوع المعدة (بوكلين...)" value={equip.equipmentType} onChange={e => {
+                     <input type="text" required placeholder={t("dpr.equipmentType")} value={equip.equipmentType} onChange={e => {
                        const newEq = [...equipments]; newEq[index].equipmentType = e.target.value; setEquipments(newEq);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
                    </div>
                    <div className="col-span-3">
-                     <input type="number" required min="1" placeholder="العدد" value={equip.count} onChange={e => {
+                     <input type="number" required min="1" placeholder={t("dpr.count")} value={equip.count} onChange={e => {
                        const newEq = [...equipments]; newEq[index].count = parseInt(e.target.value); setEquipments(newEq);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-center font-mono text-white focus:outline-none focus:border-amber-500" />
                    </div>
                    <div className="col-span-3">
-                     <input type="number" required min="1" step="0.5" placeholder="ساعات" value={equip.hours} onChange={e => {
+                     <input type="number" required min="1" step="0.5" placeholder={t("dpr.hours")} value={equip.hours} onChange={e => {
                        const newEq = [...equipments]; newEq[index].hours = parseFloat(e.target.value); setEquipments(newEq);
                      }} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-center font-mono text-white focus:outline-none focus:border-amber-500" />
                    </div>
@@ -257,7 +259,7 @@ export default function EditDPRPage() {
                    </div>
                  </div>
                ))}
-               {equipments.length === 0 && <p className="text-xs text-center text-slate-500 py-4">لم يتم إضافة آليات بعد.</p>}
+               {equipments.length === 0 && <p className="text-xs text-center text-slate-500 py-4">{t("dpr.noEquipments")}</p>}
              </div>
           </div>
         </div>
@@ -265,7 +267,7 @@ export default function EditDPRPage() {
         <div className="glass-dark border border-white/10 rounded-3xl p-8 shadow-xl bg-slate-900/60 space-y-6">
           <div>
             <label className="text-sm font-bold text-white mb-3 block flex items-center gap-2">
-              الأعمال المنجزة اليوم بالموقع (Work Performed)
+              {t("dpr.workPerformed")}
             </label>
             <textarea 
               required
@@ -278,7 +280,7 @@ export default function EditDPRPage() {
           </div>
           <div>
             <label className="text-sm font-bold text-white mb-3 block flex items-center gap-2">
-              ملاحظات الأمن والسلامة ومعوقات العمل (إن وجدت)
+              {t("dpr.safetyNotes")}
             </label>
             <textarea 
               rows={3}
@@ -296,7 +298,7 @@ export default function EditDPRPage() {
           className="w-full flex justify-center items-center gap-2 px-6 py-5 rounded-2xl font-black text-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
           {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} className="group-hover:scale-110 transition-transform" />}
-          حفظ التعديلات وتحديث التقرير
+          {t("dpr.saveUpdate")}
         </button>
 
       </form>
@@ -304,8 +306,8 @@ export default function EditDPRPage() {
       {/* Print View */}
       <div ref={pdfRef} className="hidden print:block print:!bg-white print:!text-black font-sans p-8" dir="rtl">
         <div className="text-center mb-6 border-b-2 border-slate-900 pb-4">
-          <h1 className="text-2xl font-black text-slate-900">تقرير الموقع اليومي</h1>
-          <h2 className="text-sm text-slate-500 font-bold">Daily Progress Report (DPR)</h2>
+          <h1 className="text-2xl font-black text-slate-900">{t("dpr.pdfTitle")}</h1>
+          <h2 className="text-sm text-slate-500 font-bold">{t("dpr.pdfSubtitle")}</h2>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
           <div className="bg-slate-50 p-3 rounded border border-slate-200">
@@ -322,20 +324,20 @@ export default function EditDPRPage() {
           </div>
         </div>
         <div className="mb-6">
-          <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">الأعمال المنجزة (Work Performed):</h3>
+          <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">{t("dpr.workPerformed")}:</h3>
           <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{workPerformed}</p>
         </div>
         {safetyNotes && (
           <div className="mb-6">
-            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">ملاحظات الأمن والسلامة (Safety Notes):</h3>
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">{t("dpr.safetyNotes")}:</h3>
             <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200">{safetyNotes}</p>
           </div>
         )}
         {labors.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">العمالة (Labors):</h3>
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">{t("dpr.labors")}:</h3>
             <table className="w-full text-right text-sm border-collapse">
-              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">المهنة</th><th className="p-2 border border-slate-900 text-center w-20">العدد</th><th className="p-2 border border-slate-900 text-center w-20">الساعات</th><th className="p-2 border border-slate-900">ملاحظات</th></tr></thead>
+              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">{t("dpr.trade")}</th><th className="p-2 border border-slate-900 text-center w-20">{t("dpr.count")}</th><th className="p-2 border border-slate-900 text-center w-20">{t("dpr.hours")}</th><th className="p-2 border border-slate-900">{t("dpr.notes")}</th></tr></thead>
               <tbody>{labors.map((l, i) => (
                 <tr key={i} className="border-b border-slate-300">
                   <td className="p-2 border-x border-slate-300 font-bold">{l.trade}</td>
@@ -349,9 +351,9 @@ export default function EditDPRPage() {
         )}
         {equipments.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">المعدات (Equipments):</h3>
+            <h3 className="font-bold text-slate-800 text-sm mb-2 border-b border-slate-200 pb-1">{t("dpr.equipments")}:</h3>
             <table className="w-full text-right text-sm border-collapse">
-              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">نوع المعدة</th><th className="p-2 border border-slate-900 text-center w-20">العدد</th><th className="p-2 border border-slate-900 text-center w-20">الساعات</th><th className="p-2 border border-slate-900">ملاحظات</th></tr></thead>
+              <thead><tr className="bg-slate-900 text-white"><th className="p-2 border border-slate-900">نوع المعدة</th><th className="p-2 border border-slate-900 text-center w-20">{t("dpr.count")}</th><th className="p-2 border border-slate-900 text-center w-20">{t("dpr.hours")}</th><th className="p-2 border border-slate-900">{t("dpr.notes")}</th></tr></thead>
               <tbody>{equipments.map((e, i) => (
                 <tr key={i} className="border-b border-slate-300">
                   <td className="p-2 border-x border-slate-300 font-bold">{e.equipmentType}</td>

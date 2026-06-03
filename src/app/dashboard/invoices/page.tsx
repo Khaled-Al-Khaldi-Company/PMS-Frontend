@@ -26,9 +26,11 @@ import {
 import axios from "axios";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function InvoicesPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   
@@ -156,9 +158,9 @@ export default function InvoicesPage() {
   }, [selectedContractId]);
 
   const statusMap: Record<string, { label: string, color: string, bg: string, icon: any }> = {
-    DRAFT: { label: "مسودة غير معتمدة", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: Clock },
-    CERTIFIED: { label: "مستخلص معتمد", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", icon: FileText },
-    PAID: { label: "تم دفع المستخلص", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
+    DRAFT: { label: t("invoice.status.draft"), color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", icon: Clock },
+    CERTIFIED: { label: t("invoice.status.certified"), color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", icon: FileText },
+    PAID: { label: t("invoice.status.paid"), color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: BadgeCheck },
   };
 
   // Calculate Aggregated Metrics
@@ -188,7 +190,7 @@ export default function InvoicesPage() {
         <div>
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200 mb-2 flex items-center gap-3 drop-shadow-lg">
             <Calculator className="text-emerald-400" size={36} />
-            إدارة المستخلصات
+            {t("invoice.title")}
           </h1>
           <p className="text-slate-400 text-base max-w-xl leading-relaxed">
             التحكم الشامل في مستخلصات الإيرادات (الجهات المالكة) ومستخلصات التكاليف (مقاولين الباطن)، وتتبع الدفعات ونسب الإنجاز والمحتجزات لحظياً.
@@ -215,7 +217,7 @@ export default function InvoicesPage() {
           >
             {selectedContractId && <div className="absolute inset-0 bg-white/20 w-0 group-hover:w-full transition-all duration-300 ease-out" />}
             <PlusCircle size={22} className={`relative z-10 ${selectedContractId ? "group-hover:rotate-90 transition-transform duration-300" : ""}`} />
-            <span className="relative z-10">إنشاء مستخلص جديد</span>
+            <span className="relative z-10">{t("invoice.create")}</span>
           </Link>
         </div>
       </div>
@@ -229,7 +231,7 @@ export default function InvoicesPage() {
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors" size={20} />
             <input
               type="text"
-              placeholder="ابحث برقم المستخلص..."
+              placeholder={t("common.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-900/60 border border-slate-700/50 rounded-2xl py-3 pr-12 pl-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-medium text-sm"
@@ -242,10 +244,10 @@ export default function InvoicesPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full bg-slate-900/80 text-white text-sm font-medium outline-none px-4 py-3 rounded-2xl border border-slate-700/50 appearance-none cursor-pointer focus:border-emerald-500/50 transition-all hover:bg-slate-800/80"
             >
-              <option value="ALL" className="bg-slate-900">جميع الحالات</option>
-              <option value="DRAFT" className="bg-slate-900 text-amber-500">مسودة غير معتمدة</option>
-              <option value="CERTIFIED" className="bg-slate-900 text-blue-500">مستخلص معتمد</option>
-              <option value="PAID" className="bg-slate-900 text-emerald-500">تم الدفع</option>
+              <option value="ALL" className="bg-slate-900">{t("common.all") || "جميع الحالات"}</option>
+              <option value="DRAFT" className="bg-slate-900 text-amber-500">{t("invoice.status.draft")}</option>
+              <option value="CERTIFIED" className="bg-slate-900 text-blue-500">{t("invoice.status.certified")}</option>
+              <option value="PAID" className="bg-slate-900 text-emerald-500">{t("invoice.status.paid")}</option>
             </select>
             <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
           </div>
@@ -381,14 +383,14 @@ export default function InvoicesPage() {
           <table className="w-full text-right text-sm">
             <thead className="bg-slate-900/80 text-slate-300 border-b border-white/10 uppercase font-semibold">
               <tr>
-                <th className="px-6 py-5 whitespace-nowrap">رقم المستخلص</th>
-                <th className="px-6 py-5 text-center whitespace-nowrap">النوع</th>
-                <th className="px-6 py-5">المشروع</th>
-                <th className="px-6 py-5">تاريخ الإصدار</th>
-                <th className="px-6 py-5 text-emerald-400 whitespace-nowrap">الصافي المستحق (SAR)</th>
-                <th className="px-6 py-5 text-rose-400 whitespace-nowrap">قيمة المحتجز (SAR)</th>
-                <th className="px-6 py-5 text-center">الحالة الرقابية</th>
-                <th className="px-6 py-5 text-center">إجراءات</th>
+                <th className="px-6 py-5 whitespace-nowrap">{t("invoice.number")}</th>
+                <th className="px-6 py-5 text-center whitespace-nowrap">{t("invoice.type") || "النوع"}</th>
+                <th className="px-6 py-5">{t("common.project")}</th>
+                <th className="px-6 py-5">{t("invoice.issueDate")}</th>
+                <th className="px-6 py-5 text-emerald-400 whitespace-nowrap">{t("common.amount")}</th>
+                <th className="px-6 py-5 text-rose-400 whitespace-nowrap">{t("invoice.retentionAmount") || "قيمة المحتجز (SAR)"}</th>
+                <th className="px-6 py-5 text-center">{t("common.status")}</th>
+                <th className="px-6 py-5 text-center">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
@@ -410,11 +412,11 @@ export default function InvoicesPage() {
                    <td colSpan={8} className="px-6 py-20 text-center">
                      <div className="flex flex-col items-center justify-center text-slate-500 space-y-4">
                        <FileText size={48} className="opacity-20" />
-                       <p className="text-lg">
-                         {!selectedContractId 
-                           ? "يرجى تحديد العقد من القائمة العلوية لعرض المستخلصات المرتبطة به." 
-                           : "لا توجد مستخلصات مسجلة لهذا العقد حتى الآن."}
-                       </p>
+                        <p className="text-lg">
+                          {!selectedContractId 
+                            ? t("invoice.selectContract") || "يرجى تحديد العقد من القائمة العلوية لعرض المستخلصات المرتبطة به."
+                            : t("common.noData")}
+                        </p>
                      </div>
                    </td>
                 </tr>
@@ -433,10 +435,10 @@ export default function InvoicesPage() {
                     <td className="px-6 py-5 font-mono font-bold text-white text-base">#{inv.invoiceNumber}</td>
                     <td className="px-6 py-5 text-center">
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${inv.contract?.type === 'MAIN_CONTRACT' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
-                        {inv.contract?.type === 'MAIN_CONTRACT' ? 'إيراد (مالكة)' : 'تكلفة (باطن)'}
+                        {inv.contract?.type === 'MAIN_CONTRACT' ? (t("invoice.revenue") || 'إيراد (مالكة)') : (t("invoice.cost") || 'تكلفة (باطن)')}
                       </span>
                     </td>
-                    <td className="px-6 py-5 font-medium">{inv.project?.name || "غير محدد"}</td>
+                    <td className="px-6 py-5 font-medium">{inv.project?.name || t("common.unknown") || "غير محدد"}</td>
                     <td className="px-6 py-5 font-mono text-slate-400">{new Date(inv.issueDate).toLocaleDateString('ar-SA')}</td>
                     <td className="px-6 py-5 font-mono font-bold text-lg text-emerald-400 bg-emerald-500/5 relative overflow-hidden">
                       <div className="absolute left-0 top-0 bottom-0 w-px bg-emerald-500/20" />
@@ -459,18 +461,18 @@ export default function InvoicesPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex justify-center items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Link href={`/dashboard/invoices/${inv.id}`} title="عرض المستخلص" className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all border border-blue-500/20">
+                        <Link href={`/dashboard/invoices/${inv.id}`} title={t("common.view") || "عرض المستخلص"} className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all border border-blue-500/20">
                           <Eye size={16} />
                         </Link>
-                        <button onClick={(e) => handlePrint(e, inv.id)} title="طباعة المستخلص" className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-600/50 hover:border-emerald-500">
+                        <button onClick={(e) => handlePrint(e, inv.id)} title={t("common.print")} className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-600/50 hover:border-emerald-500">
                           <Printer size={16} />
                         </button>
                         {inv.status === 'DRAFT' && (
                           <>
-                            <Link href={`/dashboard/invoices/${inv.id}/edit`} title="تعديل (مسودة)" className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-all border border-amber-500/20">
+                            <Link href={`/dashboard/invoices/${inv.id}/edit`} title={t("common.edit")} className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-all border border-amber-500/20">
                               <Edit3 size={16} />
                             </Link>
-                            <button onClick={(e) => handleDelete(e, inv.id)} title="حذف المستخلص" className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20">
+                            <button onClick={(e) => handleDelete(e, inv.id)} title={t("common.delete")} className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20">
                               <Trash2 size={16} />
                             </button>
                           </>
@@ -478,7 +480,7 @@ export default function InvoicesPage() {
                         {inv.status === 'CERTIFIED' && (
                           <button
                             onClick={(e) => handleRevertToDraft(e, inv.id)}
-                            title="إرجاع للمسودة (إلغاء الاعتماد)"
+                            title={t("invoice.revertToDraft") || "إرجاع للمسودة (إلغاء الاعتماد)"}
                             className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all border border-orange-500/20"
                           >
                             <RotateCcw size={16} />

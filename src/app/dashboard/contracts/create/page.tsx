@@ -6,9 +6,11 @@ import { motion } from "framer-motion";
 import { FileSignature, Save, ArrowRight, Loader2, Wallet } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function CreateContractPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -138,7 +140,7 @@ export default function CreateContractPage() {
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <FileSignature className="text-orange-500" size={24} />
-              تسجيل عقد جديد
+              {t("contract.create")}
             </h1>
             <p className="text-slate-400 text-sm mt-1">تأسيس عقد مقاول باطن أو مورد وربطه بالمشروع.</p>
           </div>
@@ -150,7 +152,7 @@ export default function CreateContractPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">المشروع المرتبط</label>
+              <label className="text-sm font-medium text-slate-300">{t("common.project")}</label>
               <select
                 required
                 value={formData.projectId}
@@ -162,26 +164,26 @@ export default function CreateContractPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">رقم العقد المرجعي (REF)</label>
+              <label className="text-sm font-medium text-slate-300">{t("contract.referenceNumber")}</label>
               <input type="text" required value={formData.referenceNumber} onChange={e => setFormData({...formData, referenceNumber: e.target.value})} className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all" placeholder="CT-2026-X01" dir="ltr" />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-slate-300">نوع العقد (التوجيه المحاسبي)</label>
+              <label className="text-sm font-medium text-slate-300">{t("contract.type")}</label>
                <select
                 required
                 value={formData.type}
                 onChange={e => setFormData({...formData, type: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer"
               >
-                <option value="SUBCONTRACT">عقد مقاول باطن (مشتريات/مصروف)</option>
-                <option value="MAIN_CONTRACT">عقد رئيسي مع المالك (مبيعات/إيراد)</option>
+                <option value="SUBCONTRACT">{t("contract.subContract")}</option>
+                <option value="MAIN_CONTRACT">{t("contract.mainContract")}</option>
               </select>
             </div>
 
             {formData.type === "SUBCONTRACT" && (
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-slate-300">اختر مقاول الباطن / المورد</label>
+                <label className="text-sm font-medium text-slate-300">{t("contract.supplier")}</label>
                 <select
                   required
                   value={formData.subcontractorId}
@@ -379,7 +381,7 @@ export default function CreateContractPage() {
               className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              <span>حفظ واعتماد العقد</span>
+              <span>{t("common.save")}</span>
             </button>
           </div>
         </form>

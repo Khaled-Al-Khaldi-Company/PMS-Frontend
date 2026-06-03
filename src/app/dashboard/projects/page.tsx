@@ -22,9 +22,11 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function ProjectsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -72,17 +74,17 @@ export default function ProjectsPage() {
   };
 
   const statusMap: Record<string, { label: string, color: string, border: string, bg: string, glow: string, icon: any }> = {
-    PLANNING: { label: "قيد التخطيط", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", glow: "from-amber-500/20 to-transparent", icon: Clock },
-    ACTIVE: { label: "نشط (قيد التنفيذ)", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", glow: "from-blue-500/20 to-transparent", icon: HardHat },
-    COMPLETED: { label: "مكتمل", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", glow: "from-emerald-500/20 to-transparent", icon: CheckCircle2 },
-    ON_HOLD: { label: "متوقف", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", glow: "from-rose-500/20 to-transparent", icon: Activity },
+    PLANNING: { label: t("project.status.planning"), color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/10", glow: "from-amber-500/20 to-transparent", icon: Clock },
+    ACTIVE: { label: t("project.status.active"), color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/10", glow: "from-blue-500/20 to-transparent", icon: HardHat },
+    COMPLETED: { label: t("project.status.completed"), color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", glow: "from-emerald-500/20 to-transparent", icon: CheckCircle2 },
+    ON_HOLD: { label: t("project.status.onHold"), color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/10", glow: "from-rose-500/20 to-transparent", icon: Activity },
   };
 
   const filters = [
-    { id: "ALL", label: "جميع المشاريع", count: projects.length },
-    { id: "ACTIVE", label: "نشطة", count: projects.filter(p => p.status === 'ACTIVE').length },
-    { id: "PLANNING", label: "قيد التخطيط", count: projects.filter(p => p.status === 'PLANNING').length },
-    { id: "COMPLETED", label: "مكتملة", count: projects.filter(p => p.status === 'COMPLETED').length },
+    { id: "ALL", label: t("project.filter.all"), count: projects.length },
+    { id: "ACTIVE", label: t("project.filter.active"), count: projects.filter(p => p.status === 'ACTIVE').length },
+    { id: "PLANNING", label: t("project.filter.planning"), count: projects.filter(p => p.status === 'PLANNING').length },
+    { id: "COMPLETED", label: t("project.filter.completed"), count: projects.filter(p => p.status === 'COMPLETED').length },
   ];
 
   const filteredProjects = projects.filter(p => {
@@ -104,11 +106,11 @@ export default function ProjectsPage() {
           </div>
           <div>
             <h1 className="text-3xl font-extrabold text-white flex flex-wrap items-center gap-3 drop-shadow-sm">
-              إدارة المشاريع
+              {t("project.title")}
             </h1>
             <div className="text-slate-400 text-sm mt-1.5 font-medium flex items-start sm:items-center gap-2">
               <Activity size={14} className="text-blue-500 shrink-0 mt-0.5 sm:mt-0" />
-              <span className="leading-relaxed">أضف، تتبع، ووّزع ميزانيات المشاريع، وراقب خطة التنفيذ خطوة بخطوة.</span>
+              <span className="leading-relaxed">{t("project.subtitle")}</span>
             </div>
           </div>
         </div>
@@ -119,7 +121,7 @@ export default function ProjectsPage() {
             className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] group hover:-translate-y-1"
           >
             <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-            <span>إضافة مشروع جديد</span>
+            <span>{t("project.create")}</span>
           </Link>
         )}
       </div>
@@ -151,7 +153,7 @@ export default function ProjectsPage() {
           <Search className="absolute right-4 lg:right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="ابحث برمز المشروع أو الكود..."
+            placeholder={t("project.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-950/50 border border-slate-700/80 rounded-xl py-3 pr-12 pl-4 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all shadow-inner group-hover:border-slate-600"
@@ -177,8 +179,8 @@ export default function ProjectsPage() {
                 className="col-span-full py-20 flex flex-col items-center justify-center text-center glass-dark rounded-3xl border border-white/5 shadow-2xl"
               >
                 <Filter size={48} className="text-slate-600 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">لم يجد النظام أي مشاريع</h3>
-                <p className="text-slate-400">جرب البحث بكلمات مختلفة أو قم بتغيير فلاتر التصنيف الحالية.</p>
+                <h3 className="text-xl font-bold text-white mb-2">{t("project.noResults")}</h3>
+                <p className="text-slate-400">{t("project.noResultsHint")}</p>
               </motion.div>
             ) : (
               filteredProjects.map((project, i) => {
@@ -211,14 +213,14 @@ export default function ProjectsPage() {
                             <button 
                               className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10" 
                               onClick={(e) => { e.stopPropagation(); /* specific action */ }}
-                              title="خيارات إضافية"
+                              title={t("common.moreOptions")}
                             >
                               <MoreVertical size={16} />
                             </button>
                             <button 
                               className="text-rose-500/70 hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-500/10" 
                               onClick={(e) => deleteProject(e, project.id)}
-                              title="حذف المشروع"
+                              title={t("common.delete")}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -229,7 +231,7 @@ export default function ProjectsPage() {
                       <div className="mb-6">
                         <h3 className="text-xl font-extrabold text-white mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors drop-shadow-sm">{project.name}</h3>
                         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900/80 border border-slate-700/50 shadow-inner">
-                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">كود المشروع</span>
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{t("project.code")}</span>
                           <span className="text-xs font-mono font-bold text-slate-300">{project.code}</span>
                         </div>
                       </div>
@@ -237,7 +239,7 @@ export default function ProjectsPage() {
                       <div className="space-y-3.5 mb-2 mt-auto">
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <User size={16} className="text-slate-500 shrink-0" />
-                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : "مدير غير محدد"}</span>
+                          <span className="truncate">{project.manager ? `${project.manager.firstName} ${project.manager.lastName}` : t("project.managerNotSet")}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <Wallet size={16} className="text-slate-500 shrink-0" />
@@ -245,13 +247,13 @@ export default function ProjectsPage() {
                             {(() => {
                               const mainContractsSum = project.contracts?.reduce((acc: number, c: any) => acc + Number(c.totalValue), 0) || 0;
                               const displayBudget = project.budget || mainContractsSum;
-                              return displayBudget > 0 ? `SAR ${Number(displayBudget).toLocaleString()}` : "الميزانية غير محددة";
+                              return displayBudget > 0 ? `SAR ${Number(displayBudget).toLocaleString()}` : t("project.budgetNotSet");
                             })()}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/[0.02] p-2 rounded-xl border border-white/5 border-transparent group-hover:border-white/5 transition-all">
                           <Calendar size={16} className="text-slate-500 shrink-0" />
-                          <span className="font-mono">{project.startDate ? new Date(project.startDate).toLocaleDateString("ar-SA") : "غير محدد"}</span>
+                          <span className="font-mono">{project.startDate ? new Date(project.startDate).toLocaleDateString("ar-SA") : t("common.notSet")}</span>
                         </div>
                       </div>
                     </div>
@@ -259,7 +261,7 @@ export default function ProjectsPage() {
                     {/* Card Footer */}
                     <div className="border-t border-white/5 p-4 bg-slate-900/40 backdrop-blur-md flex items-center justify-between group-hover:bg-slate-900/60 transition-colors">
                       <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                        عرض لوحة قيادة المشروع
+                        {t("project.viewDashboard")}
                       </div>
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-md ${stat.bg} ${stat.color} group-hover:scale-110 group-hover:rotate-12`}>
                         <ArrowUpRight size={18} />

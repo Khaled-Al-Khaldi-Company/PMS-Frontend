@@ -7,9 +7,11 @@ import { Building2, Save, ArrowRight, Loader2, ExternalLink } from "lucide-react
 import axios from "axios";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function CreateProjectPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [clients, setClients] = useState<any[]>([]);
@@ -76,9 +78,9 @@ export default function CreateProjectPage() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Building2 className="text-blue-500" size={24} />
-            إنشاء مشروع جديد
+            {t("project.create")}
           </h1>
-          <p className="text-slate-400 text-sm mt-1">قم بتعبئة التفاصيل الأساسية لاعتماد المشروع في النظام.</p>
+          <p className="text-slate-400 text-sm mt-1">{t("project.createSubtitle")}</p>
         </div>
       </div>
 
@@ -97,35 +99,35 @@ export default function CreateProjectPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">اسم المشروع <span className="text-rose-500">*</span></label>
+              <label className="text-sm font-medium text-slate-300">{t("project.name")} <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                placeholder="مثال: إنشاءات مستشفى العليا..."
+                placeholder={t("project.namePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">كود المشروع المرجعي <span className="text-rose-500">*</span></label>
+              <label className="text-sm font-medium text-slate-300">{t("project.code")} <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 required
                 value={formData.code}
                 onChange={e => setFormData({...formData, code: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                placeholder="مثال: PRJ-2026-001"
+                placeholder={t("project.codePlaceholder")}
                 dir="ltr"
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
               <div className="flex justify-between items-end">
-                <label className="text-sm font-medium text-slate-300">الجهة المالكة (عميل المشروع) <span className="text-rose-500">*</span></label>
+                <label className="text-sm font-medium text-slate-300">{t("project.client")} <span className="text-rose-500">*</span></label>
                 <Link href="/dashboard/contacts" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
-                  <ExternalLink size={12} /> إدارة وإضافة عملاء
+                  <ExternalLink size={12} /> {t("client.manage")}
                 </Link>
               </div>
               <select
@@ -134,28 +136,28 @@ export default function CreateProjectPage() {
                 onChange={e => setFormData({...formData, clientId: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all cursor-pointer"
               >
-                <option value="" disabled>-- اختر جهة مالكة من دليل العملاء --</option>
+                <option value="" disabled>{t("project.selectClient")}</option>
                 {clients.map(client => (
                   <option key={client.id} value={client.id}>
-                    {client.name} {client.daftraClientId ? '🟢 (مربوط بدفترة)' : '🔴 (غير مربوط)'}
+                    {client.name} {client.daftraClientId ? '🟢 ' + t("client.connected") : '🔴 ' + t("client.notConnected")}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-slate-300">وصف نطاق العمل</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.description")}</label>
               <textarea
                 value={formData.description}
                 onChange={e => setFormData({...formData, description: e.target.value})}
                 rows={3}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                placeholder="تفاصيل موجزة عن المشروع والموقع..."
+                placeholder={t("project.descriptionPlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">تاريخ البداية (المخطط)</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.startDate")}</label>
               <input
                 type="date"
                 value={formData.startDate}
@@ -165,7 +167,7 @@ export default function CreateProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">تاريخ التسليم المتوقع</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.endDate")}</label>
               <input
                 type="date"
                 value={formData.endDate}
@@ -175,15 +177,15 @@ export default function CreateProjectPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">حالة المشروع المبدئية</label>
+              <label className="text-sm font-medium text-slate-300">{t("project.status")}</label>
               <select
                 value={formData.status}
                 onChange={e => setFormData({...formData, status: e.target.value})}
                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
               >
-                <option value="PLANNING">قيد التخطيط والدراسة</option>
-                <option value="ACTIVE">نشط وقيد التنفيذ</option>
-                <option value="ON_HOLD">ترسية متوقفة</option>
+                <option value="PLANNING">{t("project.status.planning")}</option>
+                <option value="ACTIVE">{t("project.status.active")}</option>
+                <option value="ON_HOLD">{t("project.status.onHold")}</option>
               </select>
             </div>
           </div>
@@ -194,7 +196,7 @@ export default function CreateProjectPage() {
               onClick={() => router.back()}
               className="px-6 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-white/5 transition-colors"
             >
-              إلغاء
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
@@ -202,7 +204,7 @@ export default function CreateProjectPage() {
               className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all disabled:opacity-50"
             >
               {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              <span>حفظ المشروع واعتماده</span>
+              <span>{t("common.save")}</span>
             </button>
           </div>
         </form>

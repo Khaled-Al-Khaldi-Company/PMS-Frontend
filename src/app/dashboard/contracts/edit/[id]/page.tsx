@@ -13,11 +13,13 @@ import { API_BASE_URL } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/apiErrors";
 import { useDownloadPdf } from "@/hooks/useDownloadPdf";
 import PrintLetterhead from "@/app/dashboard/components/PrintLetterhead";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function EditContractPage() {
   const router = useRouter();
   const params = useParams();
   const contractId = params.id as string;
+  const { t } = useLanguage();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -244,7 +246,7 @@ export default function EditContractPage() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Edit3 className={isMain ? "text-indigo-400" : "text-amber-400"} size={24} />
-            تعديل العقد
+            {t("contract.edit")}
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             تعديل البيانات المالية والمرجعية للعقد
@@ -310,7 +312,7 @@ export default function EditContractPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Reference Number */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">رقم العقد المرجعي (REF)</label>
+              <label className="text-sm font-medium text-slate-300">{t("contract.referenceNumber")}</label>
               <input
                 type="text"
                 required
@@ -359,7 +361,7 @@ export default function EditContractPage() {
 
             {/* Scope */}
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-slate-300">نطاق العمل / وصف العقد</label>
+              <label className="text-sm font-medium text-slate-300">{t("common.description")}</label>
               <textarea
                 rows={4}
                 value={formData.scope}
@@ -531,7 +533,7 @@ export default function EditContractPage() {
               onClick={() => router.push("/dashboard/contracts")}
               className="px-6 py-2.5 rounded-xl font-medium bg-white/5 hover:bg-white/10 text-slate-300 transition-all"
             >
-              إلغاء
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
@@ -543,7 +545,7 @@ export default function EditContractPage() {
               }`}
             >
               {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              حفظ التعديلات
+              {t("common.save")}
             </button>
           </div>
         </form>
@@ -854,7 +856,7 @@ export default function EditContractPage() {
                     className="w-full mt-8 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-white shadow-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
                   >
                     {isEditSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    حفظ التعديلات
+                    {t("common.save")}
                   </button>
                 </div>
               </div>
