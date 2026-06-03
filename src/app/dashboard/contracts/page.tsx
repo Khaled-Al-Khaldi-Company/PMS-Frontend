@@ -409,7 +409,7 @@ export default function ContractsPage() {
                   {/* Actions */}
                   <div className="mt-auto flex gap-2">
                     <Link 
-                      href={`/dashboard/invoices?contractId=${contract.id}`} 
+                      href={`/dashboard/invoices/create?contract=${contract.id}&project=${contract.project?.id || ''}`} 
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all font-medium text-sm border ${
                         isMain
                           ? 'bg-indigo-500/10 hover:bg-indigo-500 text-indigo-300 hover:text-white border-indigo-500/20 hover:border-indigo-500'
@@ -417,7 +417,7 @@ export default function ContractsPage() {
                       }`}
                     >
                       <Receipt size={15} /> 
-                      {isMain ? 'مستخلصات الإيراد' : 'مستخلصات التكلفة'}
+                      {isMain ? t("invoice.create") : t("invoice.create")}
                     </Link>
                   </div>
                 </div>
