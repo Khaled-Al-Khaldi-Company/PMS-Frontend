@@ -16,7 +16,6 @@ export function useDownloadPdf() {
       const dataUrl = await toPng(el, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#ffffff",
       });
 
       const imgWidth = 210;

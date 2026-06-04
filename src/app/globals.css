@@ -113,9 +113,9 @@
    الورقة تظهر عبر background-image على حاوية المحتوى
    ================================================================ */
 .print-on-letterhead {
-  /* الورقة كخلفية مع طبقة بيضاء شفافة فوقها لتخفيف تأثيرها */
+  /* الورقة كخلفية مع طبقة بيضاء شفافة خفيفة جداً فقط لتفتيح الخلفية */
   background-image:
-    linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.55)),
+    linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.15)),
     url('/letterhead.png') !important;
   background-size: 100% 100% !important;
   background-repeat: no-repeat !important;
@@ -142,7 +142,7 @@
   color: #000000 !important;
 }
 .print-on-letterhead th {
-  background-color: #f1f5f9 !important;
+  background-color: #cbd5e1 !important;
   color: #0f172a !important;
   border: 1.5px solid #94a3b8 !important;
   padding: 8px 12px !important;
@@ -157,7 +157,7 @@
   background-color: transparent !important;
 }
 .print-on-letterhead tr:nth-child(even) td {
-  background-color: #f8fafc !important;
+  background-color: #e2e8f0 !important;
 }
 .print-on-letterhead .bg-slate-900 {
   background-color: #0f172a !important;
@@ -171,7 +171,7 @@
 }
 .print-on-letterhead .bg-slate-50, 
 .print-on-letterhead .bg-slate-100 {
-  background-color: #f8fafc !important;
+  background-color: #e2e8f0 !important;
 }
 
 @media print {

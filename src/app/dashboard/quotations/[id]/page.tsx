@@ -89,8 +89,8 @@ export default function EditQuotationPage() {
     el2.classList.add("print:block");
 
     try {
-      const dataUrl1 = await toPng(el1, { quality: 1, pixelRatio: 2, backgroundColor: "#ffffff" });
-      const dataUrl2 = await toPng(el2, { quality: 1, pixelRatio: 2, backgroundColor: "#ffffff" });
+      const dataUrl1 = await toPng(el1, { quality: 1, pixelRatio: 2 });
+      const dataUrl2 = await toPng(el2, { quality: 1, pixelRatio: 2 });
 
       const imgWidth = 210;
       const pageHeight = 297;
