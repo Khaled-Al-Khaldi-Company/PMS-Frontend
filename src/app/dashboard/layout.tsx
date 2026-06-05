@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { CompanyProvider } from "@/context/CompanyContext";
-import { 
-  Building2, 
-  FileSpreadsheet, 
-  Briefcase, 
-  Receipt, 
-  LogOut, 
+import {
+  Building2,
+  FileSpreadsheet,
+  Briefcase,
+  Receipt,
+  LogOut,
   Menu,
   X,
   UserCircle,
@@ -19,7 +19,9 @@ import {
   Settings,
   PieChart,
   Banknote,
-  Shield
+  Shield,
+  LayoutDashboard,
+  ClipboardList,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
@@ -181,7 +183,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </motion.aside>
 
-      {/* Main Container */}
+        {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden print:h-auto print:overflow-visible print:!bg-white text-slate-100 print:!text-black print:block">
         {/* Top Header */}
         <header className="h-20 bg-[#09090b]/80 backdrop-blur-xl border-b border-white/5 flex items-center px-4 md:px-8 shrink-0 z-10 sticky top-0 print:hidden">
@@ -204,7 +206,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Dynamic Page Content Area */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[url('/bg-pattern.svg')] bg-cover relative print:overflow-visible print:h-auto print:block print:!bg-none print:!bg-white print:p-0 print:!text-black">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-transparent to-indigo-900/10 z-0 print:hidden" />
-          <div className="p-4 md:p-8 relative z-10 h-full w-full print:p-0 print:h-auto print:block">
+          <div className="p-4 md:p-8 relative z-10 h-full w-full print:p-0 print:h-auto print:block pb-24 md:pb-8">
             {(() => {
               // Exact match or sub-paths (e.g. /dashboard/projects/123)
               const matchedMenuItem = menuItems.find(item => pathname === item.path || pathname.startsWith(item.path + '/'));
@@ -222,6 +224,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })()}
           </div>
         </main>
+
+        {/* Bottom Navigation - Mobile Only */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0f1015]/95 backdrop-blur-xl border-t border-white/5 safe-area-bottom">
+          <div className="flex items-center justify-around py-1">
+            {[
+              { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard", req: [] },
+              { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"] },
+              { icon: FileSignature, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
+              { icon: FileCheck2, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
+              { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [] },
+            ].filter(item => hasAccess(item.req)).map((item, i) => {
+              const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+              return (
+                <button
+                  key={i}
+                  onClick={() => router.push(item.path)}
+                  className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-colors ${
+                    isActive ? "text-blue-400" : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  <item.icon size={20} />
+                  <span className={`text-[10px] font-bold ${isActive ? "" : "font-medium"}`}>{t(item.labelKey)}</span>
+                  {isActive && <div className="w-1 h-1 rounded-full bg-blue-400 mt-0.5" />}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       </div>
     </div>
   );
