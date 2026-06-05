@@ -2,7 +2,7 @@
   "name": "PMS - Khaled Al-Khaldi Contracting",
   "short_name": "PMS",
   "description": "نظام إدارة المقاولات والمستخلصات - Enterprise Resource Planning & Management System",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

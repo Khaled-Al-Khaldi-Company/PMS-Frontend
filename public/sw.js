@@ -1,11 +1,10 @@
-const CACHE_NAME = "pms-cache-v1";
+const CACHE_NAME = "pms-cache-v2";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
 ];
 
-// Install event - cache static assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -15,7 +14,6 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -29,10 +27,30 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  // For navigation requests (HTML pages)
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match("/");
+          });
+        })
+    );
+    return;
+  }
+
+  // For all other GET requests (assets, API, etc.)
   event.respondWith(
     fetch(event.request)
       .then((response) => {
