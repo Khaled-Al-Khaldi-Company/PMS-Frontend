@@ -821,21 +821,21 @@ export default function ReportsPage() {
                   <h4 className="text-xs font-black text-slate-300 mb-4 flex items-center gap-2">
                     <PieChart size={14} className="text-rose-500" /> {t("reports.costStructureAnalysis")}
                   </h4>
-                  <ExpensesDonutChart data={getCostBreakdown()} />
+                  <ExpensesDonutChart data={getCostBreakdown()} t={t} />
                 </div>
               </div>
             )}
 
             {reportType === 'BOQ_PROGRESS' && (
-              <BoqProgressChart summary={reportData.summary} items={reportData.data || []} />
+              <BoqProgressChart summary={reportData.summary} items={reportData.data || []} t={t} />
             )}
 
             {(reportType === 'CONTRACTS' || reportType === 'CLIENT_CONTRACTS' || reportType === 'SUBCONTRACTOR_CONTRACTS') && (
-              <ContractsStackedBar summary={reportData.summary} />
+              <ContractsStackedBar summary={reportData.summary} t={t} />
             )}
 
             {(reportType === 'CONTACTS' || reportType === 'CLIENT_CONTACTS' || reportType === 'SUPPLIER_CONTACTS') && (
-              <TopContactsChart data={reportData.data || []} />
+              <TopContactsChart data={reportData.data || []} t={t} />
             )}
           </motion.div>
         </AnimatePresence>
