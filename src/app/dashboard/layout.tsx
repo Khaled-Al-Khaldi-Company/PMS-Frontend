@@ -34,6 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [userName, setUserName] = useState("مدير النظام");
   const [userRole, setUserRole] = useState("Admin");
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [screenPermissions, setScreenPermissions] = useState<string[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setUserName(`${u.firstName} ${u.lastName}`);
         setUserRole(u.role);
         setPermissions(u.permissions || []);
+        setScreenPermissions(u.screenPermissions || []);
       } catch (e) {}
     }
   }, [router]);
@@ -54,33 +56,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const hasAccess = (reqPerms: string[]) => {
     if (userRole === "Admin") return true; 
     if (userRole === "Viewer") {
-      // Allow Viewer to see everything except pages that require MANAGE_USERS (settings, users, roles)
       return !reqPerms.includes("MANAGE_USERS");
     }
-    if (!reqPerms || reqPerms.length === 0) return true; // public to all logged in
+    if (!reqPerms || reqPerms.length === 0) return true;
     return reqPerms.some(p => permissions.includes(p));
   };
 
+  const hasScreenAccess = (screenKey: string) => {
+    if (userRole === "Admin" || userRole === "System Admin") return true;
+    if (screenPermissions.includes("*")) return true;
+    return screenPermissions.includes(screenKey);
+  };
+
   const menuItems = [
-    { icon: Building2, labelKey: "nav.dashboard", path: "/dashboard", req: [] },
-    { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"] },
-    { icon: FileCheck2, labelKey: "nav.quotations", path: "/dashboard/quotations", req: ["QUOTATION_CREATE", "QUOTATION_APPROVE"] },
-    { icon: FileSpreadsheet, labelKey: "nav.boq", path: "/dashboard/boq", req: ["PROJECT_MANAGE", "INVOICE_CREATE"] },
-    { icon: ShoppingCart, labelKey: "nav.purchases", path: "/dashboard/purchases", req: ["PO_CREATE", "PO_APPROVE"] },
-    { icon: Building2, labelKey: "nav.inventory", path: "/dashboard/inventory", req: ["PO_CREATE", "INVOICE_CREATE"] },
-    { icon: FileSignature, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
-    { icon: Receipt, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
-    { icon: Banknote, labelKey: "nav.expenses", path: "/dashboard/expenses", req: ["EXPENSE_CREATE", "EXPENSE_APPROVE"] },
-    { icon: FileSpreadsheet, labelKey: "nav.reports", path: "/dashboard/reports", req: [] },
-    { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [] },
-    { icon: UserCircle, labelKey: "nav.contacts", path: "/dashboard/contacts", req: ["PROJECT_MANAGE", "CONTRACT_CREATE", "PO_CREATE"] },
-    { icon: Building2, labelKey: "nav.company", path: "/dashboard/settings/company", req: ["MANAGE_USERS"] },
-    { icon: Settings, labelKey: "nav.settings", path: "/dashboard/settings", req: ["MANAGE_USERS"] },
-    { icon: UserCircle, labelKey: "nav.users", path: "/dashboard/settings/users", req: ["MANAGE_USERS"] },
-    { icon: Shield, labelKey: "nav.roles", path: "/dashboard/settings/roles", req: ["MANAGE_USERS"] },
+    { icon: Building2, labelKey: "nav.dashboard", path: "/dashboard", req: [], screenKey: "dashboard" },
+    { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"], screenKey: "projects" },
+    { icon: FileCheck2, labelKey: "nav.quotations", path: "/dashboard/quotations", req: ["QUOTATION_CREATE", "QUOTATION_APPROVE"], screenKey: "quotations" },
+    { icon: FileSpreadsheet, labelKey: "nav.boq", path: "/dashboard/boq", req: ["PROJECT_MANAGE", "INVOICE_CREATE"], screenKey: "boq" },
+    { icon: ShoppingCart, labelKey: "nav.purchases", path: "/dashboard/purchases", req: ["PO_CREATE", "PO_APPROVE"], screenKey: "purchases" },
+    { icon: Building2, labelKey: "nav.inventory", path: "/dashboard/inventory", req: ["PO_CREATE", "INVOICE_CREATE"], screenKey: "inventory" },
+    { icon: FileSignature, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"], screenKey: "contracts" },
+    { icon: Receipt, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"], screenKey: "invoices" },
+    { icon: Banknote, labelKey: "nav.expenses", path: "/dashboard/expenses", req: ["EXPENSE_CREATE", "EXPENSE_APPROVE"], screenKey: "expenses" },
+    { icon: FileSpreadsheet, labelKey: "nav.reports", path: "/dashboard/reports", req: [], screenKey: "reports" },
+    { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [], screenKey: "analytics" },
+    { icon: UserCircle, labelKey: "nav.contacts", path: "/dashboard/contacts", req: ["PROJECT_MANAGE", "CONTRACT_CREATE", "PO_CREATE"], screenKey: "contacts" },
+    { icon: Building2, labelKey: "nav.company", path: "/dashboard/settings/company", req: ["MANAGE_USERS"], screenKey: "company" },
+    { icon: Settings, labelKey: "nav.settings", path: "/dashboard/settings", req: ["MANAGE_USERS"], screenKey: "settings" },
+    { icon: UserCircle, labelKey: "nav.users", path: "/dashboard/settings/users", req: ["MANAGE_USERS"], screenKey: "users" },
+    { icon: Shield, labelKey: "nav.roles", path: "/dashboard/settings/roles", req: ["MANAGE_USERS"], screenKey: "roles" },
   ];
 
-  const visibleMenuItems = menuItems.filter(item => hasAccess(item.req));
+  const visibleMenuItems = menuItems.filter(item => hasAccess(item.req) && hasScreenAccess(item.screenKey));
 
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 flex overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:!bg-white print:!text-black print:block">
@@ -208,10 +215,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-transparent to-indigo-900/10 z-0 print:hidden" />
           <div className="p-4 md:p-8 relative z-10 h-full w-full print:p-0 print:h-auto print:block pb-24 md:pb-8">
             {(() => {
-              // Exact match or sub-paths (e.g. /dashboard/projects/123)
               const matchedMenuItem = menuItems.find(item => pathname === item.path || pathname.startsWith(item.path + '/'));
               
-              if (matchedMenuItem && !hasAccess(matchedMenuItem.req)) {
+              if (matchedMenuItem && (!hasAccess(matchedMenuItem.req) || !hasScreenAccess(matchedMenuItem.screenKey))) {
                 return (
                   <div className="flex flex-col items-center justify-center h-[70vh] text-center">
                     <Shield size={64} className="text-rose-500/50 mb-4" />
@@ -229,12 +235,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0f1015]/95 backdrop-blur-xl border-t border-white/5 safe-area-bottom">
           <div className="flex items-center justify-around py-1">
             {[
-              { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard", req: [] },
-              { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"] },
-              { icon: FileSignature, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"] },
-              { icon: FileCheck2, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"] },
-              { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [] },
-            ].filter(item => hasAccess(item.req)).map((item, i) => {
+              { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard", req: [], screenKey: "dashboard" },
+              { icon: Briefcase, labelKey: "nav.projects", path: "/dashboard/projects", req: ["PROJECT_MANAGE"], screenKey: "projects" },
+              { icon: FileSignature, labelKey: "nav.invoices", path: "/dashboard/invoices", req: ["INVOICE_CREATE", "INVOICE_REVIEW", "INVOICE_APPROVE"], screenKey: "invoices" },
+              { icon: FileCheck2, labelKey: "nav.contracts", path: "/dashboard/contracts", req: ["CONTRACT_CREATE", "CONTRACT_APPROVE"], screenKey: "contracts" },
+              { icon: PieChart, labelKey: "nav.analytics", path: "/dashboard/analytics", req: [], screenKey: "analytics" },
+            ].filter(item => hasAccess(item.req) && hasScreenAccess(item.screenKey)).map((item, i) => {
               const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
               return (
                 <button

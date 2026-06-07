@@ -51,7 +51,8 @@
     "company": "Company Profile",
     "settings": "Daftra Integration",
     "users": "User Management",
-    "roles": "Permissions Matrix (RBAC)"
+    "roles": "Permissions Matrix (RBAC)",
+    "dpr": "Daily Progress Reports"
   },
   "inventory": {
     "loading": "Preparing inventory management...",
@@ -534,7 +535,8 @@
     "selectProjects": "Projects (select one or more)",
     "selectPerms": "Permissions allowed for this user within the project",
     "saveAssignment": "Save Assignment",
-    "allAssigned": "All projects are already assigned"
+    "allAssigned": "All projects are already assigned",
+    "screenPermissions": "Screen Permissions (Allowed Screens)"
   },
   "reports": {
     "title": "Unified Reports Center",

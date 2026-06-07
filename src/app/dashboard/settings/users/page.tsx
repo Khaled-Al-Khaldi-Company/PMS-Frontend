@@ -6,10 +6,30 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, FileEdit, Trash2, Shield, Lock, Activity, CheckCircle, XCircle,
-  Building2, Plus, X, Save, Loader2
+  Building2, Plus, X, Save, Loader2, Eye, EyeOff
 } from "lucide-react";
 import axios from "axios";
 import { useLanguage } from "@/lib/i18n/context";
+
+const SCREEN_OPTIONS = [
+  { key: "dashboard", labelKey: "nav.dashboard" },
+  { key: "projects", labelKey: "nav.projects" },
+  { key: "quotations", labelKey: "nav.quotations" },
+  { key: "boq", labelKey: "nav.boq" },
+  { key: "purchases", labelKey: "nav.purchases" },
+  { key: "inventory", labelKey: "nav.inventory" },
+  { key: "contracts", labelKey: "nav.contracts" },
+  { key: "invoices", labelKey: "nav.invoices" },
+  { key: "expenses", labelKey: "nav.expenses" },
+  { key: "dpr", labelKey: "nav.dpr" },
+  { key: "reports", labelKey: "nav.reports" },
+  { key: "analytics", labelKey: "nav.analytics" },
+  { key: "contacts", labelKey: "nav.contacts" },
+  { key: "company", labelKey: "nav.company" },
+  { key: "settings", labelKey: "nav.settings" },
+  { key: "users", labelKey: "nav.users" },
+  { key: "roles", labelKey: "nav.roles" },
+];
 
 const ALL_PERMISSIONS = [
   "QUOTATION_CREATE", "QUOTATION_APPROVE",
@@ -41,6 +61,9 @@ export default function UsersManagementPage() {
     roleId: "",
     isActive: true
   });
+
+  // Screen Permissions State
+  const [screenPerms, setScreenPerms] = useState<string[]>([]);
 
   // Project Permissions State
   const [userProjectPerms, setUserProjectPerms] = useState<any[]>([]);
@@ -103,6 +126,7 @@ export default function UsersManagementPage() {
     setEditingUserId(null);
     setFormData({ firstName: "", lastName: "", email: "", password: "", roleId: roles[0]?.id || "", isActive: true });
     setUserProjectPerms([]);
+    setScreenPerms([]);
     setShowModal(true);
   };
 
@@ -116,6 +140,7 @@ export default function UsersManagementPage() {
       roleId: user.roleId,
       isActive: user.isActive
     });
+    setScreenPerms(user.screenPermissions || []);
     fetchUserProjectPerms(user.id);
     setShowModal(true);
   };
@@ -125,7 +150,7 @@ export default function UsersManagementPage() {
     try {
       const token = localStorage.getItem("token");
       if (editingUserId) {
-        const payload: any = { ...formData };
+        const payload: any = { ...formData, screenPermissions: screenPerms };
         if (!payload.password) delete payload.password;
         await axios.patch(`${API_BASE_URL}/v1/users/${editingUserId}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
@@ -135,7 +160,7 @@ export default function UsersManagementPage() {
            alert("كلمة المرور مطلوبة للمستخدم الجديد!");
            return;
         }
-        await axios.post(`${API_BASE_URL}/v1/users`, formData, {
+        await axios.post(`${API_BASE_URL}/v1/users`, { ...formData, screenPermissions: screenPerms }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -325,7 +350,46 @@ export default function UsersManagementPage() {
                 </div>
               </div>
 
-              <div className="mt-8 flex gap-4 pt-4 border-t border-slate-800">
+              {/* Screen Permissions */}
+              <div className="mt-6 pt-4 border-t border-slate-800">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                  <Eye size={16} className="text-indigo-400" />
+                  {t("users.screenPermissions")}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-2 bg-slate-950/40 rounded-2xl border border-slate-800">
+                  {SCREEN_OPTIONS.map((screen) => {
+                    const isChecked = screenPerms.includes(screen.key);
+                    return (
+                      <label
+                        key={screen.key}
+                        onClick={() => {
+                          setScreenPerms(prev =>
+                            prev.includes(screen.key)
+                              ? prev.filter(k => k !== screen.key)
+                              : [...prev, screen.key]
+                          );
+                        }}
+                        className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer transition-colors text-xs ${
+                          isChecked
+                            ? 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-400'
+                            : 'bg-slate-900/50 border border-transparent hover:bg-slate-800/50 text-slate-400'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
+                          isChecked
+                            ? 'bg-indigo-500 border-indigo-500'
+                            : 'border-slate-600'
+                        }`}>
+                          {isChecked && <span className="text-white text-[8px] font-bold">✓</span>}
+                        </div>
+                        <span className="truncate">{t(screen.labelKey)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-4 pt-4 border-t border-slate-800">
                 <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors">
                   {t("users.saveUser")}
                 </button>
