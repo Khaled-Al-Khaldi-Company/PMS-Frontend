@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import arMessages from "./translations/ar.json";
+import enMessages from "./translations/en.json";
 
 type Locale = "ar" | "en";
 
@@ -17,14 +19,7 @@ const STORAGE_KEY = "pms_locale";
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 function loadMessages(locale: Locale): Record<string, any> {
-  try {
-    if (locale === "en") {
-      return require("./translations/en.json");
-    }
-    return require("./translations/ar.json");
-  } catch {
-    return {};
-  }
+  return locale === "en" ? (enMessages as Record<string, any>) : (arMessages as Record<string, any>);
 }
 
 function resolveNestedKey(obj: Record<string, any>, key: string): string {
